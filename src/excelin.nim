@@ -11,7 +11,7 @@
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, XmlAttributes,
-     len, xmlHeader, attrs, `attrs=`, innerText, `[]`
+     len, xmlHeader, attrs, `attrs=`, innerText, `[]`, insert
 from std/xmlparser import parseXml, XmlError
 from std/strutils import endsWith, join, contains, parseInt, `%`, replace,
   parseFloat, parseUint
@@ -162,34 +162,57 @@ proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
   result = try: parseInt(r.body.attr "r") except: 1
 
+proc fetchCell(body: XmlNode, colrow: string): int =
+  var count = -1
+  for n in body:
+    inc count
+    if colrow == n.attr "r": return count
+  -1
+
+proc addCell(row: Row, cellpos: string, cnode: XmlNode) =
+  let nodepos = row.body.fetchCell cellpos
+  if nodepos < 0:
+    row.body.add cnode
+  else:
+    row.body.delete nodepos
+    row.body.insert cnode, nodepos
+
 proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
   let lastStr = row.sheet.sharedStrings.len
+  let cellpos = fmt"""{col}{row.body.attr "r"}"""
+  let cnode = <>c(r=cellpos, t="s", s="0", <>v(newText $lastStr))
+  row.addCell cellpos, cnode
   row.sheet.sharedStrings.add <>si(newXmlTree("t",
     [newText s],
     {"xml:space": "preserve"}.toXmlAttributes))
-  row.body.add <>c(r=fmt"""{col}{row.body.attr "r"}""",
-    t="s", s="0", <>v(newText $lastStr))
   row.sheet.modifiedAt
   let newcount = lastStr + 1
   row.sheet.sharedStrings.attrs = {"count": $newcount,
     "uniqueCount": $newcount, "xmlns": mainns}.toXmlAttributes
+
 proc `[]=`*(row: Row, col: string, n: SomeNumber) =
   ## Add cell with overload for any number.
   let cellpos = fmt"""{col}{row.body.attr "r"}"""
-  row.body.add <>c(r=cellpos, t="n", <>v(newText $n))
+  let cnode = <>c(r=cellpos, t="n", <>v(newText $n))
+  row.addCell cellpos, cnode
   row.sheet.modifiedAt
+
 proc `[]=`*(row: Row, col: string, b: bool) =
   ## Add cell with overload for truthy value.
-  row.body.add <>c(r=fmt"""{col}{row.body.attr "r"}""", t="b", <>v(newText $b))
+  let cellpos = fmt"""{col}{row.body.attr "r"}"""
+  let cnode = <>c(r=cellpos, t="b", <>v(newText $b))
+  row.addCell cellpos, cnode
   row.sheet.modifiedAt
+
 proc `[]=`*(row: Row, col: string, d: DateTime | Time) =
   ## Add cell with overload for DateTime or Time. The saved value
   ## will be in string format of `yyyy-MM-dd'T'hh:mm:ss'.'fffzz` e.g.
   ## `2200-10-01T11:22:33.456-03`.
-  row.body.add <>c(r=fmt"""{col}{row.body.attr "r"}""", t="d",
-              <>v(newText d.format(datefmt)))
+  let cellpos = fmt"""{col}{row.body.attr "r"}"""
+  let cnode = <>c(r=cellpos, t="d", <>v(newText d.format(datefmt)))
+  row.addCell cellpos, cnode
   row.sheet.modifiedAt
 
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
