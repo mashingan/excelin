@@ -9,4 +9,4 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 1.6.4", "zippy >= 0.9.7
+requires "nim >= 1.4.0", "zippy >= 0.9.7

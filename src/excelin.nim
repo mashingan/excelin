@@ -10,20 +10,19 @@
 ##
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
-     newXmlTree, add, newText, toXmlAttributes, delete, XmlAttributes,
-     len, xmlHeader, attrs, `attrs=`, innerText, `[]`, insert
-from std/xmlparser import parseXml, XmlError
-from std/strutils import endsWith, join, contains, parseInt, `%`, replace,
+     newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
+     attrs, `attrs=`, innerText, `[]`, insert, clear
+from std/xmlparser import parseXml
+from std/strutils import endsWith, contains, parseInt, `%`, replace,
   parseFloat, parseUint
-from std/sequtils import toSeq, map, mapIt
+from std/sequtils import toSeq, mapIt
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
 from std/strformat import fmt
 from std/times import DateTime, Time, now, format, toTime, toUnix, parse
-from std/os import splitFile, `/`, addFileExt, parentDir, splitPath,
+from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/uri import parseUri, `/`, `$`
-from std/strtabs import StringTableRef, `[]=`
+from std/strtabs import `[]=`
 from std/sugar import dump, `->`
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
@@ -66,7 +65,7 @@ type
     parent: Excel
 
   Sheet* = ref object of InternalBody
-    ## The main object that will be used most of of the time for many users.
+    ## The main object that will be used most of the time for many users.
     ## This object will represent a sheet in Excel file such as adding row
     ## getting row, and/or adding cell directly.
     sharedStrings: XmlNode
@@ -76,12 +75,14 @@ type
 
   Row* = ref object of InternalBody
     ## The object that will be used for working with values within cells of a row.
-    ## Users can get the value within cell and set the its value.
+    ## Users can get the value within cell and set its value.
     sheet: Sheet
   FilePath = string
   FileRep = (FilePath, XmlNode)
 
   ExcelError* = object of CatchableError
+    ## Error when the Excel file read is invalid, specifically Excel file
+    ## that doesn't have workbook.
 
 template unixSep*(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
@@ -499,9 +500,15 @@ proc readExcel*(path: string): Excel =
   for _, s in result.sheets:
     s.sharedStrings = result.sharedStrings[1]
 
-proc addAppProp*(e: Excel, prop: varargs[(string, string)]) =
-  ## Add information property to Excel file. Will overwrite
-  ## any existing information property.
+  if "app.xml" in result.otherfiles:
+    var (_, appnode) = result.otherfiles["app.xml"]
+    clear appnode
+    appnode.add <>Application(newText "Excelin")
+    appnode.add <>AppVersion(newText excelinVersion)
+
+proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
+  ## Add information property to Excel file. Will add the properties
+  ## to the existing.
   const key = "app.xml"
   if key notin e.otherfiles: return
   let (_, propnode) = e.otherfiles[key]
@@ -561,7 +568,7 @@ proc `name=`*(s: Sheet, newname: string) =
   s.privName = newname
   for node in s.parent.workbook.body.findAll "sheet":
     if s.rid == node.attr "r:id":
-      var currattr = StringTableRef(node.attrs)
+      var currattr = node.attrs
       currattr["name"] = newname
       node.attrs = currattr
 
@@ -592,7 +599,9 @@ when isMainModule:
     let row6 = sheet.addRow
     row6["B"] = 5
     row6["A"] = -1
+    empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
     #dump sheet.body
+    #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
     echo "sheet is nil"
