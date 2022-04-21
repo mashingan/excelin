@@ -293,8 +293,23 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
 # ✓ add entry to content type
 # ✗ add complete worksheet nodes
 proc addSheet*(e: Excel, name = ""): Sheet =
-  # Add new sheet to excel with supplied name and return it to enable further working.
-  # The name can use the existing sheet name.
+  ## Add new sheet to excel with supplied name and return it to enable further working.
+  ## The name can use the existing sheet name. Sheet name by default will in be
+  ## `"Sheet{num}"` format with `num` is number of available sheets increased each time
+  ## adding sheet. The new empty Excel file starting with Sheet1 will continue to Sheet2,
+  ## Sheet3 ... each time this function is called.
+  ## For example snip code below:
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##   let (excel, sheet1) = newExcel()
+  ##   doAssert sheet1.name == "Sheet1"
+  ##   excel.deleteSheet "Sheet1"
+  ##   let newsheet = addSheet excel
+  ##   doAssert newsheet.name == "Sheet2" # instead of to be Sheet1
+  ##
+  ## This is because the counter for sheet will not be reduced despite of deleting
+  ## the sheet in order to reduce maintaining relation-id cross reference.
   const
     sheetTypeNs = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
     contentTypeNs = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"
@@ -302,10 +317,10 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   var name = name
   if name == "":
     name = fmt"Sheet{e.sheetCount}"
-  let wbsheets = e.workbook.body.child "sheets"
+  var wbsheets = e.workbook.body.child "sheets"
   if wbsheets == nil:
-    dec e.sheetCount # failed to add new sheet, return nil
-    return
+    wbsheets = <>sheets()
+    e.workbook.body.add wbsheets
   let
     rel = e.workbook.rels
     availableId = rel[1].findAll("Relationship").len + 1
@@ -343,7 +358,7 @@ proc addSheet*(e: Excel, name = ""): Sheet =
 # ✓ deleting from workbook body
 # ✗ deleting from workbook sheets info
 proc deleteSheet*(e: Excel, name = "") =
-  ## Delete sheet based on its name. Will ignore when it's cannot find the name.
+  ## Delete sheet based on its name. Will ignore when it cannot find the name.
   ## Delete the first (or older) sheet when there's a same name.
   ## Check `sheetNames proc<#sheetNames,Excel>`_ to get available names.
 
@@ -383,7 +398,6 @@ proc deleteSheet*(e: Excel, name = "") =
       break
   if not found: return
   e.content.delete nodepos
-  dec e.sheetCount
 
   #nodepos = -1
   #for node in e.workbook.sheetsInfo:
@@ -549,11 +563,13 @@ when isMainModule:
     sheet.name = "hehe"
     let newsheet = empty.addSheet("test add new sheet")
     dump newsheet.name
-    empty.writeFile "generate-modified.xlsx"
     dump row.getCell[:string]("A")
     dump row.getCell[:int]("B")
     dump row.getCell[:uint]("C")
     dump row.getCell[:float]("D")
+    empty.writeFile "generate-modified.xlsx"
+    row["D"] = now() # modify to date time
+    empty.writeFile "generate-modified-cell.xlsx"
     empty.deleteSheet "hehe"
     empty.writeFile "generate-deleted-sheet.xlsx"
   else:
