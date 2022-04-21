@@ -515,32 +515,24 @@ proc `name=`*(s: Sheet, newname: string) =
 
 
 when isMainModule:
-  let tworows = readExcel "2-rows.xlsx"
   let (empty, sheet) = newExcel()
-  empty.writeFile "generate-empty.xlsx"
-  dump tworows.sheetNames
+  empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
     let row = sheet.addRow
     row.addCell "A", "hehe"
     row.addCell "B", -1
     row.addCell "C", 2
     row.addCell "D", 42.0
-    #dump sheet.name
     sheet.name = "hehe"
-    #dump empty.sheetNames
     let newsheet = empty.addSheet("test add new sheet")
     dump newsheet.name
-    #dump empty.sheetNames
-    #dump newsheet.body
-    #dump empty.workbook.rels
-    #dump empty.workbook.body
-    empty.writeFile "generate-empty.xlsx"
+    empty.writeFile "generate-modified.xlsx"
     dump row.getCell[:string]("A")
     dump row.getCell[:int]("B")
     dump row.getCell[:uint]("C")
     dump row.getCell[:float]("D")
     empty.deleteSheet "hehe"
-    empty.writeFile "generate-empty-sheet.xlsx"
+    empty.writeFile "generate-deleted-sheet.xlsx"
   else:
     echo "sheet is nil"
 
