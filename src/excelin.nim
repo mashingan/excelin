@@ -131,14 +131,12 @@ proc addRow*(s: Sheet): Row =
   ## Add row directly from sheet after any existing row.
   ## This will return a new pristine row to work further.
   ## Row numbering is 1-based.
-  let rows = toSeq s.body.findAll("row")
-  let newnum = block:
-    if rows.len > 0:
-      try: parseInt(rows[^1].attr "r")+1 except: 1
-    else: 1
-  result = Row(sheet: s)
-  result.body = <>row(r= $newnum, hidden="false", collapsed="false")
   let sdata = s.body.getSheetData
+  let rowExists = sdata.len
+  result = Row(
+    sheet: s,
+    body: <>row(r= $(rowExists+1), hidden="false", collapsed="false"),
+  )
   sdata.add result.body
   s.modifiedAt
 
@@ -146,15 +144,19 @@ proc addRow*(s: Sheet, rowNum: Positive): Row =
   ## Add row by selecting which row number to work with.
   ## This will return new row if there's no existing row
   ## or will return an existing one.
-  var latestRowNum = 0
-  for r in s.body.findAll "row":
-    let rnum = try: parseInt(r.attr "r") except: 0
-    if rnum == rowNum:
-      return Row(body: r, sheet: s)
-    latestRowNum = max(latestRowNum, rnum)
-  result = Row(sheet: s)
-  result.body = <>row(r= $latestRowNum, hidden="false", collapsed="false")
   let sdata = s.body.getSheetData
+  let rowsExists = sdata.len
+  dump rowsExists
+  dump rowNum
+  if rowNum > rowsExists+1:
+    for i in rowsExists+1 ..< rowNum:
+      sdata.add <>row(r= $i, hidden="false", collapsed="false")
+  else:
+    return Row(sheet:s, body: sdata[rowNum-1])
+  result = Row(
+    sheet: s,
+    body: <>row(r= $rowNum, hidden="false", collapsed="false"),
+  )
   sdata.add result.body
   s.modifiedAt
 
@@ -570,8 +572,15 @@ when isMainModule:
     empty.writeFile "generate-modified.xlsx"
     row["D"] = now() # modify to date time
     empty.writeFile "generate-modified-cell.xlsx"
-    empty.deleteSheet "hehe"
-    empty.writeFile "generate-deleted-sheet.xlsx"
+    #empty.deleteSheet "hehe"
+    #empty.writeFile "generate-deleted-sheet.xlsx"
+    let row5 = sheet.addRow 5
+    row5["A"] = "yeehaa"
+    let row6 = sheet.addRow
+    row6["B"] = 5
+    row6["A"] = -1
+    #dump sheet.body
+    empty.writeFile "generated-add-rows.xlsx"
   else:
     echo "sheet is nil"
 
