@@ -162,7 +162,7 @@ proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
   result = try: parseInt(r.body.attr "r") except: 1
 
-proc addCell*(row: Row, col: string, s: string) =
+proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
   let lastStr = row.sheet.sharedStrings.len
@@ -175,16 +175,16 @@ proc addCell*(row: Row, col: string, s: string) =
   let newcount = lastStr + 1
   row.sheet.sharedStrings.attrs = {"count": $newcount,
     "uniqueCount": $newcount, "xmlns": mainns}.toXmlAttributes
-proc addCell*(row: Row, col: string, n: SomeNumber) =
+proc `[]=`*(row: Row, col: string, n: SomeNumber) =
   ## Add cell with overload for any number.
   let cellpos = fmt"""{col}{row.body.attr "r"}"""
   row.body.add <>c(r=cellpos, t="n", <>v(newText $n))
   row.sheet.modifiedAt
-proc addCell*(row: Row, col: string, b: bool) =
+proc `[]=`*(row: Row, col: string, b: bool) =
   ## Add cell with overload for truthy value.
   row.body.add <>c(r=fmt"""{col}{row.body.attr "r"}""", t="b", <>v(newText $b))
   row.sheet.modifiedAt
-proc addCell*(row: Row, col: string, d: DateTime | Time) =
+proc `[]=`*(row: Row, col: string, d: DateTime | Time) =
   ## Add cell with overload for DateTime or Time. The saved value
   ## will be in string format of `yyyy-MM-dd'T'hh:mm:ss'.'fffzz` e.g.
   ## `2200-10-01T11:22:33.456-03`.
@@ -519,10 +519,10 @@ when isMainModule:
   empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
     let row = sheet.addRow
-    row.addCell "A", "hehe"
-    row.addCell "B", -1
-    row.addCell "C", 2
-    row.addCell "D", 42.0
+    row["A"] = "hehe"
+    row["B"] = -1
+    row["C"] = 2
+    row["D"] = 42.0
     sheet.name = "hehe"
     let newsheet = empty.addSheet("test add new sheet")
     dump newsheet.name
