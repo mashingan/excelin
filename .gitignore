@@ -1,0 +1,28 @@
+*
+
+!*.*
+!*/
+
+nimcache/
+.vscode/
+
+# Vim backup file
+*.swp
+*.un~
+
+*.exe
+*.bson
+*.bin
+*.txt
+
+# disable for big files
+*.mkv
+*.mp4
+
+config.nims
+*.settings
+
+*.xlsx
+*.ods
+!empty.xlsx
+dev-local/*
