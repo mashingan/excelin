@@ -288,6 +288,19 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   else:
     discard
 
+proc `[]`*(r: Row, col: string, ret: typedesc): ret =
+  # Getting cell value from supplied return typedesc. This is overload
+  # of basic supported values that will return default value e.g.:
+  # * string default to ""
+  # * SomeSignedInt default to int.low
+  # * SomeUnsignedInt default to uint.high
+  # * SomeFloat default to NaN
+  # * DateTime and Time default to empty object time
+  #
+  # Other than above mentioned types, see `getCell proc<#getCell,Row>`_
+  # for supplying the converting closure for getting the value.
+  getCell[ret](r, col)
+
 # when adding new sheet, need to update workbook to add
 # ✓ to sheets,
 # ✓ its new id,
@@ -566,9 +579,9 @@ when isMainModule:
     let newsheet = empty.addSheet("test add new sheet")
     dump newsheet.name
     dump row.getCell[:string]("A")
-    dump row.getCell[:int]("B")
+    dump row["B", int]
     dump row.getCell[:uint]("C")
-    dump row.getCell[:float]("D")
+    dump row["D", float]
     empty.writeFile "generate-modified.xlsx"
     row["D"] = now() # modify to date time
     empty.writeFile "generate-modified-cell.xlsx"
