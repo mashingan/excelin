@@ -29,8 +29,6 @@ from std/sugar import dump, `->`
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
-#{.hint[XDeclaredButNotUsed]: off.}
-
 
 const
   datefmt = "yyyy-MM-dd'T'hh:mm:ss'.'fffzz"
