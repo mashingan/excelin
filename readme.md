@@ -115,6 +115,66 @@ excel.writeFile("to/any/path/we/choose.xlsx")
 # provide the `$` to get the raw data from built zip directly.
 ```
 
+Another example here we work directly with `Sheet` instead of the `Rows` and/or cells.
+
+```nim
+import excelin
+
+# prepare our excel
+let (excel, _) = newExcel()
+doAssert excel.sheetNames == @["Sheet1"]
+
+# above we see that our excel has seq string with a member
+# "Sheet1". The "Sheet1" is the default sheet when creating
+# a new Excel file.
+# Let's add a sheet to our Excel.
+
+let newsheet = excel.addSheet "new-sheet"
+doAssert newsheet.name == "new-sheet"
+doAssert excel.sheetNames == @["Sheet1", "new-sheet"]
+
+# above, we add a new sheet with supplied of the new-sheet name.
+# By checking with `sheetNames` proc, we see two sheets' name.
+
+# Let's see what happen when we add a sheet without supplying the name
+let sheet3 = excel.addSheet
+doAssert sheet3.name == "Sheet3"
+doAssert excel.sheetNames == @["Sheet1", "new-sheet", "Sheet3"]
+
+# While the default name quite unexpected, we can guess the "num" part
+# for default sheet naming is related to how many we added/invoked
+# the `addSheet` proc. We'll see below example why it's done like this.
+
+# Let's add again
+let anewsheet = excel.addSheet "new-sheet"
+doAssert anewsheet.name == "Sheet3"
+doAssert excel.sheetNames == @["Sheet1", "new-sheet", "Sheet3", "new-sheet"]
+
+# Here, we added a new sheet using existing sheet name.
+# This can be done because internally Excel workbook holds the reference of
+# sheets is by using its id instead of the name. Hence adding a same name
+# for new sheet is possible.
+# For the consquence, let's see what happens when we delete a sheet below
+
+# work fine case
+excel.deleteSheet "Sheet1"
+doAssert excel.sheetNames == @["new-sheet", "Sheet3", "new-sheet"]
+
+# deleting sheet with name "new-sheet"
+excel.deleteSheet "new-sheet"
+doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
+# will delete the older one since it's the first the sheet found with "new-sheet" name
+
+# when there's name available, Excel file will do nothing.
+excel.deleteSheet "aww-sheet"
+doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
+# still same as before.
+
+excel.writeFile("many_sheets.xlsx")
+# Write it to file and open it with our favorite Excel viewer to see 2 sheets:
+# Sheet3 and new-sheet.
+```
+
 # Install
 
 Excelin requires minimum Nim version of `v1.4.0`.  
