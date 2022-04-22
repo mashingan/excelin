@@ -29,20 +29,20 @@ doAssert sheet.name == "Sheet1"
 sheet.name = "excelin-example"
 doAssert sheet.name == "excelin-example"
 
-# let's add some row to our sheet
-let row1 = sheet.addRow
+# let's add/fetch some row to our sheet
+let row1 = sheet.row 1
 
-# excelin.addRow is immediately create a new row based on latest existing
-# rows available in the sheet we're working.
-# since `sheet` has no rows at first, so we get the row from `addRow` is 1.
-# We can check current row number with `rowNum`
+# excelin.row is immediately creating when the rows if it's not available
+# and if it's available, it's returning the existing.
+# With excelin.rowNum, we can check its row number.
 doAssert row1.rowNum == 1
 
 # let's add another row, this time it's row 5
-let row5 = sheet.addRow 5
+let row5 = sheet.row 5
 doAssert row5.rowNum == 5
 # in this case, we immediately get the row 5 even though the existing
 # rows in the sheet are only one.
+# PS: addRow proc(Sheet): Row and addRow proc(Sheet, Positive): Row is deprecated.
 
 type
     ForExample = object
@@ -108,7 +108,7 @@ doAssert fex.b == 2
 # to return the string of Excel) and `writeFile` is accepting string path
 # to where the Excel data will be written.
 let toSendToWire = $excel
-excel.writeFile("to/any/path/we/choose")
+excel.writeFile("to/any/path/we/choose.xlsx")
 
 # note that the current excelin.`$` is using the `writeFile` first to temporarily
 # write to file in $TEMP dir because the current zip lib dependency doesn't
