@@ -28,9 +28,12 @@ from std/sugar import dump, `->`
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
+export attr
+export xmltree.items
+#export xmltree.`$`
 
 const
-  datefmt = "yyyy-MM-dd'T'hh:mm:ss'.'fffzz"
+  datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
   xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
   xmlnsr = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
   xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
@@ -147,8 +150,6 @@ proc addRow*(s: Sheet, rowNum: Positive): Row =
   ## or will return an existing one.
   let sdata = s.body.getSheetData
   let rowsExists = sdata.len
-  dump rowsExists
-  dump rowNum
   if rowNum > rowsExists+1:
     for i in rowsExists+1 ..< rowNum:
       sdata.add <>row(r= $i, hidden="false", collapsed="false")
@@ -211,7 +212,7 @@ proc `[]=`*(row: Row, col: string, b: bool) =
 
 proc `[]=`*(row: Row, col: string, d: DateTime | Time) =
   ## Add cell with overload for DateTime or Time. The saved value
-  ## will be in string format of `yyyy-MM-dd'T'hh:mm:ss'.'fffzz` e.g.
+  ## will be in string format of `yyyy-MM-dd'T'HH:mm:ss'.'fffzz` e.g.
   ## `2200-10-01T11:22:33.456-03`.
   let cellpos = fmt"""{col}{row.body.attr "r"}"""
   let cnode = <>c(r=cellpos, t="d", <>v(newText d.format(datefmt)))
@@ -225,7 +226,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## * SomeSignedInt (int/int8/int32/int64): strutils.parseInt
   ## * SomeUnsignedInt (uint/uint8/uint32/uint64): strutils.parseUint
   ## * SomeFloat (float/float32/float64): strutils.parseFloat
-  ## * DateTime | Time: times.format with layout `yyyy-MM-dd'T'hh:mm:ss'.'fffzz`
+  ## * DateTime | Time: times.format with layout `yyyy-MM-dd'T'HH:mm:ss'.'fffzz`
   ##
   ## For simple usage example:
   ##
@@ -259,15 +260,21 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is SomeFloat: result = NaN
   else: discard
   let t = v.innerText
-  template retconv =
-    if conv != nil: return conv t
-  when R is string:
-    retconv()
+  template fetchShared(t: string): untyped =
     let refpos = try: parseInt(t) except: -1
-    if refpos == -1: return # failed to find the shared string pos
+    if refpos < 0: return
     let tnode = row.sheet.sharedStrings[refpos]
     if tnode == nil: return
-    result = tnode.innerText
+    tnode.innerText
+  template retconv =
+    if conv != nil:
+      var tt = t
+      if "s" == v.attr "t":
+        tt = fetchShared t
+      return conv tt
+  when R is string:
+    retconv()
+    result = fetchShared t
   elif R is SomeSignedInt:
     retconv()
     try: result = parseInt(t)
@@ -282,12 +289,12 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     except: discard
   elif R is DateTime:
     retconv()
-    result = try: parse(t, datefmt) except: discard
+    try: result = parse(t, datefmt) except: discard
   elif R is Time:
     retconv()
-    result = try: parse(t, datefmt).toTime except: discard
+    try: result = parse(t, datefmt).toTime except: discard
   else:
-    discard
+    retconv()
 
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   # Getting cell value from supplied return typedesc. This is overload
