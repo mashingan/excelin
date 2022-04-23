@@ -1,4 +1,3 @@
-Excelin	excelin.html#excelin	 Excelin	
 excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
 Excel	excelin.html#Excel	excelin: Excel	
 Workbook	excelin.html#Workbook	excelin: Workbook	
@@ -29,3 +28,4 @@ writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targe
 sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
 name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
 name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
+Excelin	excelin.html#excelin	 Excelin	

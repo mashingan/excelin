@@ -2,9 +2,13 @@
 
 A library to work with Excel file and/or data.
 
+## Docs
+
+All available APIs can be find in [docs page](https://mashingan.github.io/excelin/src/htmldocs/excelin.html).
+
 # Examples
 
-All operations available are illustrated in below:
+All operations available working with Excel worksheet are illustrated in below:
 
 ```nim
 from std/times import now, DateTime, Time, toTime, parse, Month,
@@ -40,9 +44,9 @@ doAssert row1.rowNum == 1
 # let's add another row, this time it's row 5
 let row5 = sheet.row 5
 doAssert row5.rowNum == 5
+
 # in this case, we immediately get the row 5 even though the existing
 # rows in the sheet are only one.
-# PS: addRow proc(Sheet): Row and addRow proc(Sheet, Positive): Row is deprecated.
 
 type
     ForExample = object
@@ -56,11 +60,14 @@ let nao = now()
 row1["A"] = "this is string"
 row1["C"] = 256
 row1["E"] = 42.42
+
 row1["B"] = nao # Excelin support DateTime or Time and
                 # by default it will be formatted as yyyy-MM-dd'T'HH:mm:dd.fff'.'zz
                 # e.g.: 2200-12-01T22:10:23.456+01
+
 row1["D"] = "2200/12/01" # we put the date as string for later example when fetching
                          # using supplied converter function from cell value
+
 row1["F"] = $ForExample(a: "A", b: 2)
 row1["H"] = -111
 
@@ -76,6 +83,7 @@ doAssert row1["H", int] == -111
 doAssert row1["B", DateTime].toTime.toUnix == nao.toTime.toUnix
 doAssert row1["B", Time].toUnix == nao.toTime.toUnix
 doAssert row1["E", float] == 42.42
+
 # in above example, we fetched various values from its designated cell position
 # using the two kind of function, `getCell` and `[]`. `[]` often used for
 # elementary/primitive types those supported by Excelin by default. `getCell`
@@ -99,6 +107,7 @@ let fex = row1.getCell[:ForExample]("F", func(s: string): ForExample =
 )
 doAssert fex.a == "A"
 doAssert fex.b == 2
+
 # above examples we provide two example of using closure for converting
 # string representation of cell value to our intended object. With this,
 # users can roll their own conversion way to interpret the cell data.
@@ -107,6 +116,7 @@ doAssert fex.b == 2
 # `writeFile`. Both of procs are the usual which `$` is stringify (that's
 # to return the string of Excel) and `writeFile` is accepting string path
 # to where the Excel data will be written.
+
 let toSendToWire = $excel
 excel.writeFile("to/any/path/we/choose.xlsx")
 
@@ -161,26 +171,33 @@ excel.deleteSheet "Sheet1"
 doAssert excel.sheetNames == @["new-sheet", "Sheet3", "new-sheet"]
 
 # deleting sheet with name "new-sheet"
+
 excel.deleteSheet "new-sheet"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
+
 # will delete the older one since it's the first the sheet found with "new-sheet" name
 
 # when there's name available, Excel file will do nothing.
+
 excel.deleteSheet "aww-sheet"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
+
 # still same as before.
 
 # Below example we illustrate how to get by sheet name.
+
 anewsheet.row(1)["A"] = "temptest"
 doAssert anewsheet.row(1)["A", string] == "temptest"
 discard excel.addSheet "new-sheet" # add a new to make it duplicate
 let foundOlderSheet = excel.getSheet "new-sheet"
 doAssert foundOlderSheet.row(1)["A", string] == "temptest"
+
 # Here we get sheet by name, and like deleting the sheet, fetching/getting
 # the sheet also returning the older sheet of the same name.
 
 doAssert excel.sheetNames == @["Sheet3", "new-sheet", "new-sheet"]
 excel.writeFile ("many-sheets.xlsx")
+
 # Write it to file and open it with our favorite Excel viewer to see 2 sheets:
 # Sheet3 and new-sheet, new-sheet.
 # Using libreoffice to view the Excel file, the duplicate name will be appended with
