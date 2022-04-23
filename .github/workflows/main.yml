@@ -46,33 +46,8 @@ jobs:
           sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo apt update -yqq
 
-      # https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
-      - name: Install mongodb
-        run: |
-          wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
-          sudo apt-get update -yqq
-          sudo apt-get install -y mongodb-org
-
-      - name: Start mongodb
-        run: |
-          sudo systemctl start mongod
-          sleep 10
 
       - run: nimble install -Y
-
-      # Disabling running mongod since mongod is already running with systemctl
-      # Disabling test gridfs because no big file available, by setting filename and saveas to blank
-      # Disabling authenticating since the installed mongo is pristine without setting up the user and password
-      - name: Nimble test setup and run
-        run: |
-            echo 'switch("define", "nomongod")' > config.nims
-            echo 'switch("define", "filename=")' >> config.nims
-            echo 'switch("define", "saveas=")' >> config.nims
-            echo 'switch("define", "user=")' >> config.nims
-            echo 'switch("define", "testReplication=no")' >> config.nims
-            echo 'switch("define", "testChangeStreams=yes")' >> config.nims
-            nimble test -Y
 
       - uses: actions/checkout@v2.3.1
       - run: nim doc --project --index:on --git.url:https://github.com/mashingan/anonimongo --outdir:src/htmldocs src/anonimongo.nim
