@@ -1,0 +1,31 @@
+excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
+Excel	excelin.html#Excel	excelin: Excel	
+Workbook	excelin.html#Workbook	excelin: Workbook	
+Sheet	excelin.html#Sheet	excelin: Sheet	
+Row	excelin.html#Row	excelin: Row	
+ExcelError	excelin.html#ExcelError	excelin: ExcelError	
+unixSep	excelin.html#unixSep.t,string	excelin: unixSep(str: string): untyped	
+getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
+modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
+modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
+addRow	excelin.html#addRow,Sheet	excelin: addRow(s: Sheet): Row	
+row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive): Row	
+addRow	excelin.html#addRow,Sheet,Positive	excelin: addRow(s: Sheet; rowNum: Positive): Row	
+rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive	
+`[]=`	excelin.html#[]=,Row,string,string	excelin: `[]=`(row: Row; col: string; s: string)	
+`[]=`	excelin.html#[]=,Row,string,SomeNumber	excelin: `[]=`(row: Row; col: string; n: SomeNumber)	
+`[]=`	excelin.html#[]=,Row,string,bool	excelin: `[]=`(row: Row; col: string; b: bool)	
+`[]=`	excelin.html#[]=,Row,string,	excelin: `[]=`(row: Row; col: string; d: DateTime | Time)	
+getCell	excelin.html#getCell,Row,string,typeof(nil)	excelin: getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R	
+`[]`	excelin.html#[],Row,string,typedesc	excelin: `[]`(r: Row; col: string; ret: typedesc): ret:type	
+addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
+deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	
+readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
+prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
+newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)	
+writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targetpath: string)	
+`$`	excelin.html#$,Excel	excelin: `$`(e: Excel): string	
+sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
+name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
+name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
+Excelin	excelin.html#excelin	 Excelin	
