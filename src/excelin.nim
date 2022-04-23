@@ -24,6 +24,7 @@ from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
 from std/strtabs import `[]=`
 from std/sugar import dump, `->`
+from std/strscans import scanf
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -131,7 +132,7 @@ proc modifiedAt*[Node: Workbook|Sheet, T: DateTime | Time](w: Node, t: T = now()
   ## Update workbook or worksheet modification time.
   w.parent.modifiedAt t
 
-proc addRow*(s: Sheet): Row =
+proc addRow*(s: Sheet): Row {.deprecated: "use `row(Sheet, Positive): Row` instead".} =
   ## Add row directly from sheet after any existing row.
   ## This will return a new pristine row to work further.
   ## Row numbering is 1-based.
@@ -144,13 +145,17 @@ proc addRow*(s: Sheet): Row =
   sdata.add result.body
   s.modifiedAt
 
-proc addRow*(s: Sheet, rowNum: Positive): Row =
+proc row*(s: Sheet, rowNum: Positive): Row =
   ## Add row by selecting which row number to work with.
   ## This will return new row if there's no existing row
   ## or will return an existing one.
   let sdata = s.body.getSheetData
   let rowsExists = sdata.len
-  if rowNum > rowsExists+1:
+  if rowsExists < 1:
+    result = Row(sheet: s, body: <>row(r= "1", hidden="false", collapsed="false"))
+    sdata.add result.body
+    return
+  elif rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
       sdata.add <>row(r= $i, hidden="false", collapsed="false")
   else:
@@ -161,6 +166,10 @@ proc addRow*(s: Sheet, rowNum: Positive): Row =
   )
   sdata.add result.body
   s.modifiedAt
+
+proc addRow*(s: Sheet, rowNum: Positive): Row
+  {.deprecated: "use `row(Sheet, Positive): Row` instead".}
+  = s.row rowNum
 
 proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
@@ -240,7 +249,8 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ##
   ##   # below example we'll get the DateTime that has been formatted like 2200/12/01
   ##   # so we supply the optional custom converter function
-  ##   let dtCustom = row.getCell[:DateTime]("F", (s: string) => s.parse("yyyy/MM/dd"))
+  ##   let dtCustom = row.getCell[:DateTime]("F", (s: string) -> DateTime => (
+  ##      s.parse("yyyy/MM/dd")))
   ##
   ## Any other type that other than mentioned above should provide the closure proc
   ## for the conversion otherwise it will return the default value, for example
@@ -297,16 +307,16 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     retconv()
 
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
-  # Getting cell value from supplied return typedesc. This is overload
-  # of basic supported values that will return default value e.g.:
-  # * string default to ""
-  # * SomeSignedInt default to int.low
-  # * SomeUnsignedInt default to uint.high
-  # * SomeFloat default to NaN
-  # * DateTime and Time default to empty object time
-  #
-  # Other than above mentioned types, see `getCell proc<#getCell,Row>`_
-  # for supplying the converting closure for getting the value.
+  ## Getting cell value from supplied return typedesc. This is overload
+  ## of basic supported values that will return default value e.g.:
+  ## * string default to ""
+  ## * SomeSignedInt default to int.low
+  ## * SomeUnsignedInt default to uint.high
+  ## * SomeFloat default to NaN
+  ## * DateTime and Time default to empty object time
+  ##
+  ## Other than above mentioned types, see `getCell proc<#getCell,Row,string,typeof(nil)>`_
+  ## for supplying the converting closure for getting the value.
   getCell[ret](r, col)
 
 # when adding new sheet, need to update workbook to add
@@ -344,12 +354,16 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   if wbsheets == nil:
     wbsheets = <>sheets()
     e.workbook.body.add wbsheets
+  let rel = e.workbook.rels
+  var availableId: int
+  if not scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId):
+    dec e.sheetCount
+    return
+  inc availableId
   let
-    rel = e.workbook.rels
-    availableId = rel[1].findAll("Relationship").len + 1
     rid = fmt"rId{availableId}"
     sheetfname = fmt"sheet{e.sheetCount}"
-    fpath = block:
+    targetpath = block:
       var thepath: string
       for fpath in e.sheets.keys:
         thepath = fpath
@@ -361,20 +375,22 @@ proc addSheet*(e: Excel, name = ""): Sheet =
     {"xmlns:x14": xmlnsx14, "xmlns:r": xmlnsr, "xmlns:xdr": xmlnsxdr,
       "xmlns": mainns, "xmlns:mc": xmlnsmc}.toXmlAttributes)
   let sheetworkbook = newXmlTree("sheet", [],
-    {"name": name, "sheetId": $e.sheetCount, "r:id": rid, "state": "visible"}.toXmlAttributes)
+    {"name": name, "sheetId": $availableId, "r:id": rid, "state": "visible"}.toXmlAttributes)
 
+  let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
     sharedStrings: e.sharedStrings[1],
+    parent: e,
     privName: name,
     rid: rid)
   e.sheets[fpath] = result
   wbsheets.add sheetworkbook
   e.workbook.sheetsInfo.add result.body
-  rel[1].add <>Relationship(Target=fpath, Type=sheetTypeNs, Id=rid)
+  rel[1].add <>Relationship(Target=targetpath, Type=sheetTypeNs, Id=rid)
   e.content.add <>Override(PartName="/" & fpath, ContentType=contentTypeNs)
 
-# deleteing sheet needs to delete several related info viz:
+# deleting sheet needs to delete several related info viz:
 # ✓ deleting from the sheet table
 # ✓ deleting from content
 # ✓ deleting from package relationships
@@ -525,7 +541,7 @@ proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
 proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
   ## Return a new Excel and Sheet at the same time to work for both.
   ## The Sheet returned is by default has name "Sheet1" but user can
-  ## use `name= proc<#name=,Sheet>`_ to change its name.
+  ## use `name= proc<#name=,Sheet,string>`_ to change its name.
   let excel = readExcel emptyxlsx
   (excel, excel.getSheet "Sheet1")
 
@@ -584,7 +600,7 @@ when isMainModule:
   let (empty, sheet) = newExcel()
   empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
-    let row = sheet.addRow
+    let row = sheet.row 1
     row["A"] = "hehe"
     row["B"] = -1
     row["C"] = 2
@@ -601,11 +617,14 @@ when isMainModule:
     empty.writeFile "generate-modified-cell.xlsx"
     #empty.deleteSheet "hehe"
     #empty.writeFile "generate-deleted-sheet.xlsx"
-    let row5 = sheet.addRow 5
+    let row5 = sheet.row 5
     row5["A"] = "yeehaa"
-    let row6 = sheet.addRow
+    let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
+    let row10 = sheet.row 10
+    row10["C"] = 11
+    row10["D"] = -11
     empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
     #dump sheet.body
     #dump empty.otherfiles["app.xml"]

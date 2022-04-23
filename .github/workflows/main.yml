@@ -1,0 +1,58 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Skip job"
+
+  before:
+    runs-on: ubuntu-latest
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - run: echo "not contains '[skip ci]'"
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+            #- windows-latest
+            #- macOS-latest
+        nim-version:
+          - '1.4.0'
+          - 'stable'
+    needs: before
+    steps:
+      - uses: actions/checkout@v1
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v1
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
+      - uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim-version }}
+
+      # see. https://github.com/actions/virtual-environments/issues/675
+      - name: Fix apt packages
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt update -yqq
+
+
+      - run: nimble install -Y
+
+      - uses: actions/checkout@v2.3.1
+      - run: nim doc --project --index:on --git.url:https://github.com/mashingan/excelin --outdir:src/htmldocs src/excelin.nim
+      - name: Deploy docs
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: .
