@@ -1,3 +1,5 @@
+* 0.2.1:
+    * Refactor `[]=` and fix addSheet failed to get last id and returning nil.
 * 0.2.0
   * Deprecate `addRow proc(Sheet): Row` and `addRow proc(Sheet, Positive): Row` in favor of `row proc(Sheet, Positive): Row`
   * Add example working with Excel sheets in readme.

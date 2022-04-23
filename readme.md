@@ -176,14 +176,12 @@ excel.deleteSheet "new-sheet"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
 
 # will delete the older one since it's the first the sheet found with "new-sheet" name
-
-# when there's name available, Excel file will do nothing.
+# when there's no name available, Excel file will do nothing.
 
 excel.deleteSheet "aww-sheet"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
 
 # still same as before.
-
 # Below example we illustrate how to get by sheet name.
 
 anewsheet.row(1)["A"] = "temptest"
