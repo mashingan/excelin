@@ -1,5 +1,7 @@
 # Excelin - create and read Excel pure Nim
 
+[![Build Status](https://nimble.directory/ci/badges/jester/nimdevel/status.svg)](https://nimble.directory/ci/badges/jester/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/jester/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/jester/nimdevel/doc_build_output.html)
+
 A library to work with Excel file and/or data.
 
 ## Docs
