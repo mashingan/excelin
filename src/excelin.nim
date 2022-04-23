@@ -29,7 +29,6 @@ from std/strscans import scanf
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
-export attr
 export xmltree.items
 #export xmltree.`$`
 
@@ -43,7 +42,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.1.0"
+  excelinVersion* = "0.2.1"
 
 type
   Excel* = ref object
@@ -182,7 +181,10 @@ proc fetchCell(body: XmlNode, colrow: string): int =
     if colrow == n.attr "r": return count
   -1
 
-proc addCell(row: Row, cellpos: string, cnode: XmlNode) =
+proc addCell(row: Row, col, cellType, text: string) =
+  let rn = row.body.attr "r"
+  let cellpos = fmt"{col}{rn}"
+  let cnode = <>c(r=cellpos, t=cellType, s="0", <>v(newText text))
   let nodepos = row.body.fetchCell cellpos
   if nodepos < 0:
     row.body.add cnode
@@ -194,9 +196,7 @@ proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
   let lastStr = row.sheet.sharedStrings.len
-  let cellpos = fmt"""{col}{row.body.attr "r"}"""
-  let cnode = <>c(r=cellpos, t="s", s="0", <>v(newText $lastStr))
-  row.addCell cellpos, cnode
+  row.addCell col, "s", $lastStr
   row.sheet.sharedStrings.add <>si(newXmlTree("t",
     [newText s],
     {"xml:space": "preserve"}.toXmlAttributes))
@@ -207,25 +207,19 @@ proc `[]=`*(row: Row, col: string, s: string) =
 
 proc `[]=`*(row: Row, col: string, n: SomeNumber) =
   ## Add cell with overload for any number.
-  let cellpos = fmt"""{col}{row.body.attr "r"}"""
-  let cnode = <>c(r=cellpos, t="n", <>v(newText $n))
-  row.addCell cellpos, cnode
+  row.addCell col, "n", $n
   row.sheet.modifiedAt
 
 proc `[]=`*(row: Row, col: string, b: bool) =
   ## Add cell with overload for truthy value.
-  let cellpos = fmt"""{col}{row.body.attr "r"}"""
-  let cnode = <>c(r=cellpos, t="b", <>v(newText $b))
-  row.addCell cellpos, cnode
+  row.addCell col, "b", $b
   row.sheet.modifiedAt
 
 proc `[]=`*(row: Row, col: string, d: DateTime | Time) =
   ## Add cell with overload for DateTime or Time. The saved value
   ## will be in string format of `yyyy-MM-dd'T'HH:mm:ss'.'fffzz` e.g.
   ## `2200-10-01T11:22:33.456-03`.
-  let cellpos = fmt"""{col}{row.body.attr "r"}"""
-  let cnode = <>c(r=cellpos, t="d", <>v(newText d.format(datefmt)))
-  row.addCell cellpos, cnode
+  row.addCell col, "d", d.format(datefmt)
   row.sheet.modifiedAt
 
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
@@ -356,9 +350,7 @@ proc addSheet*(e: Excel, name = ""): Sheet =
     e.workbook.body.add wbsheets
   let rel = e.workbook.rels
   var availableId: int
-  if not scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId):
-    dec e.sheetCount
-    return
+  discard scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId)
   inc availableId
   let
     rid = fmt"rId{availableId}"
