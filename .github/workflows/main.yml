@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v2.3.1
       - run: nim doc --project --index:on --git.url:https://github.com/mashingan/excelin --outdir:src/htmldocs src/excelin.nim
       - name: Deploy docs
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@4.3.0
         with:
           branch: gh-pages
           folder: .
