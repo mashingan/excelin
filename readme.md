@@ -147,7 +147,7 @@ doAssert excel.sheetNames == @["Sheet1", "new-sheet", "Sheet3"]
 
 # Let's add again
 let anewsheet = excel.addSheet "new-sheet"
-doAssert anewsheet.name == "Sheet3"
+doAssert anewsheet.name == "new-sheet"
 doAssert excel.sheetNames == @["Sheet1", "new-sheet", "Sheet3", "new-sheet"]
 
 # Here, we added a new sheet using existing sheet name.
@@ -170,9 +170,22 @@ excel.deleteSheet "aww-sheet"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet"]
 # still same as before.
 
-excel.writeFile("many_sheets.xlsx")
+# Below example we illustrate how to get by sheet name.
+anewsheet.row(1)["A"] = "temptest"
+doAssert anewsheet.row(1)["A", string] == "temptest"
+discard excel.addSheet "new-sheet" # add a new to make it duplicate
+let foundOlderSheet = excel.getSheet "new-sheet"
+doAssert foundOlderSheet.row(1)["A", string] == "temptest"
+# Here we get sheet by name, and like deleting the sheet, fetching/getting
+# the sheet also returning the older sheet of the same name.
+
+doAssert excel.sheetNames == @["Sheet3", "new-sheet", "new-sheet"]
+excel.writeFile ("many-sheets.xlsx")
 # Write it to file and open it with our favorite Excel viewer to see 2 sheets:
-# Sheet3 and new-sheet.
+# Sheet3 and new-sheet, new-sheet.
+# Using libreoffice to view the Excel file, the duplicate name will be appended with
+# format {sheetName}-{numDuplicated}.
+# We can replicate that behaviour too but currently we support duplicate sheet name.
 ```
 
 # Install

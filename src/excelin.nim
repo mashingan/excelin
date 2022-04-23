@@ -24,6 +24,7 @@ from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
 from std/strtabs import `[]=`
 from std/sugar import dump, `->`
+from std/strscans import scanf
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -153,6 +154,7 @@ proc row*(s: Sheet, rowNum: Positive): Row =
   if rowsExists < 1:
     result = Row(sheet: s, body: <>row(r= "1", hidden="false", collapsed="false"))
     sdata.add result.body
+    return
   elif rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
       sdata.add <>row(r= $i, hidden="false", collapsed="false")
@@ -352,12 +354,16 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   if wbsheets == nil:
     wbsheets = <>sheets()
     e.workbook.body.add wbsheets
+  let rel = e.workbook.rels
+  var availableId: int
+  if not scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId):
+    dec e.sheetCount
+    return
+  inc availableId
   let
-    rel = e.workbook.rels
-    availableId = rel[1].findAll("Relationship").len + 1
     rid = fmt"rId{availableId}"
     sheetfname = fmt"sheet{e.sheetCount}"
-    fpath = block:
+    targetpath = block:
       var thepath: string
       for fpath in e.sheets.keys:
         thepath = fpath
@@ -369,20 +375,22 @@ proc addSheet*(e: Excel, name = ""): Sheet =
     {"xmlns:x14": xmlnsx14, "xmlns:r": xmlnsr, "xmlns:xdr": xmlnsxdr,
       "xmlns": mainns, "xmlns:mc": xmlnsmc}.toXmlAttributes)
   let sheetworkbook = newXmlTree("sheet", [],
-    {"name": name, "sheetId": $e.sheetCount, "r:id": rid, "state": "visible"}.toXmlAttributes)
+    {"name": name, "sheetId": $availableId, "r:id": rid, "state": "visible"}.toXmlAttributes)
 
+  let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
     sharedStrings: e.sharedStrings[1],
+    parent: e,
     privName: name,
     rid: rid)
   e.sheets[fpath] = result
   wbsheets.add sheetworkbook
   e.workbook.sheetsInfo.add result.body
-  rel[1].add <>Relationship(Target=fpath, Type=sheetTypeNs, Id=rid)
+  rel[1].add <>Relationship(Target=targetpath, Type=sheetTypeNs, Id=rid)
   e.content.add <>Override(PartName="/" & fpath, ContentType=contentTypeNs)
 
-# deleteing sheet needs to delete several related info viz:
+# deleting sheet needs to delete several related info viz:
 # ✓ deleting from the sheet table
 # ✓ deleting from content
 # ✓ deleting from package relationships
