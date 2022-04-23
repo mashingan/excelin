@@ -300,6 +300,11 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   else:
     retconv()
 
+template getCellIt*[R](r: Row, col: string, body: untyped): untyped =
+  ## Shorthand for `getCell <#getCell,Row,string,typeof(nil)>`_ with
+  ## injected `it` in body.
+  r.getCell[:R](col, proc(it {.inject.}: string): R = `body`)
+
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   ## Getting cell value from supplied return typedesc. This is overload
   ## of basic supported values that will return default value e.g.:

@@ -68,7 +68,7 @@ row1["B"] = nao # Excelin support DateTime or Time and
 row1["D"] = "2200/12/01" # we put the date as string for later example when fetching
                          # using supplied converter function from cell value
 
-row1["F"] = $ForExample(a: "A", b: 2)
+row1["F"] = $ForExample(a: "A", b: 200)
 row1["H"] = -111
 
 # notice above example we arbitrarily chose the column and by current implementation
@@ -106,11 +106,25 @@ let fex = row1.getCell[:ForExample]("F", func(s: string): ForExample =
     discard scanf(s, "[$w:$i]", result.a, result.b)
 )
 doAssert fex.a == "A"
-doAssert fex.b == 2
+doAssert fex.b == 200
 
 # above examples we provide two example of using closure for converting
 # string representation of cell value to our intended object. With this,
 # users can roll their own conversion way to interpret the cell data.
+
+# Following the pattern like sequtils.map with sequtils.mapIt and others,
+# we also provide the shorthand with excelin.getCellIt
+
+let dtIt = row1.getCellIt[:DateTime]("D", parse(it, "yyyy/MM/dd"))
+doAssert dtIt.year == 2200
+doAssert dtIt.month == mDec
+doAssert dtIt.monthday == 1
+
+let fexIt = row1.getCellIt[:ForExample]("F", (
+    discard scanf(it, "[$w:$i]", result.a, result.b)))
+doAssert fexIt.a == "A"
+doAssert fexIt.b == 200
+
 
 # finally, we have 2 options to access the binary Excel data, using `$` and
 # `writeFile`. Both of procs are the usual which `$` is stringify (that's
