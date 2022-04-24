@@ -1,11 +1,9 @@
-Excelin	excelin.html#excelin	 Excelin	
 excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
 Excel	excelin.html#Excel	excelin: Excel	
 Workbook	excelin.html#Workbook	excelin: Workbook	
 Sheet	excelin.html#Sheet	excelin: Sheet	
 Row	excelin.html#Row	excelin: Row	
 ExcelError	excelin.html#ExcelError	excelin: ExcelError	
-unixSep	excelin.html#unixSep.t,string	excelin: unixSep(str: string): untyped	
 getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
 modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
 modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
@@ -30,3 +28,4 @@ writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targe
 sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
 name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
 name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
+Excelin	excelin.html#excelin	 Excelin	

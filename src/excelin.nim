@@ -88,7 +88,7 @@ type
     ## Error when the Excel file read is invalid, specifically Excel file
     ## that doesn't have workbook.
 
-template unixSep*(str: string): untyped = str.replace('\\', '/')
+template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
 proc getSheet*(e: Excel, name: string): Sheet =
@@ -195,6 +195,34 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: XmlN
     row.body.delete nodepos
     row.body.insert cnode, nodepos
 
+proc addSharedString(r: Row, col, s: string) =
+  var
+    pos = 0
+    found = false
+  let sharedStr = r.sheet.sharedStrings
+  for ss in sharedStr:
+    inc pos
+    if s == ss.innerText:
+      found = true
+      break
+
+  var
+    count = try: parseInt(sharedStr.attr "count") except: 0
+    uniq = try: parseInt(sharedStr.attr "uniqueCount") except: 0
+
+  inc count
+  if not found:
+    inc uniq
+    sharedStr.add <>si(newXmlTree("t",
+      [newText s], {"xml:space": "preserve"}.toXmlAttributes))
+  else:
+    dec pos # shared string 0-based
+
+  r.addCell col, "s", $pos
+  sharedStr.attrs = {"count": $count,
+    "uniqueCount": $uniq, "xmlns": mainns}.toXmlAttributes
+  r.sheet.modifiedAt
+
 proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
@@ -202,15 +230,7 @@ proc `[]=`*(row: Row, col: string, s: string) =
     row.addCell col, "inlineStr", s, "is", <>t(newText s)
     row.sheet.modifiedAt
     return
-  let lastStr = row.sheet.sharedStrings.len
-  row.addCell col, "s", $lastStr
-  row.sheet.sharedStrings.add <>si(newXmlTree("t",
-    [newText s],
-    {"xml:space": "preserve"}.toXmlAttributes))
-  row.sheet.modifiedAt
-  let newcount = lastStr + 1
-  row.sheet.sharedStrings.attrs = {"count": $newcount,
-    "uniqueCount": $newcount, "xmlns": mainns}.toXmlAttributes
+  row.addSharedString(col, s)
 
 proc `[]=`*(row: Row, col: string, n: SomeNumber) =
   ## Add cell with overload for any number.
@@ -305,6 +325,19 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
 template getCellIt*[R](r: Row, col: string, body: untyped): untyped =
   ## Shorthand for `getCell <#getCell,Row,string,typeof(nil)>`_ with
   ## injected `it` in body.
+  ## For example:
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##   from std/times import parse, year, month, DateTime, Month, monthday
+  ##
+  ##   # the value in cell is "2200/12/01"
+  ##   let dt = row.getCell[:DateTime]("F", (s: string) -> DateTime => (
+  ##      s.parse("yyyy/MM/dd")))
+  ##   doAssert dt.year == 2200
+  ##   doAssert dt.month == mDec
+  ##   doAssert dt.monthday = 1
+  ##
   r.getCell[:R](col, proc(it {.inject.}: string): R = `body`)
 
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
@@ -596,6 +629,8 @@ proc `name=`*(s: Sheet, newname: string) =
 
 
 when isMainModule:
+  from std/sequtils import repeat
+  from std/strutils import join
   let (empty, sheet) = newExcel()
   empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
@@ -627,8 +662,11 @@ when isMainModule:
     empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
     dump row5["A", string]
     row5["A"] = row5["A", string] & " heehaa"
+    let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
+    row5["B"] = tobeShared
+    row5["c"] = tobeShared
     #dump sheet.body
-    #dump empty.sharedStrings
+    dump empty.sharedStrings
     #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:

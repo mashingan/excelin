@@ -1,4 +1,6 @@
 * 0.3.0:
+    * Make `unixSep` template as private as it should.
+    * Enhance checking/adding shared string instead of adding it continuously.
     * Make string entry as inline string when it's small string, less than 64 characters.
     * Enforce column to be upper case when accessing cell in row.
 * 0.2.2:

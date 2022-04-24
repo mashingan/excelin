@@ -1,6 +1,6 @@
 # Excelin - create and read Excel pure Nim
 
-[![Version](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
+[![Build Status](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
 
 A library to work with Excel file and/or data.
 
@@ -28,7 +28,8 @@ let (excel, sheet) = newExcel()
 # we comment this out because the path is imaginary
 #let excelTemplate = readExcel("path/to/template.xlsx")
 # note readExcel only returns the Excel itself because there's no
-# known default sheet available
+# known default sheet available. Use `excelin.getSheet(Excel,string): Sheet`
+# to get the sheet based on its name.
 
 doAssert sheet.name == "Sheet1"
 # by default the name sheet is Sheet1
@@ -214,8 +215,8 @@ doAssert foundOlderSheet.row(1)["A", string] == "temptest"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet", "new-sheet"]
 excel.writeFile ("many-sheets.xlsx")
 
-# Write it to file and open it with our favorite Excel viewer to see 2 sheets:
-# Sheet3 and new-sheet, new-sheet.
+# Write it to file and open it with our favorite Excel viewer to see 3 sheets:
+# Sheet3, new-sheet and new-sheet.
 # Using libreoffice to view the Excel file, the duplicate name will be appended with
 # format {sheetName}-{numDuplicated}.
 # We can replicate that behaviour too but currently we support duplicate sheet name.
