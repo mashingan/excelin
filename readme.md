@@ -215,8 +215,8 @@ doAssert foundOlderSheet.row(1)["A", string] == "temptest"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet", "new-sheet"]
 excel.writeFile ("many-sheets.xlsx")
 
-# Write it to file and open it with our favorite Excel viewer to see 2 sheets:
-# Sheet3 and new-sheet, new-sheet.
+# Write it to file and open it with our favorite Excel viewer to see 3 sheets:
+# Sheet3, new-sheet and new-sheet.
 # Using libreoffice to view the Excel file, the duplicate name will be appended with
 # format {sheetName}-{numDuplicated}.
 # We can replicate that behaviour too but currently we support duplicate sheet name.
