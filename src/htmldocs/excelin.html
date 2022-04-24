@@ -17,7 +17,7 @@
 <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600' rel='stylesheet' type='text/css'/>
 
 <!-- CSS -->
-<title>src/excelin</title>
+<title>excelin</title>
 <link rel="stylesheet" type="text/css" href="nimdoc.out.css">
 
 <script type="text/javascript" src="dochack.js"></script>
@@ -34,6 +34,7 @@ function main() {
     }
   }
 
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -44,32 +45,24 @@ function main() {
       }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-  if (toggleSwitch !== null) {
-    toggleSwitch.addEventListener('change', switchTheme, false);
-  }
+  toggleSwitch.addEventListener('change', switchTheme, false);
 
-  var currentTheme = localStorage.getItem('theme');
-  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    currentTheme = 'dark';
-  }
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark' && toggleSwitch !== null) {
+    if (currentTheme === 'dark') {
       toggleSwitch.checked = true;
     }
   }
 }
-
-window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body>
+<body onload="main()">
 <div class="document" id="documentId">
   <div class="container">
-    <h1 class="title">src/excelin</h1>
+    <h1 class="title">excelin</h1>
     <div class="row">
   <div class="three columns">
   <div class="theme-switch-wrapper">
@@ -110,24 +103,24 @@ window.addEventListener('DOMContentLoaded', main);
   sheets: TableRef[FilePath, Sheet]
   sharedStrings: FileRep
   otherfiles: TableRef[string, FileRep]
-  sheetCount: int">Excel</a></li>
-  <li><a class="reference" href="#ExcelError"
-    title="ExcelError = object of CatchableError">ExcelError</a></li>
-  <li><a class="reference" href="#Row"
-    title="Row = ref object of InternalBody
-  sheet: Sheet">Row</a></li>
-  <li><a class="reference" href="#Sheet"
-    title="Sheet = ref object of InternalBody
-  sharedStrings: XmlNode
-  parent: Excel
-  rid: string
-  privName: string">Sheet</a></li>
+  sheetCount: int"><wbr />Excel<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Workbook"
     title="Workbook = ref object of InternalBody
   path: string
   sheetsInfo: seq[XmlNode]
   rels: FileRep
-  parent: Excel">Workbook</a></li>
+  parent: Excel"><wbr />Workbook<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#Sheet"
+    title="Sheet = ref object of InternalBody
+  sharedStrings: XmlNode
+  parent: Excel
+  rid: string
+  privName: string"><wbr />Sheet<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#Row"
+    title="Row = ref object of InternalBody
+  sheet: Sheet"><wbr />Row<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#ExcelError"
+    title="ExcelError = object of CatchableError"><wbr />Excel<wbr />Error<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -135,111 +128,111 @@ window.addEventListener('DOMContentLoaded', main);
   <a class="reference reference-toplevel" href="#10" id="60">Consts</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#excelinVersion"
-    title="excelinVersion = &quot;0.3.0&quot;">excelinVersion</a></li>
+    title="excelinVersion = &quot;0.3.0&quot;"><wbr />excelin<wbr />Version<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">$
+      <ul class="simple nested-toc-section">modifiedAt
+      <li><a class="reference" href="#modifiedAt%2CExcel%2CT"
+    title="modifiedAt[T: DateTime | Time](e: Excel; t: T = now())">modifiedAt,Excel,T<span class="attachedType">Excel</span></a></li>
+  <li><a class="reference" href="#modifiedAt%2CNode%2CT"
+    title="modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())">modifiedAt,Node,T<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">$
       <li><a class="reference" href="#%24%2CExcel"
-    title="`$`(e: Excel): string">`$`(e: Excel): string</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">[]
-      <li><a class="reference" href="#%5B%5D%2CRow%2Cstring%2Ctypedesc"
-    title="`[]`(r: Row; col: string; ret: typedesc): ret:type">`[]`(r: Row; col: string; ret: typedesc): ret:type</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">[]=
-      <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2Cbool"
-    title="`[]=`(row: Row; col: string; b: bool)">`[]=`(row: Row; col: string; b: bool)</a></li>
-  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2C"
-    title="`[]=`(row: Row; col: string; d: DateTime | Time)">`[]=`(row: Row; col: string; d: DateTime | Time)</a></li>
-  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber"
-    title="`[]=`(row: Row; col: string; n: SomeNumber)">`[]=`(row: Row; col: string; n: SomeNumber)</a></li>
-  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2Cstring"
-    title="`[]=`(row: Row; col: string; s: string)">`[]=`(row: Row; col: string; s: string)</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">addRow
-      <li><a class="reference" href="#addRow%2CSheet"
-    title="addRow(s: Sheet): Row">addRow(s: Sheet): Row</a></li>
-  <li><a class="reference" href="#addRow%2CSheet%2CPositive"
-    title="addRow(s: Sheet; rowNum: Positive): Row">addRow(s: Sheet; rowNum: Positive): Row</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">addSheet
-      <li><a class="reference" href="#addSheet%2CExcel%2Cstring"
-    title="addSheet(e: Excel; name = &quot;&quot;): Sheet">addSheet(e: Excel; name = &quot;&quot;): Sheet</a></li>
+    title="`$`(e: Excel): string">$,Excel<span class="attachedType">Excel</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">deleteSheet
       <li><a class="reference" href="#deleteSheet%2CExcel%2Cstring"
-    title="deleteSheet(e: Excel; name = &quot;&quot;)">deleteSheet(e: Excel; name = &quot;&quot;)</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">getCell
-      <li><a class="reference" href="#getCell%2CRow%2Cstring%2Ctypeof%28nil%29"
-    title="getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R">getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">getSheet
-      <li><a class="reference" href="#getSheet%2CExcel%2Cstring"
-    title="getSheet(e: Excel; name: string): Sheet">getSheet(e: Excel; name: string): Sheet</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">modifiedAt
-      <li><a class="reference" href="#modifiedAt%2CNode%2CT"
-    title="modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())">modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())</a></li>
-  <li><a class="reference" href="#modifiedAt%2CExcel%2CT"
-    title="modifiedAt[T: DateTime | Time](e: Excel; t: T = now())">modifiedAt[T: DateTime | Time](e: Excel; t: T = now())</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">name
-      <li><a class="reference" href="#name%2CSheet"
-    title="name(s: Sheet): string">name(s: Sheet): string</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">name=
-      <li><a class="reference" href="#name%3D%2CSheet%2Cstring"
-    title="name=(s: Sheet; newname: string)">name=(s: Sheet; newname: string)</a></li>
+    title="deleteSheet(e: Excel; name = &quot;&quot;)">deleteSheet,Excel,string<span class="attachedType">Excel</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">newExcel
       <li><a class="reference" href="#newExcel%2Cstring"
-    title="newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)">newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">prop=
-      <li><a class="reference" href="#prop%3D%2CExcel%2Cvarargs%5B%5D"
-    title="prop=(e: Excel; prop: varargs[(string, string)])">prop=(e: Excel; prop: varargs[(string, string)])</a></li>
+    title="newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)">newExcel,string<span class="attachedType">Excel</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readExcel
       <li><a class="reference" href="#readExcel%2Cstring"
-    title="readExcel(path: string): Excel">readExcel(path: string): Excel</a></li>
+    title="readExcel(path: string): Excel">readExcel,string<span class="attachedType">Excel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">[]=
+      <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2Cstring"
+    title="`[]=`(row: Row; col: string; s: string)">[]=,Row,string,string<span class="attachedType">Row</span></a></li>
+  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber"
+    title="`[]=`(row: Row; col: string; n: SomeNumber)">[]=,Row,string,SomeNumber<span class="attachedType">Row</span></a></li>
+  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2Cbool"
+    title="`[]=`(row: Row; col: string; b: bool)">[]=,Row,string,bool<span class="attachedType">Row</span></a></li>
+  <li><a class="reference" href="#%5B%5D%3D%2CRow%2Cstring%2C"
+    title="`[]=`(row: Row; col: string; d: DateTime | Time)">[]=,Row,string,<span class="attachedType">Row</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">addSheet
+      <li><a class="reference" href="#addSheet%2CExcel%2Cstring"
+    title="addSheet(e: Excel; name = &quot;&quot;): Sheet">addSheet,Excel,string<span class="attachedType">Excel</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">row
       <li><a class="reference" href="#row%2CSheet%2CPositive"
-    title="row(s: Sheet; rowNum: Positive): Row">row(s: Sheet; rowNum: Positive): Row</a></li>
+    title="row(s: Sheet; rowNum: Positive): Row">row,Sheet,Positive<span class="attachedType">Sheet</span></a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">rowNum
-      <li><a class="reference" href="#rowNum%2CRow"
-    title="rowNum(r: Row): Positive">rowNum(r: Row): Positive</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">sheetNames
-      <li><a class="reference" href="#sheetNames%2CExcel"
-    title="sheetNames(e: Excel): seq[string]">sheetNames(e: Excel): seq[string]</a></li>
+  <ul class="simple nested-toc-section">addRow
+      <li><a class="reference" href="#addRow%2CSheet"
+    title="addRow(s: Sheet): Row">addRow,Sheet<span class="attachedType">Sheet</span></a></li>
+  <li><a class="reference" href="#addRow%2CSheet%2CPositive"
+    title="addRow(s: Sheet; rowNum: Positive): Row">addRow,Sheet,Positive<span class="attachedType">Sheet</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">writeFile
       <li><a class="reference" href="#writeFile%2CExcel%2Cstring"
-    title="writeFile(e: Excel; targetpath: string)">writeFile(e: Excel; targetpath: string)</a></li>
+    title="writeFile(e: Excel; targetpath: string)">writeFile,Excel,string<span class="attachedType">Excel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">name=
+      <li><a class="reference" href="#name%3D%2CSheet%2Cstring"
+    title="name=(s: Sheet; newname: string)">name=,Sheet,string<span class="attachedType">Sheet</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">prop=
+      <li><a class="reference" href="#prop%3D%2CExcel%2Cvarargs%5B%5D"
+    title="prop=(e: Excel; prop: varargs[(string, string)])">prop=,Excel,varargs[]<span class="attachedType">Excel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">rowNum
+      <li><a class="reference" href="#rowNum%2CRow"
+    title="rowNum(r: Row): Positive">rowNum,Row<span class="attachedType">Row</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getCell
+      <li><a class="reference" href="#getCell%2CRow%2Cstring%2Ctypeof%28nil%29"
+    title="getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R">getCell,Row,string,typeof(nil)<span class="attachedType">Row</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">sheetNames
+      <li><a class="reference" href="#sheetNames%2CExcel"
+    title="sheetNames(e: Excel): seq[string]">sheetNames,Excel<span class="attachedType">Excel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">name
+      <li><a class="reference" href="#name%2CSheet"
+    title="name(s: Sheet): string">name,Sheet<span class="attachedType">Sheet</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getSheet
+      <li><a class="reference" href="#getSheet%2CExcel%2Cstring"
+    title="getSheet(e: Excel; name: string): Sheet">getSheet,Excel,string<span class="attachedType">Excel</span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">[]
+      <li><a class="reference" href="#%5B%5D%2CRow%2Cstring%2Ctypedesc"
+    title="`[]`(r: Row; col: string; ret: typedesc): ret:type">[],Row,string,typedesc<span class="attachedType">Row</span></a></li>
 
   </ul>
 
@@ -248,16 +241,10 @@ window.addEventListener('DOMContentLoaded', main);
 <li>
   <a class="reference reference-toplevel" href="#18" id="68">Templates</a>
   <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">getCellIt
-      <li><a class="reference" href="#getCellIt.t%2CRow%2Cstring%2Cuntyped"
-    title="getCellIt[R](r: Row; col: string; body: untyped): untyped">getCellIt[R](r: Row; col: string; body: untyped): untyped</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">unixSep
       <li><a class="reference" href="#unixSep.t%2Cstring"
-    title="unixSep(str: string): untyped">unixSep(str: string): untyped</a></li>
-
-  </ul>
+    title="unixSep(str: string): untyped"><wbr />unix<wbr />Sep<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#getCellIt.t%2CRow%2Cstring%2Cuntyped"
+    title="getCellIt[R](r: Row; col: string; body: untyped): untyped"><wbr />get<wbr />Cell<wbr />It<span class="attachedType">Row</span></a></li>
 
   </ul>
 </li>
@@ -265,11 +252,6 @@ window.addEventListener('DOMContentLoaded', main);
 </ul>
 
   </div>
-  &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
-
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
@@ -279,7 +261,7 @@ class="link-seesrc" target="_blank">Source</a>
   <div class="section" id="7">
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
-<div id="Excel">
+<a id="Excel"></a>
 <dt><pre><a href="excelin.html#Excel"><span class="Identifier">Excel</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">XmlNode</span>
   <span class="Identifier">rels</span><span class="Other">:</span> <span class="Identifier">XmlNode</span>
@@ -293,57 +275,12 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object the represent as Excel file, mostly used for reading the Excel and writing it to Zip file and to memory buffer (at later version).
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L49"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L49"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L49" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L49" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="ExcelError">
-<dt><pre><a href="excelin.html#ExcelError"><span class="Identifier">ExcelError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span>
-  </pre></dt>
-<dd>
-
-Error when the Excel file read is invalid, specifically Excel file that doesn't have workbook.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L87"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L87" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="Row">
-<dt><pre><a href="excelin.html#Row"><span class="Identifier">Row</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">InternalBody</span>
-  <span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a>
-</pre></dt>
-<dd>
-
-The object that will be used for working with values within cells of a row. Users can get the value within cell and set its value.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L80"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="Sheet">
-<dt><pre><a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">InternalBody</span>
-  <span class="Identifier">sharedStrings</span><span class="Other">:</span> <span class="Identifier">XmlNode</span>
-  <span class="Identifier">parent</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a>
-  <span class="Identifier">rid</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">privName</span><span class="Other">:</span> <span class="Identifier">string</span>
-</pre></dt>
-<dd>
-
-The main object that will be used most of the time for many users. This object will represent a sheet in Excel file such as adding row getting row, and/or adding cell directly.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L71"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="Workbook">
+<a id="Workbook"></a>
 <dt><pre><a href="excelin.html#Workbook"><span class="Identifier">Workbook</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">InternalBody</span>
   <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">sheetsInfo</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">XmlNode</span><span class="Other">]</span>
@@ -354,119 +291,110 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object that used for managing package information of Excel file. Most users won't need to use this.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L63"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L63"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
+<a id="Sheet"></a>
+<dt><pre><a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">InternalBody</span>
+  <span class="Identifier">sharedStrings</span><span class="Other">:</span> <span class="Identifier">XmlNode</span>
+  <span class="Identifier">parent</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a>
+  <span class="Identifier">rid</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">privName</span><span class="Other">:</span> <span class="Identifier">string</span>
+</pre></dt>
+<dd>
+
+The main object that will be used most of the time for many users. This object will represent a sheet in Excel file such as adding row getting row, and/or adding cell directly.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L71"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="Row"></a>
+<dt><pre><a href="excelin.html#Row"><span class="Identifier">Row</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">InternalBody</span>
+  <span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a>
+</pre></dt>
+<dd>
+
+The object that will be used for working with values within cells of a row. Users can get the value within cell and set its value.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L80"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="ExcelError"></a>
+<dt><pre><a href="excelin.html#ExcelError"><span class="Identifier">ExcelError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span>
+  </pre></dt>
+<dd>
+
+Error when the Excel file read is invalid, specifically Excel file that doesn't have workbook.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L87"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L87" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 <div class="section" id="10">
 <h1><a class="toc-backref" href="#10">Consts</a></h1>
 <dl class="item">
-<div id="excelinVersion">
+<a id="excelinVersion"></a>
 <dt><pre><a href="excelin.html#excelinVersion"><span class="Identifier">excelinVersion</span></a> <span class="Other">=</span> <span class="StringLit">&quot;0.3.0&quot;</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L46"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L46"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L46" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L46" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
 
 </dl></div>
 <div class="section" id="12">
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
-<div id="$,Excel">
-<dt><pre><span class="Keyword">proc</span> <a href="#%24%2CExcel"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="getSheet,Excel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getSheet%2CExcel%2Cstring"><span class="Identifier">getSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Get Excel file as string. Currently implemented by writing to temporary dir first because there's no API to get the data directly.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L568"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L94"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L568" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L94" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="[]=,Row,string,bool">
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2Cbool"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="modifiedAt,Excel,T"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#modifiedAt%2CExcel%2CT"><span class="Identifier">modifiedAt</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">T</span> <span class="Other">=</span> <span class="Identifier">now</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span></pre></dt>
 <dd>
 
-Add cell with overload for truthy value.
+Update Excel modification time.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L220"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L121"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L121" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="[]=,Row,string,">
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2C"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">)</span></pre></dt>
+<a id="modifiedAt,Node,T"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#modifiedAt%2CNode%2CT"><span class="Identifier">modifiedAt</span></a><span class="Other">[</span><span class="Identifier">Node</span><span class="Other">:</span> <a href="excelin.html#Workbook"><span class="Identifier">Workbook</span></a> <span class="Operator">|</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">w</span><span class="Other">:</span> <span class="Identifier">Node</span><span class="Other">;</span>
+    <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">T</span> <span class="Other">=</span> <span class="Identifier">now</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span></pre></dt>
 <dd>
 
-Add cell with overload for DateTime or Time. The saved value will be in string format of <tt class="docutils literal"><span class="pre"><span class="Identifier">yyyy</span><span class="Operator">-</span><span class="Identifier">MM</span><span class="Operator">-</span><span class="Identifier">dd</span><span class="CharLit">'T'</span><span class="Identifier">HH</span><span class="Punctuation">:</span><span class="Identifier">mm</span><span class="Punctuation">:</span><span class="Identifier">ss</span><span class="CharLit">'.'</span><span class="Identifier">fffzz</span></span></tt> e.g. <tt class="docutils literal"><span class="pre"><span class="DecNumber">2200</span><span class="Operator">-</span><span class="DecNumber">10</span><span class="Operator">-</span><span class="DecNumber">01</span><span class="Identifier">T11</span><span class="Punctuation">:</span><span class="DecNumber">22</span><span class="Punctuation">:</span><span class="FloatNumber">33.456</span><span class="Operator">-</span><span class="DecNumber">03</span></span></tt>.
+Update workbook or worksheet modification time.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L225"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L131"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="[]=,Row,string,SomeNumber">
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">n</span><span class="Other">:</span> <span class="Identifier">SomeNumber</span><span class="Other">)</span></pre></dt>
-<dd>
-
-Add cell with overload for any number.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L215"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L215" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="[]=,Row,string,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2Cstring"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Add cell with overload for value string. Supplied column is following the Excel convention starting from A -  Z, AA - AZ ...
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L198"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="[],Row,string,typedesc">
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CRow%2Cstring%2Ctypedesc"><span class="Identifier">`[]`</span></a><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">ret</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">ret:type</span></pre></dt>
-<dd>
-
-Getting cell value from supplied return typedesc. This is overload of basic supported values that will return default value e.g.:<ul class="simple"><li>string default to &quot;&quot;</li>
-<li>SomeSignedInt default to int.low</li>
-<li>SomeUnsignedInt default to uint.high</li>
-<li>SomeFloat default to NaN</li>
-<li>DateTime and Time default to empty object time</li>
-</ul>
-<p>Other than above mentioned types, see <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell proc</a> for supplying the converting closure for getting the value.</p>
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L310"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="addRow,Sheet">
-<dt><pre><span class="Keyword">proc</span> <a href="#addRow%2CSheet"><span class="Identifier">addRow</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">deprecated</span><span class="Other">:</span> <span class="StringLit">&quot;use `row(Sheet, Positive): Row` instead&quot;</span><span class="Other">,</span>
-                             <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="addRow,Sheet"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#addRow%2CSheet"><span class="Identifier">addRow</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">deprecated</span><span class="Other">:</span> <span class="StringLit">&quot;use `row(Sheet, Positive): Row` instead&quot;</span><span class="Other">,</span>
+                             <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
   <div class="deprecation-message">
     <b>Deprecated:</b> use `row(Sheet, Positive): Row` instead
@@ -474,16 +402,27 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add row directly from sheet after any existing row. This will return a new pristine row to work further. Row numbering is 1-based.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L135"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L135"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L135" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L135" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="addRow,Sheet,Positive">
-<dt><pre><span class="Keyword">proc</span> <a href="#addRow%2CSheet%2CPositive"><span class="Identifier">addRow</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">rowNum</span><span class="Other">:</span> <span class="Identifier">Positive</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">deprecated</span><span class="Other">:</span> <span class="StringLit">&quot;use `row(Sheet, Positive): Row` instead&quot;</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="row,Sheet,Positive"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#row%2CSheet%2CPositive"><span class="Identifier">row</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">rowNum</span><span class="Other">:</span> <span class="Identifier">Positive</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Add row by selecting which row number to work with. This will return new row if there's no existing row or will return an existing one.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L148"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="addRow,Sheet,Positive"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#addRow%2CSheet%2CPositive"><span class="Identifier">addRow</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">rowNum</span><span class="Other">:</span> <span class="Identifier">Positive</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">deprecated</span><span class="Other">:</span> <span class="StringLit">&quot;use `row(Sheet, Positive): Row` instead&quot;</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
   <div class="deprecation-message">
     <b>Deprecated:</b> use `row(Sheet, Positive): Row` instead
@@ -491,50 +430,76 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L170"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L170"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="addSheet,Excel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#addSheet%2CExcel%2Cstring"><span class="Identifier">addSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="rowNum,Row"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#rowNum%2CRow"><span class="Identifier">rowNum</span></a><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Positive</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Add new sheet to excel with supplied name and return it to enable further working. The name can use the existing sheet name. Sheet name by default will in be <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;Sheet{num}&quot;</span></span></tt> format with <tt class="docutils literal"><span class="pre"><span class="Identifier">num</span></span></tt> is number of available sheets increased each time adding sheet. The new empty Excel file starting with Sheet1 will continue to Sheet2, Sheet3 ... each time this function is called. For example snip code below:<pre class="listing"><span class="Keyword">let</span> <span class="Punctuation">(</span><span class="Identifier">excel</span><span class="Punctuation">,</span> <span class="Identifier">sheet1</span><span class="Punctuation">)</span> <span class="Operator">=</span> <span class="Identifier">newExcel</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
-<span class="Identifier">doAssert</span> <span class="Identifier">sheet1</span><span class="Operator">.</span><span class="Identifier">name</span> <span class="Operator">==</span> <span class="StringLit">&quot;Sheet1&quot;</span>
-<span class="Identifier">excel</span><span class="Operator">.</span><span class="Identifier">deleteSheet</span> <span class="StringLit">&quot;Sheet1&quot;</span>
-<span class="Keyword">let</span> <span class="Identifier">newsheet</span> <span class="Operator">=</span> <span class="Identifier">addSheet</span> <span class="Identifier">excel</span>
-<span class="Identifier">doAssert</span> <span class="Identifier">newsheet</span><span class="Operator">.</span><span class="Identifier">name</span> <span class="Operator">==</span> <span class="StringLit">&quot;Sheet2&quot;</span> <span class="Comment"># instead of to be Sheet1</span></pre><p>This is because the counter for sheet will not be reduced despite of deleting the sheet in order to reduce maintaining relation-id cross reference.</p>
-
+Getting the current row number of Row object users working it.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L329"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L174"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L329" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L174" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="deleteSheet,Excel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#deleteSheet%2CExcel%2Cstring"><span class="Identifier">deleteSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="[]=,Row,string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2Cstring"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Delete sheet based on its name. Will ignore when it cannot find the name. Delete the first (or older) sheet when there's a same name. Check <a class="reference external" href="#sheetNames,Excel">sheetNames proc</a> to get available names.
+Add cell with overload for value string. Supplied column is following the Excel convention starting from A -  Z, AA - AZ ...
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L398"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L198"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L398" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="getCell,Row,string,typeof(nil)">
+<a id="[]=,Row,string,SomeNumber"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">n</span><span class="Other">:</span> <span class="Identifier">SomeNumber</span><span class="Other">)</span></pre></dt>
+<dd>
+
+Add cell with overload for any number.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L215"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L215" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="[]=,Row,string,bool"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2Cbool"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Add cell with overload for truthy value.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L220"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="[]=,Row,string,"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CRow%2Cstring%2C"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">d</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">)</span></pre></dt>
+<dd>
+
+Add cell with overload for DateTime or Time. The saved value will be in string format of <tt class="docutils literal"><span class="pre">yyyy-MM-dd'T'HH:mm:ss'.'fffzz</span></tt> e.g. <tt class="docutils literal"><span class="pre">2200-10-01T11:22:33.456-03</span></tt>.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L225"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="getCell,Row,string,typeof(nil)"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#getCell%2CRow%2Cstring%2Ctypeof%28nil%29"><span class="Identifier">getCell</span></a><span class="Other">[</span><span class="Identifier">R</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">conv</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Operator">-&gt;</span> <span class="Identifier">R</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">R</span></pre></dt>
 <dd>
 
 Get cell value from row with optional function to convert it. When conversion function is supplied, it will be used instead of default conversion function viz:<ul class="simple"><li>SomeSignedInt (int/int8/int32/int64): strutils.parseInt</li>
 <li>SomeUnsignedInt (uint/uint8/uint32/uint64): strutils.parseUint</li>
 <li>SomeFloat (float/float32/float64): strutils.parseFloat</li>
-<li>DateTime | Time: times.format with layout <tt class="docutils literal"><span class="pre"><span class="Identifier">yyyy</span><span class="Operator">-</span><span class="Identifier">MM</span><span class="Operator">-</span><span class="Identifier">dd</span><span class="CharLit">'T'</span><span class="Identifier">HH</span><span class="Punctuation">:</span><span class="Identifier">mm</span><span class="Punctuation">:</span><span class="Identifier">ss</span><span class="CharLit">'.'</span><span class="Identifier">fffzz</span></span></tt></li>
+<li>DateTime | Time: times.format with layout <tt class="docutils literal"><span class="pre">yyyy-MM-dd'T'HH:mm:ss'.'fffzz</span></tt></li>
 </ul>
 <p>For simple usage example:</p>
 <pre class="listing"><span class="Keyword">let</span> <span class="Identifier">strval</span> <span class="Operator">=</span> <span class="Identifier">row</span><span class="Operator">.</span><span class="Identifier">getCell</span><span class="Punctuation">[</span><span class="Punctuation">:</span><span class="Identifier">string</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="StringLit">&quot;A&quot;</span><span class="Punctuation">)</span> <span class="Comment"># we're fetching string value in colum A</span>
@@ -549,193 +514,179 @@ Get cell value from row with optional function to convert it. When conversion fu
    <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">parse</span><span class="Punctuation">(</span><span class="StringLit">&quot;yyyy/MM/dd&quot;</span><span class="Punctuation">)</span><span class="Punctuation">)</span><span class="Punctuation">)</span></pre><p>Any other type that other than mentioned above should provide the closure proc for the conversion otherwise it will return the default value, for example any ref object will return nil or for object will get the object with its field filled with default values.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L232"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="getSheet,Excel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#getSheet%2CExcel%2Cstring"><span class="Identifier">getSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="[],Row,string,typedesc"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CRow%2Cstring%2Ctypedesc"><span class="Identifier">`[]`</span></a><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">ret</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">ret:type</span></pre></dt>
 <dd>
 
+Getting cell value from supplied return typedesc. This is overload of basic supported values that will return default value e.g.:<ul class="simple"><li>string default to &quot;&quot;</li>
+<li>SomeSignedInt default to int.low</li>
+<li>SomeUnsignedInt default to uint.high</li>
+<li>SomeFloat default to NaN</li>
+<li>DateTime and Time default to empty object time</li>
+</ul>
+<p>Other than above mentioned types, see <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell proc</a> for supplying the converting closure for getting the value.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L94"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L310"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L94" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="modifiedAt,Node,T">
-<dt><pre><span class="Keyword">proc</span> <a href="#modifiedAt%2CNode%2CT"><span class="Identifier">modifiedAt</span></a><span class="Other">[</span><span class="Identifier">Node</span><span class="Other">:</span> <a href="excelin.html#Workbook"><span class="Identifier">Workbook</span></a> <span class="Operator">|</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">w</span><span class="Other">:</span> <span class="Identifier">Node</span><span class="Other">;</span>
-    <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">T</span> <span class="Other">=</span> <span class="Identifier">now</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span></pre></dt>
+<a id="addSheet,Excel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#addSheet%2CExcel%2Cstring"><span class="Identifier">addSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Update workbook or worksheet modification time.
+Add new sheet to excel with supplied name and return it to enable further working. The name can use the existing sheet name. Sheet name by default will in be <tt class="docutils literal"><span class="pre">&quot;Sheet{num}&quot;</span></tt> format with <tt class="docutils literal"><span class="pre">num</span></tt> is number of available sheets increased each time adding sheet. The new empty Excel file starting with Sheet1 will continue to Sheet2, Sheet3 ... each time this function is called. For example snip code below:<pre class="listing"><span class="Keyword">let</span> <span class="Punctuation">(</span><span class="Identifier">excel</span><span class="Punctuation">,</span> <span class="Identifier">sheet1</span><span class="Punctuation">)</span> <span class="Operator">=</span> <span class="Identifier">newExcel</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
+<span class="Identifier">doAssert</span> <span class="Identifier">sheet1</span><span class="Operator">.</span><span class="Identifier">name</span> <span class="Operator">==</span> <span class="StringLit">&quot;Sheet1&quot;</span>
+<span class="Identifier">excel</span><span class="Operator">.</span><span class="Identifier">deleteSheet</span> <span class="StringLit">&quot;Sheet1&quot;</span>
+<span class="Keyword">let</span> <span class="Identifier">newsheet</span> <span class="Operator">=</span> <span class="Identifier">addSheet</span> <span class="Identifier">excel</span>
+<span class="Identifier">doAssert</span> <span class="Identifier">newsheet</span><span class="Operator">.</span><span class="Identifier">name</span> <span class="Operator">==</span> <span class="StringLit">&quot;Sheet2&quot;</span> <span class="Comment"># instead of to be Sheet1</span></pre><p>This is because the counter for sheet will not be reduced despite of deleting the sheet in order to reduce maintaining relation-id cross reference.</p>
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L131"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L329"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L329" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="modifiedAt,Excel,T">
-<dt><pre><span class="Keyword">proc</span> <a href="#modifiedAt%2CExcel%2CT"><span class="Identifier">modifiedAt</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">DateTime</span> <span class="Operator">|</span> <span class="Identifier">Time</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">T</span> <span class="Other">=</span> <span class="Identifier">now</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span></pre></dt>
+<a id="deleteSheet,Excel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteSheet%2CExcel%2Cstring"><span class="Identifier">deleteSheet</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">name</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Update Excel modification time.
+Delete sheet based on its name. Will ignore when it cannot find the name. Delete the first (or older) sheet when there's a same name. Check <a class="reference external" href="#sheetNames,Excel">sheetNames proc</a> to get available names.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L121"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L398"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L121" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L398" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="name,Sheet">
-<dt><pre><span class="Keyword">proc</span> <a href="#name%2CSheet"><span class="Identifier">name</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Get the name of current sheet
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L585"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L585" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="name=,Sheet,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#name%3D%2CSheet%2Cstring"><span class="Identifier">name=</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">newname</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Update sheet's name.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L588"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="newExcel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#newExcel%2Cstring"><span class="Identifier">newExcel</span></a><span class="Other">(</span><span class="Identifier">appName</span> <span class="Other">=</span> <span class="StringLit">&quot;Excelin&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">,</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
-    <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Return a new Excel and Sheet at the same time to work for both. The Sheet returned is by default has name &quot;Sheet1&quot; but user can use <a class="reference external" href="#name=,Sheet,string">name= proc</a> to change its name.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L539"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L539" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="prop=,Excel,varargs[]">
-<dt><pre><span class="Keyword">proc</span> <a href="#prop%3D%2CExcel%2Cvarargs%5B%5D"><span class="Identifier">prop=</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">prop</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Add information property to Excel file. Will add the properties to the existing.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L530"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="readExcel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#readExcel%2Cstring"><span class="Identifier">readExcel</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
+<a id="readExcel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#readExcel%2Cstring"><span class="Identifier">readExcel</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Read Excel file from supplied path. Will raise OSError in case path is not exists, IOError when system errors during reading the file, ExcelError when the Excel file is not valid (Excel file that has no workbook).
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L475"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L475"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L475" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L475" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="row,Sheet,Positive">
-<dt><pre><span class="Keyword">proc</span> <a href="#row%2CSheet%2CPositive"><span class="Identifier">row</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">rowNum</span><span class="Other">:</span> <span class="Identifier">Positive</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="prop=,Excel,varargs[]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#prop%3D%2CExcel%2Cvarargs%5B%5D"><span class="Identifier">prop=</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">prop</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Add row by selecting which row number to work with. This will return new row if there's no existing row or will return an existing one.
+Add information property to Excel file. Will add the properties to the existing.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L148"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L530"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="rowNum,Row">
-<dt><pre><span class="Keyword">proc</span> <a href="#rowNum%2CRow"><span class="Identifier">rowNum</span></a><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Positive</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="newExcel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newExcel%2Cstring"><span class="Identifier">newExcel</span></a><span class="Other">(</span><span class="Identifier">appName</span> <span class="Other">=</span> <span class="StringLit">&quot;Excelin&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">,</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
+    <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Getting the current row number of Row object users working it.
+Return a new Excel and Sheet at the same time to work for both. The Sheet returned is by default has name &quot;Sheet1&quot; but user can use <a class="reference external" href="#name=,Sheet,string">name= proc</a> to change its name.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L174"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L539"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L174" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L539" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="sheetNames,Excel">
-<dt><pre><span class="Keyword">proc</span> <a href="#sheetNames%2CExcel"><span class="Identifier">sheetNames</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-Return all availables sheet names within an Excel file.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L581"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L581" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="writeFile,Excel,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#writeFile%2CExcel%2Cstring"><span class="Identifier">writeFile</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">targetpath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="writeFile,Excel,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#writeFile%2CExcel%2Cstring"><span class="Identifier">writeFile</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">;</span> <span class="Identifier">targetpath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Write Excel to file in target path. Raise OSError when it can't write to the intended path.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L546"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L546"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L546" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L546" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
+<a id="$,Excel"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%24%2CExcel"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Get Excel file as string. Currently implemented by writing to temporary dir first because there's no API to get the data directly.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L568"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L568" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="sheetNames,Excel"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#sheetNames%2CExcel"><span class="Identifier">sheetNames</span></a><span class="Other">(</span><span class="Identifier">e</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Return all availables sheet names within an Excel file.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L581"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L581" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="name,Sheet"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#name%2CSheet"><span class="Identifier">name</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Get the name of current sheet
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L585"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L585" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="name=,Sheet,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#name%3D%2CSheet%2Cstring"><span class="Identifier">name=</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">newname</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Update sheet's name.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L588"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 <div class="section" id="18">
 <h1><a class="toc-backref" href="#18">Templates</a></h1>
 <dl class="item">
-<div id="getCellIt.t,Row,string,untyped">
-<dt><pre><span class="Keyword">template</span> <a href="#getCellIt.t%2CRow%2Cstring%2Cuntyped"><span class="Identifier">getCellIt</span></a><span class="Other">[</span><span class="Identifier">R</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
-<dd>
-
-Shorthand for <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell</a> with injected <tt class="docutils literal"><span class="pre"><span class="Identifier">it</span></span></tt> in body.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L305"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L305" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="unixSep.t,string">
+<a id="unixSep.t,string"></a>
 <dt><pre><span class="Keyword">template</span> <a href="#unixSep.t%2Cstring"><span class="Identifier">unixSep</span></a><span class="Other">(</span><span class="Identifier">str</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
 <dd>
 
 helper to change the Windows path separator to Unix path separator
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L91"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L91"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L91" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L91" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
+<a id="getCellIt.t,Row,string,untyped"></a>
+<dt><pre><span class="Keyword">template</span> <a href="#getCellIt.t%2CRow%2Cstring%2Cuntyped"><span class="Identifier">getCellIt</span></a><span class="Other">[</span><span class="Identifier">R</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">r</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+<dd>
+
+Shorthand for <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell</a> with injected <tt class="docutils literal"><span class="pre">it</span></tt> in body.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L305"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L305" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 
