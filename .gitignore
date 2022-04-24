@@ -21,6 +21,7 @@ nimcache/
 
 config.nims
 *.settings
+!tests/config.nims
 
 *.xlsx
 *.ods

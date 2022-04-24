@@ -1,6 +1,6 @@
 # Excelin - create and read Excel pure Nim
 
-[![Build Status](https://nimble.directory/ci/badges/jester/nimdevel/status.svg)](https://nimble.directory/ci/badges/jester/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/jester/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/jester/nimdevel/doc_build_output.html)
+[![Version](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
 
 A library to work with Excel file and/or data.
 
@@ -26,7 +26,9 @@ let (excel, sheet) = newExcel()
 
 # we of course can also read from Excel file directly using `readExcel`
 # we comment this out because the path is imaginary
-#let (excelTemplate, sheetFromTemplate) = readExcel("path/to/template.xlsx")
+#let excelTemplate = readExcel("path/to/template.xlsx")
+# note readExcel only returns the Excel itself because there's no
+# known default sheet available
 
 doAssert sheet.name == "Sheet1"
 # by default the name sheet is Sheet1

@@ -277,29 +277,21 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
       if "s" == v.attr "t":
         tt = fetchShared t
       return conv tt
+  retconv()
   when R is string:
-    retconv()
     result = fetchShared t
   elif R is SomeSignedInt:
-    retconv()
-    try: result = parseInt(t)
-    except: discard
+    try: result = parseInt(t) except: discard
   elif R is SomeFloat:
-    retconv()
-    try: result = parseFloat(t)
-    except: discard
+    try: result = parseFloat(t) except: discard
   elif R is SomeUnsignedInt:
-    retconv()
-    try: result = parseUint t
-    except: discard
+    try: result = parseUint(t) except: discard
   elif R is DateTime:
-    retconv()
     try: result = parse(t, datefmt) except: discard
   elif R is Time:
-    retconv()
     try: result = parse(t, datefmt).toTime except: discard
   else:
-    retconv()
+    discard
 
 template getCellIt*[R](r: Row, col: string, body: untyped): untyped =
   ## Shorthand for `getCell <#getCell,Row,string,typeof(nil)>`_ with
@@ -470,7 +462,6 @@ proc assignSheetInfo(e: Excel) =
   for path, sheet in e.sheets:
     sheet.rid = mapFilenameRid[path.extractFilename]
     sheet.privName = mapRidName[sheet.rid]
-
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
