@@ -26,7 +26,9 @@ let (excel, sheet) = newExcel()
 
 # we of course can also read from Excel file directly using `readExcel`
 # we comment this out because the path is imaginary
-#let (excelTemplate, sheetFromTemplate) = readExcel("path/to/template.xlsx")
+#let excelTemplate = readExcel("path/to/template.xlsx")
+# note readExcel only returns the Excel itself because there's no
+# known default sheet available
 
 doAssert sheet.name == "Sheet1"
 # by default the name sheet is Sheet1

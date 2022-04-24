@@ -2,6 +2,7 @@
     * Add `getCellIt` to access the string value directly as `it`.
     * Change temporary file name and hashed it when calling `$`.
     * Refactor `getCell`.
+    * Add unit test.
 * 0.2.1:
     * Refactor `[]=` and fix addSheet failed to get last id and returning nil.
 * 0.2.0

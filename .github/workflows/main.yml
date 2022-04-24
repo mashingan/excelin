@@ -2,6 +2,8 @@ name: test
 
 on:
   push:
+    branches:
+      - dev
   pull_request:
 
 jobs:
@@ -40,14 +42,10 @@ jobs:
         with:
           nim-version: ${{ matrix.nim-version }}
 
-      # see. https://github.com/actions/virtual-environments/issues/675
-      - name: Fix apt packages
-        run: |
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo apt update -yqq
-
-
       - run: nimble install -Y
+
+      - name: Nimble test setup and run
+        run: nimble test -Y
 
       - uses: actions/checkout@v3
       - run: nim doc --project --index:on --git.url:https://github.com/mashingan/excelin --outdir:src/htmldocs src/excelin.nim
