@@ -27,3 +27,5 @@ config.nims
 *.ods
 !empty.xlsx
 dev-local/*
+
+!LICENSE
