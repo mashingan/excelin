@@ -14,7 +14,7 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      attrs, `attrs=`, innerText, `[]`, insert, clear
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint
+  parseFloat, parseUint, toUpperAscii
 from std/sequtils import toSeq, mapIt
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
@@ -43,7 +43,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.2.2"
+  excelinVersion* = "0.3.0"
 
 type
   Excel* = ref object
@@ -184,6 +184,7 @@ proc fetchCell(body: XmlNode, colrow: string): int =
 
 proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: XmlNode = nil) =
   let rn = row.body.attr "r"
+  let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
   let innerval = if altnode != nil: altnode else: newText text
   let cnode = <>c(r=cellpos, t=cellType, s="0", newXmlTree(valelem, [innerval]))
@@ -257,6 +258,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## any ref object will return nil or for object will get the object with its field
   ## filled with default values.
   let rnum = row.body.attr "r"
+  let col = col.toUpperAscii
   var isInnerStr = false
   let v = block:
     var x: XmlNode
@@ -624,6 +626,7 @@ when isMainModule:
     row10["D"] = -11
     empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
     dump row5["A", string]
+    row5["A"] = row5["A", string] & " heehaa"
     #dump sheet.body
     #dump empty.sharedStrings
     #dump empty.otherfiles["app.xml"]
