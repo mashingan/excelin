@@ -1,6 +1,6 @@
 # Excelin - create and read Excel pure Nim
 
-[![Version](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
+[![Build Status](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
 
 A library to work with Excel file and/or data.
 

@@ -88,7 +88,7 @@ type
     ## Error when the Excel file read is invalid, specifically Excel file
     ## that doesn't have workbook.
 
-template unixSep*(str: string): untyped = str.replace('\\', '/')
+template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
 proc getSheet*(e: Excel, name: string): Sheet =
