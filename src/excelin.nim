@@ -182,10 +182,11 @@ proc fetchCell(body: XmlNode, colrow: string): int =
     if colrow == n.attr "r": return count
   -1
 
-proc addCell(row: Row, col, cellType, text: string) =
+proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: XmlNode = nil) =
   let rn = row.body.attr "r"
   let cellpos = fmt"{col}{rn}"
-  let cnode = <>c(r=cellpos, t=cellType, s="0", <>v(newText text))
+  let innerval = if altnode != nil: altnode else: newText text
+  let cnode = <>c(r=cellpos, t=cellType, s="0", newXmlTree(valelem, [innerval]))
   let nodepos = row.body.fetchCell cellpos
   if nodepos < 0:
     row.body.add cnode
@@ -196,6 +197,10 @@ proc addCell(row: Row, col, cellType, text: string) =
 proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
+  if s.len < 64:
+    row.addCell col, "inlineStr", s, "is", <>t(newText s)
+    row.sheet.modifiedAt
+    return
   let lastStr = row.sheet.sharedStrings.len
   row.addCell col, "s", $lastStr
   row.sheet.sharedStrings.add <>si(newXmlTree("t",
@@ -252,10 +257,12 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## any ref object will return nil or for object will get the object with its field
   ## filled with default values.
   let rnum = row.body.attr "r"
+  var isInnerStr = false
   let v = block:
     var x: XmlNode
     for node in row.body:
       if fmt"{col}{rnum}" == node.attr "r":
+        isInnerStr = "inlineStr" == node.attr "t"
         x = node
         break
     x
@@ -279,7 +286,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
       return conv tt
   retconv()
   when R is string:
-    result = fetchShared t
+    result = if isInnerStr: t else: fetchShared t
   elif R is SomeSignedInt:
     try: result = parseInt(t) except: discard
   elif R is SomeFloat:
@@ -616,7 +623,9 @@ when isMainModule:
     row10["C"] = 11
     row10["D"] = -11
     empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
+    dump row5["A", string]
     #dump sheet.body
+    #dump empty.sharedStrings
     #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
