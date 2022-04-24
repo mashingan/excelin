@@ -28,7 +28,8 @@ let (excel, sheet) = newExcel()
 # we comment this out because the path is imaginary
 #let excelTemplate = readExcel("path/to/template.xlsx")
 # note readExcel only returns the Excel itself because there's no
-# known default sheet available
+# known default sheet available. Use `excelin.getSheet(Excel,string): Sheet`
+# to get the sheet based on its name.
 
 doAssert sheet.name == "Sheet1"
 # by default the name sheet is Sheet1

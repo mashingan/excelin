@@ -305,6 +305,19 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
 template getCellIt*[R](r: Row, col: string, body: untyped): untyped =
   ## Shorthand for `getCell <#getCell,Row,string,typeof(nil)>`_ with
   ## injected `it` in body.
+  ## For example:
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##   from std/times import parse, year, month, DateTime, Month, monthday
+  ##
+  ##   # the value in cell is "2200/12/01"
+  ##   let dt = row.getCell[:DateTime]("F", (s: string) -> DateTime => (
+  ##      s.parse("yyyy/MM/dd")))
+  ##   doAssert dt.year == 2200
+  ##   doAssert dt.month == mDec
+  ##   doAssert dt.monthday = 1
+  ##
   r.getCell[:R](col, proc(it {.inject.}: string): R = `body`)
 
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
