@@ -19,12 +19,13 @@ from std/sequtils import toSeq, mapIt
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
 from std/strformat import fmt
-from std/times import DateTime, Time, now, format, toTime, toUnix, parse
+from std/times import DateTime, Time, now, format, toTime, toUnixFloat, parse
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
 from std/strtabs import `[]=`
 from std/sugar import dump, `->`
 from std/strscans import scanf
+from std/sha1 import secureHash, `$`
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -42,7 +43,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.2.1"
+  excelinVersion* = "0.2.2"
 
 type
   Excel* = ref object
@@ -276,29 +277,26 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
       if "s" == v.attr "t":
         tt = fetchShared t
       return conv tt
+  retconv()
   when R is string:
-    retconv()
     result = fetchShared t
   elif R is SomeSignedInt:
-    retconv()
-    try: result = parseInt(t)
-    except: discard
+    try: result = parseInt(t) except: discard
   elif R is SomeFloat:
-    retconv()
-    try: result = parseFloat(t)
-    except: discard
+    try: result = parseFloat(t) except: discard
   elif R is SomeUnsignedInt:
-    retconv()
-    try: result = parseUint t
-    except: discard
+    try: result = parseUint(t) except: discard
   elif R is DateTime:
-    retconv()
     try: result = parse(t, datefmt) except: discard
   elif R is Time:
-    retconv()
     try: result = parse(t, datefmt).toTime except: discard
   else:
-    retconv()
+    discard
+
+template getCellIt*[R](r: Row, col: string, body: untyped): untyped =
+  ## Shorthand for `getCell <#getCell,Row,string,typeof(nil)>`_ with
+  ## injected `it` in body.
+  r.getCell[:R](col, proc(it {.inject.}: string): R = `body`)
 
 proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   ## Getting cell value from supplied return typedesc. This is overload
@@ -465,7 +463,6 @@ proc assignSheetInfo(e: Excel) =
     sheet.rid = mapFilenameRid[path.extractFilename]
     sheet.privName = mapRidName[sheet.rid]
 
-
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
   ## in case path is not exists, IOError when system errors
@@ -563,7 +560,8 @@ proc `$`*(e: Excel): string =
   ## Get Excel file as string. Currently implemented by writing to
   ## temporary dir first because there's no API to get the data
   ## directly.
-  let path = getTempDir() / fmt"excelin-{now().toTime.toUnix}.xml"
+  let fname = fmt"excelin-{now().toTime.toUnixFloat}"
+  let path = (getTempDir() / $fname.secureHash).addFileExt ".xlsx"
   e.writeFile path
   result = readFile path
   try:

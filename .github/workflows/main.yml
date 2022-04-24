@@ -2,6 +2,8 @@ name: test
 
 on:
   push:
+    branches:
+      - dev
   pull_request:
 
 jobs:
@@ -40,19 +42,15 @@ jobs:
         with:
           nim-version: ${{ matrix.nim-version }}
 
-      # see. https://github.com/actions/virtual-environments/issues/675
-      - name: Fix apt packages
-        run: |
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo apt update -yqq
-
-
       - run: nimble install -Y
 
-      - uses: actions/checkout@v2.3.1
+      - name: Nimble test setup and run
+        run: nimble test -Y
+
+      - uses: actions/checkout@v3
       - run: nim doc --project --index:on --git.url:https://github.com/mashingan/excelin --outdir:src/htmldocs src/excelin.nim
       - name: Deploy docs
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@v4.3.0
         with:
           branch: gh-pages
           folder: .
