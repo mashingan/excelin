@@ -14,8 +14,8 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      attrs, `attrs=`, innerText, `[]`, insert, clear
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii
-from std/sequtils import toSeq, mapIt
+  parseFloat, parseUint, toUpperAscii, join
+from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
 from std/strformat import fmt
@@ -88,6 +88,10 @@ type
     ## Error when the Excel file read is invalid, specifically Excel file
     ## that doesn't have workbook.
 
+  CellFill* = enum
+    cfSparse = "sparse"
+    cfFilled = "filled"
+
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
@@ -145,24 +149,25 @@ proc addRow*(s: Sheet): Row {.deprecated: "use `row(Sheet, Positive): Row` inste
   sdata.add result.body
   s.modifiedAt
 
-proc row*(s: Sheet, rowNum: Positive): Row =
+proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## Add row by selecting which row number to work with.
   ## This will return new row if there's no existing row
   ## or will return an existing one.
   let sdata = s.body.getSheetData
   let rowsExists = sdata.len
   if rowsExists < 1:
-    result = Row(sheet: s, body: <>row(r= "1", hidden="false", collapsed="false"))
+    result = Row(sheet: s, body: <>row(r= "1", hidden="false",
+      collapsed="false", cellfill= $fill))
     sdata.add result.body
     return
   elif rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
-      sdata.add <>row(r= $i, hidden="false", collapsed="false")
+      sdata.add <>row(r= $i, hidden="false", collapsed="false", cellfill= $fill)
   else:
     return Row(sheet:s, body: sdata[rowNum-1])
   result = Row(
     sheet: s,
-    body: <>row(r= $rowNum, hidden="false", collapsed="false"),
+    body: <>row(r= $rowNum, hidden="false", collapsed="false", cellfill= $fill),
   )
   sdata.add result.body
   s.modifiedAt
@@ -182,13 +187,61 @@ proc fetchCell(body: XmlNode, colrow: string): int =
     if colrow == n.attr "r": return count
   -1
 
+proc toNum*(col: string): int =
+  ## Convert our column string to its numeric representation.
+  ## Make sure the supplied column is already in upper case.
+  ## 0-based e.g.: "A".toNum == 0, "C".toNum == 2
+  ## Complement of `toCol <#toCol,Natural,string>`_.
+  runnableExamples:
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      doAssert cn[0].toNum == cn[1]
+  for i in countdown(col.len-1, 0):
+    let cnum = col[col.len-i-1].ord - 'A'.ord + 1
+    if i == 0: result += cnum
+    else: result += cnum * 26
+  dec result
+
+let atoz = toSeq('A'..'Z')
+
+proc toCol*(n: Natural): string =
+  ## Convert our numeric column to string representation.
+  ## The numeric should be 0-based, e.g.: 0.toCol == "A", 25.toCol == "Z"
+  ## Complement of `toNum <#toNum,string,int>`_.
+  runnableExamples:
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      doAssert cn[1].toCol == cn[0]
+  if n < atoz.len:
+    return $atoz[n]
+  var count = n
+  while count >= atoz.len:
+    let c = count div atoz.len
+    result &= atoz[c-1]
+    count = count mod atoz.len
+  result &= atoz[count]
+
 proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: XmlNode = nil) =
   let rn = row.body.attr "r"
+  let sparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
   let innerval = if altnode != nil: altnode else: newText text
   let cnode = <>c(r=cellpos, t=cellType, s="0", newXmlTree(valelem, [innerval]))
-  let nodepos = row.body.fetchCell cellpos
+  if not sparse:
+    let cellsTotal = row.body.len
+    let colnum = toNum col
+    if colnum < cellsTotal:
+      row.body.delete colnum
+      row.body.insert cnode, colnum
+    else:
+      for i in cellsTotal ..< colnum:
+        let colchar = toCol i
+        let cellp = fmt"{colchar}{rn}"
+        row.body.add <>c(r=cellp)
+      row.body.add cnode
+    return
+  let nodepos = row.body.fetchCell(cellpos)
   if nodepos < 0:
     row.body.add cnode
   else:
@@ -629,12 +682,16 @@ proc `name=`*(s: Sheet, newname: string) =
 
 
 when isMainModule:
-  from std/sequtils import repeat
-  from std/strutils import join
   let (empty, sheet) = newExcel()
+
+  let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+  for cn in colnum:
+    doAssert cn[0].toNum == cn[1]
+    doAssert cn[1].toCol == cn[0]
+
   empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
-    let row = sheet.row 1
+    let row = sheet.row(1, cfFilled)
     row["A"] = "hehe"
     row["B"] = -1
     row["C"] = 2
@@ -656,7 +713,7 @@ when isMainModule:
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
-    let row10 = sheet.row 10
+    let row10 = sheet.row(10, cfFilled)
     row10["C"] = 11
     row10["D"] = -11
     empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
@@ -666,7 +723,7 @@ when isMainModule:
     row5["B"] = tobeShared
     row5["c"] = tobeShared
     #dump sheet.body
-    dump empty.sharedStrings
+    #dump empty.sharedStrings
     #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:

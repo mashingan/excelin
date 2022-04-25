@@ -5,13 +5,18 @@ Workbook	excelin.html#Workbook	excelin: Workbook
 Sheet	excelin.html#Sheet	excelin: Sheet	
 Row	excelin.html#Row	excelin: Row	
 ExcelError	excelin.html#ExcelError	excelin: ExcelError	
+cfSparse	excelin.html#cfSparse	CellFill.cfSparse	
+cfFilled	excelin.html#cfFilled	CellFill.cfFilled	
+CellFill	excelin.html#CellFill	excelin: CellFill	
 getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
 modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
 modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
 addRow	excelin.html#addRow,Sheet	excelin: addRow(s: Sheet): Row	
-row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive): Row	
+row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive; fill = cfSparse): Row	
 addRow	excelin.html#addRow,Sheet,Positive	excelin: addRow(s: Sheet; rowNum: Positive): Row	
 rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive	
+toNum	excelin.html#toNum,string	excelin: toNum(col: string): int	
+toCol	excelin.html#toCol,Natural	excelin: toCol(n: Natural): string	
 `[]=`	excelin.html#[]=,Row,string,string	excelin: `[]=`(row: Row; col: string; s: string)	
 `[]=`	excelin.html#[]=,Row,string,SomeNumber	excelin: `[]=`(row: Row; col: string; n: SomeNumber)	
 `[]=`	excelin.html#[]=,Row,string,bool	excelin: `[]=`(row: Row; col: string; b: bool)	

@@ -18,6 +18,7 @@ from std/times import now, DateTime, Time, toTime, parse, Month,
 from std/strformat import fmt
 from std/sugar import `->`, `=>`, dump
 from std/strscans import scanf
+from std/sequtils import toSeq
 import excelin
 
 # `newExcel` returns Excel and Sheet object to immediately work
@@ -78,8 +79,11 @@ row1["H"] = -111
 
 # notice above example we arbitrarily chose the column and by current implementation
 # Excel data won't add unnecessary empty cells. In other words, sparse row cells.
-# At later, we will add the implementation to fill all cells because it will be
-# more efficient when working with large columns.
+# When we're sure working with large cells and often have to update its cell value,
+# we can supply the optional argument `cfFilled` to make our cells in the row filled
+# preemptively.
+
+discard sheet.row(2, cfFilled) # default is cfSparse
  
 # now let's fetch the data we inputted
 doAssert row1["A", string] == "this is string"
@@ -129,6 +133,19 @@ let fexIt = row1.getCellIt[:ForExample]("F", (
     discard scanf(it, "[$w:$i]", result.a, result.b)))
 doAssert fexIt.a == "A"
 doAssert fexIt.b == 200
+
+# We also provide helpers `toNum` and `toCol` to convert string-int column
+# representation. Usually when we're working with array/seq of data,
+# we want to access the column string but we only have the int, so this
+# helpers will come handy.
+
+let row11 = sheet.row 11
+for i in 0 ..< 10: # both toCol and toNum is starting from zero.
+    row11[i.toCol] = i.toCol
+    
+# and let's see whether it's same or not
+for i, c in toSeq['A'..'J']:
+    doAssert row11[$c, string].toNum == i
 
 
 # finally, we have 2 options to access the binary Excel data, using `$` and

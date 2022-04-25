@@ -153,3 +153,9 @@ suite "Excelin unit test":
     check row1G["E", float] == row1cellE
     check row1G["J", string] == tobeShared
     check row1G["K", string] == tobeShared
+
+  test "can convert column string to int vice versa":
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      check cn[0].toNum == cn[1]
+      check cn[1].toCol == cn[0]
