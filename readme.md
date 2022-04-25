@@ -1,6 +1,6 @@
 # Excelin - create and read Excel pure Nim
 
-[![Version](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
+[![Build Status](https://nimble.directory/ci/badges/excelin/version.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/status.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/output.html) [![Build Status](https://nimble.directory/ci/badges/excelin/nimdevel/docstatus.svg)](https://nimble.directory/ci/badges/excelin/nimdevel/doc_build_output.html)
 
 A library to work with Excel file and/or data.
 
@@ -18,6 +18,7 @@ from std/times import now, DateTime, Time, toTime, parse, Month,
 from std/strformat import fmt
 from std/sugar import `->`, `=>`, dump
 from std/strscans import scanf
+from std/sequtils import toSeq
 import excelin
 
 # `newExcel` returns Excel and Sheet object to immediately work
@@ -28,7 +29,8 @@ let (excel, sheet) = newExcel()
 # we comment this out because the path is imaginary
 #let excelTemplate = readExcel("path/to/template.xlsx")
 # note readExcel only returns the Excel itself because there's no
-# known default sheet available
+# known default sheet available. Use `excelin.getSheet(Excel,string): Sheet`
+# to get the sheet based on its name.
 
 doAssert sheet.name == "Sheet1"
 # by default the name sheet is Sheet1
@@ -77,8 +79,11 @@ row1["H"] = -111
 
 # notice above example we arbitrarily chose the column and by current implementation
 # Excel data won't add unnecessary empty cells. In other words, sparse row cells.
-# At later, we will add the implementation to fill all cells because it will be
-# more efficient when working with large columns.
+# When we're sure working with large cells and often have to update its cell value,
+# we can supply the optional argument `cfFilled` to make our cells in the row filled
+# preemptively.
+
+discard sheet.row(2, cfFilled) # default is cfSparse
  
 # now let's fetch the data we inputted
 doAssert row1["A", string] == "this is string"
@@ -128,6 +133,19 @@ let fexIt = row1.getCellIt[:ForExample]("F", (
     discard scanf(it, "[$w:$i]", result.a, result.b)))
 doAssert fexIt.a == "A"
 doAssert fexIt.b == 200
+
+# We also provide helpers `toNum` and `toCol` to convert string-int column
+# representation. Usually when we're working with array/seq of data,
+# we want to access the column string but we only have the int, so this
+# helpers will come handy.
+
+let row11 = sheet.row 11
+for i in 0 ..< 10: # both toCol and toNum is starting from zero.
+    row11[i.toCol] = i.toCol
+    
+# and let's see whether it's same or not
+for i, c in toSeq['A'..'J']:
+    doAssert row11[$c, string].toNum == i
 
 
 # finally, we have 2 options to access the binary Excel data, using `$` and
@@ -214,8 +232,8 @@ doAssert foundOlderSheet.row(1)["A", string] == "temptest"
 doAssert excel.sheetNames == @["Sheet3", "new-sheet", "new-sheet"]
 excel.writeFile ("many-sheets.xlsx")
 
-# Write it to file and open it with our favorite Excel viewer to see 2 sheets:
-# Sheet3 and new-sheet, new-sheet.
+# Write it to file and open it with our favorite Excel viewer to see 3 sheets:
+# Sheet3, new-sheet and new-sheet.
 # Using libreoffice to view the Excel file, the duplicate name will be appended with
 # format {sheetName}-{numDuplicated}.
 # We can replicate that behaviour too but currently we support duplicate sheet name.

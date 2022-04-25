@@ -4,6 +4,8 @@ from std/strformat import fmt
 from std/sugar import `->`, `=>`
 from std/strscans import scanf
 from std/os import fileExists
+from std/sequtils import repeat
+from std/strutils import join
 import std/unittest
 
 import excelin
@@ -31,6 +33,8 @@ suite "Excelin unit test":
     row1cellD = "2200/12/01"
     row1cellF = $fexob
     row1cellH = -111
+    tobeShared = "the brown fox jumps over the lazy dog"
+      .repeat(5).join(";")
 
   test "can create empty excel and sheet":
     (excel, sheet1) = newExcel()
@@ -61,6 +65,10 @@ suite "Excelin unit test":
     row1["F"] = row1cellF
     row1["H"] = row1cellH
 
+  test "can create shared strings for long size (more than 64 chars)":
+    row1["J"] = tobeShared
+    row1["K"] = tobeShared
+
   test "can fetch values inputted from row 1":
     check row1["A", string] == row1cellA
     check row1.getCell[:uint]("C") == row1cellC.uint
@@ -68,6 +76,10 @@ suite "Excelin unit test":
     check row1["B", DateTime].toTime.toUnix == row1cellB.toTime.toUnix
     check row1["B", Time].toUnix == row1cellB.toTime.toUnix
     check row1["E", float] == row1cellE
+    checkpoint "fetching other values"
+    check row1["J", string] == tobeShared
+    check row1["K", string] == tobeShared
+    checkpoint "fetching shared string done"
 
   test "can fetch with custom converter":
     let dt = row1.getCell[:DateTime]("D",
@@ -139,3 +151,11 @@ suite "Excelin unit test":
     check row1G["B", DateTime].toTime.toUnix == row1cellB.toTime.toUnix
     check row1G["B", Time].toUnix == row1cellB.toTime.toUnix
     check row1G["E", float] == row1cellE
+    check row1G["J", string] == tobeShared
+    check row1G["K", string] == tobeShared
+
+  test "can convert column string to int vice versa":
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      check cn[0].toNum == cn[1]
+      check cn[1].toCol == cn[0]

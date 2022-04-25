@@ -1,3 +1,11 @@
+* 0.3.0:
+    * Export helpers `toCol` and `toNum`.
+    * Implement row cells fill whether sparse or filled.
+    * Modify to make empty.xlsx template smaller.
+    * Make `unixSep` template as private as it should.
+    * Enhance checking/adding shared string instead of adding it continuously.
+    * Make string entry as inline string when it's small string, less than 64 characters.
+    * Enforce column to be upper case when accessing cell in row.
 * 0.2.2:
     * Add `getCellIt` to access the string value directly as `it`.
     * Change temporary file name and hashed it when calling `$`.
