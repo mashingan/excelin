@@ -78,8 +78,11 @@ row1["H"] = -111
 
 # notice above example we arbitrarily chose the column and by current implementation
 # Excel data won't add unnecessary empty cells. In other words, sparse row cells.
-# At later, we will add the implementation to fill all cells because it will be
-# more efficient when working with large columns.
+# When we're sure working with large cells and often have to update its cell value,
+# we can supply the optional argument `cfFilled` to make our cells in the row filled
+# preemptively.
+
+discard sheet.row(2, cfFilled) # default is cfSparse
  
 # now let's fetch the data we inputted
 doAssert row1["A", string] == "this is string"
