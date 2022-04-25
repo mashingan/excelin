@@ -187,7 +187,15 @@ proc fetchCell(body: XmlNode, colrow: string): int =
     if colrow == n.attr "r": return count
   -1
 
-proc toNum(col: string): int =
+proc toNum*(col: string): int =
+  ## Convert our column string to its numeric representation.
+  ## Make sure the supplied column is already in upper case.
+  ## 0-based e.g.: "A".toNum == 0, "C".toNum == 2
+  ## Complement of `toCol <#toCol,Natural,string>`_.
+  runnableExamples:
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      doAssert cn[0].toNum == cn[1]
   for i in countdown(col.len-1, 0):
     let cnum = col[col.len-i-1].ord - 'A'.ord + 1
     if i == 0: result += cnum
@@ -195,7 +203,15 @@ proc toNum(col: string): int =
   dec result
 
 let atoz = toSeq('A'..'Z')
-proc toCol(n: Natural): string =
+
+proc toCol*(n: Natural): string =
+  ## Convert our numeric column to string representation.
+  ## The numeric should be 0-based, e.g.: 0.toCol == "A", 25.toCol == "Z"
+  ## Complement of `toNum <#toNum,string,int>`_.
+  runnableExamples:
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    for cn in colnum:
+      doAssert cn[1].toCol == cn[0]
   if n < atoz.len:
     return $atoz[n]
   var count = n

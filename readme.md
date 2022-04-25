@@ -18,6 +18,7 @@ from std/times import now, DateTime, Time, toTime, parse, Month,
 from std/strformat import fmt
 from std/sugar import `->`, `=>`, dump
 from std/strscans import scanf
+from std/sequtils import toSeq
 import excelin
 
 # `newExcel` returns Excel and Sheet object to immediately work
@@ -132,6 +133,19 @@ let fexIt = row1.getCellIt[:ForExample]("F", (
     discard scanf(it, "[$w:$i]", result.a, result.b)))
 doAssert fexIt.a == "A"
 doAssert fexIt.b == 200
+
+# We also provide helpers `toNum` and `toCol` to convert string-int column
+# representation. Usually when we're working with array/seq of data,
+# we want to access the column string but we only have the int, so this
+# helpers will come handy.
+
+let row11 = sheet.row 11
+for i in 0 ..< 10: # both toCol and toNum is starting from zero.
+    row11[i.toCol] = i.toCol
+    
+# and let's see whether it's same or not
+for i, c in toSeq['A'..'J']:
+    doAssert row11[$c, string].toNum == i
 
 
 # finally, we have 2 options to access the binary Excel data, using `$` and
