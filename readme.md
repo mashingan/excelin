@@ -10,6 +10,11 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 
 # Examples
 
+* [Common operations](#common-operations)
+* [Working with sheets](#working-with-sheets)
+* [Cell formula](#cell-formula)
+
+## Common operations
 All operations available working with Excel worksheet are illustrated in below:
 
 ```nim
@@ -161,6 +166,11 @@ excel.writeFile("to/any/path/we/choose.xlsx")
 # provide the `$` to get the raw data from built zip directly.
 ```
 
+[Back to examples list](#examples)
+
+
+## Working-with-sheets
+
 Another example here we work directly with `Sheet` instead of the `Rows` and/or cells.
 
 ```nim
@@ -238,6 +248,67 @@ excel.writeFile ("many-sheets.xlsx")
 # format {sheetName}-{numDuplicated}.
 # We can replicate that behaviour too but currently we support duplicate sheet name.
 ```
+
+[Back to examples list](#examples)
+
+## Cell Formula
+
+We support rudimentary of filling and fetching cell with format of Formula.
+
+```nim
+from std/math import cbrt
+from excelin import
+    newExcel,   # the usual for creating empty excel
+    row,        # for fetching row from sheet
+    toCol,      # to get string column from integer
+    Formula,    # the cell type object this example for.
+    `[]=`,      # fill cell
+    `[]`,       # fetch cell
+    writeFile,  # finally, to write to file
+    
+    items       # this pecualiar `items` which actually `xmltree.items`
+                # this is called from generic hence it needs to be accessed
+                # even though it runs in proc instead of template.
+
+let (excel, sheet) = newExcel()
+let row1 = sheet.row 1
+
+# Let's setup some simple data in a row 1 with col A..J simple seq of int
+
+var sum = 0 # this will be our calculated result
+for i in 0 .. 9:
+    row1[i.toCol] = i
+    sum += i
+
+# Here, we simply fill A1 = 0, B1 = 1, ... J1 = 9
+# while the equation is to sum values from cell A to J in K1.
+# Additionally, we'll add another example which depend
+# on another formula cell with equation CUBE(K1) in L1
+
+row1[10.toCol] = Formula(equation: "SUM(A1:J1)", valueStr: $sum)
+let cubesum = cbrt(float64 sum)
+row1[11.toCol] = Formula(equation: "CUBE(K1)", valueStr: $cubesum)
+
+# Formula has two public fields, equation which is the formula string itself
+# and valueStr, the string of calcluated value.
+# Let's fetch and check it
+
+let fmr = row1["k", Formula]
+doAssert fmr.equation == "SUM(A1:J1)"
+doAssert fmr.valueStr == "45"
+let f1l = row1["l", Formula]
+doAssert f1l.equation == "CUBE(K1)"
+doAssert f1l.valueStr == $cubesum
+
+# As this is rudimentary support for formula format, the equation itself
+# is simply string that we'll fill to cell, and the value is something
+# that we calculate manually on our end.
+
+# lastly, as usual, let's write to file and check it other excel viewer apps.
+excel.writeFile "excelin-sum-example.xlsx"
+```
+
+[Back to examples list](#examples)
 
 # Install
 
