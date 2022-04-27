@@ -6,6 +6,7 @@ from std/strscans import scanf
 from std/os import fileExists
 from std/sequtils import repeat
 from std/strutils import join
+from std/math import cbrt
 import std/unittest
 
 import excelin
@@ -103,6 +104,34 @@ suite "Excelin unit test":
       discard it.scanf("[$w:$i]", result.a, result.b)))
     check fex2.a == fexob.a
     check fex2.b == fexob.b
+
+  test "can fill and fetch cell with formula format":
+    let row3 = sheet1.row 3
+    let row4 = sheet1.row(4, cfFilled)
+    var sum3, sum4: int
+    for i in 0 .. 9:
+      let col = i.toCol
+      row3[col] = i
+      row4[col] = i
+      sum3 += i
+      sum4 += i
+    row3[10.toCol] = Formula(equation: "SUM(A3:J3)", valueStr: $sum3)
+    row4["K"] = Formula(equation: "SUM(A4:J4)", valueStr: $sum4)
+    let f3 = row3["K", Formula]
+    let f4 = row4[10.toCol, Formula]
+    check f3.equation == "SUM(A3:J3)"
+    check f4.equation == "SUM(A4:J4)"
+    check f3.valueStr == f4.valueStr
+
+    let cube3 = cbrt(float64 sum3)
+    let cube4 = cbrt(float64 sum4)
+    row3["L"] = Formula(equation: "CUBE(K3)", valueStr: $cube3)
+    row4["L"] = Formula(equation: "CUBE(K4)", valueStr: $cube4)
+    let fl3 = row3["L", Formula]
+    let fl4 = row4["L", Formula]
+    check fl3.equation == "CUBE(K3)"
+    check fl4.equation == "CUBE(K4)"
+    check fl3.valueStr == fl4.valueStr
 
   test "can give the result to string and write to file":
     excel.writeFile generatefname

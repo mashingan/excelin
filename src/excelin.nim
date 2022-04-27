@@ -92,6 +92,14 @@ type
     cfSparse = "sparse"
     cfFilled = "filled"
 
+  Formula* = object
+    ## Object exclusively working with formula in a cell.
+    ## The equation is simply formula representative and
+    ## the valueStr is the value in its string format,
+    ## which already calculated beforehand.
+    equation*: string
+    valueStr*: string
+
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
@@ -221,13 +229,16 @@ proc toCol*(n: Natural): string =
     count = count mod atoz.len
   result &= atoz[count]
 
-proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: XmlNode = nil) =
+proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[XmlNode] = @[]) =
   let rn = row.body.attr "r"
   let sparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
-  let innerval = if altnode != nil: altnode else: newText text
-  let cnode = <>c(r=cellpos, t=cellType, s="0", newXmlTree(valelem, [innerval]))
+  let innerval = if altnode.len > 0: altnode else: @[newText text]
+  let cnode = if cellType != "" and valelem != "":
+                <>c(r=cellpos, s="0", t=cellType, newXmlTree(valelem, innerval))
+              elif valelem != "": <>c(r=cellpos, s="0", newXmlTree(valelem, innerval))
+              else: newXmlTree("c", innerval, {"r": cellpos}.toXmlAttributes)
   if not sparse:
     let cellsTotal = row.body.len
     let colnum = toNum col
@@ -280,7 +291,7 @@ proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
   ## is following the Excel convention starting from A -  Z, AA - AZ ...
   if s.len < 64:
-    row.addCell col, "inlineStr", s, "is", <>t(newText s)
+    row.addCell col, "inlineStr", s, "is", @[<>t(newText s)]
     row.sheet.modifiedAt
     return
   row.addSharedString(col, s)
@@ -300,6 +311,11 @@ proc `[]=`*(row: Row, col: string, d: DateTime | Time) =
   ## will be in string format of `yyyy-MM-dd'T'HH:mm:ss'.'fffzz` e.g.
   ## `2200-10-01T11:22:33.456-03`.
   row.addCell col, "d", d.format(datefmt)
+  row.sheet.modifiedAt
+
+proc `[]=`*(row: Row, col: string, f: Formula) =
+  row.addCell col, "", "", "",
+    @[<>f(newText f.equation), <>v(newText f.valueStr)]
   row.sheet.modifiedAt
 
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
@@ -377,6 +393,9 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     try: result = parse(t, datefmt) except: discard
   elif R is Time:
     try: result = parse(t, datefmt).toTime except: discard
+  elif R is Formula:
+    result = Formula(equation: v.child("f").innerText,
+      valueStr: v.child("v").innerText)
   else:
     discard
 
@@ -727,7 +746,14 @@ when isMainModule:
     let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
     row5["B"] = tobeShared
     row5["c"] = tobeShared
-    #dump sheet.body
+    let row11 = sheet.row 11
+    var sum = 0
+    for i in 0 .. 9:
+      row11[i.toCol] = i
+      sum += i
+    row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
+    dump row11[10.toCol, Formula]
+    dump sheet.body
     #dump empty.sharedStrings
     #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"

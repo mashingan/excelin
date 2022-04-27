@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,21 +44,29 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -73,6 +80,8 @@ function main() {
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; d: DateTime | Time)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2C">excelin: `[]=`(row: Row; col: string; d: DateTime | Time)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; b: bool)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2Cbool">excelin: `[]=`(row: Row; col: string; b: bool)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="excelin: `[]=`(row: Row; col: string; f: Formula)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2CFormula">excelin: `[]=`(row: Row; col: string; f: Formula)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; n: SomeNumber)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber">excelin: `[]=`(row: Row; col: string; n: SomeNumber)</a></li>
           <li><a class="reference external"
@@ -119,6 +128,10 @@ function main() {
 <dt><a name="excelinVersion" href="#excelinVersion"><span>excelinVersion:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: excelinVersion" href="excelin.html#excelinVersion">excelin: excelinVersion</a></li>
+          </ul></dd>
+<dt><a name="Formula" href="#Formula"><span>Formula:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: Formula" href="excelin.html#Formula">excelin: Formula</a></li>
           </ul></dd>
 <dt><a name="getCell" href="#getCell"><span>getCell:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -199,7 +212,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-04-27 19:43:58 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-04-27 22:30:51 UTC</small>
       </div>
     </div>
   </div>
