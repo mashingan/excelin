@@ -1,3 +1,5 @@
+* 0.3.1:
+    * Support fetching filled cells row.
 * 0.3.0:
     * Export helpers `toCol` and `toNum`.
     * Implement row cells fill whether sparse or filled.

@@ -43,7 +43,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.0"
+  excelinVersion* = "0.3.1"
 
 type
   Excel* = ref object
@@ -331,15 +331,20 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## any ref object will return nil or for object will get the object with its field
   ## filled with default values.
   let rnum = row.body.attr "r"
+  let isSparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
   var isInnerStr = false
   let v = block:
     var x: XmlNode
-    for node in row.body:
-      if fmt"{col}{rnum}" == node.attr "r":
-        isInnerStr = "inlineStr" == node.attr "t"
-        x = node
-        break
+    let colnum = col.toNum
+    if not isSparse and colnum < row.body.len:
+      x = row.body[colnum]
+    else:
+      for node in row.body:
+        if fmt"{col}{rnum}" == node.attr "r":
+          isInnerStr = "inlineStr" == node.attr "t"
+          x = node
+          break
     x
   if v == nil: return
   when R is SomeSignedInt: result = int.low
