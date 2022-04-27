@@ -1,3 +1,6 @@
+* 0.3.1:
+    * Add support for filling and fetching formula cell.
+    * Support fetching filled cells row.
 * 0.3.0:
     * Export helpers `toCol` and `toNum`.
     * Implement row cells fill whether sparse or filled.
