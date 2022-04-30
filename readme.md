@@ -304,7 +304,16 @@ doAssert f1l.valueStr == $cubesum
 # is simply string that we'll fill to cell, and the value is something
 # that we calculate manually on our end.
 
+# What if we fill another formula with its equation only? The value is simply
+# nothing since we didn't fill its value.
+
+let row1["m"] = Formula(equation: "L1")
+let f1m = row1["m", Formula]
+doAssert f1m.equation == "L1"
+doAssert f1m.valueStr == ""
+
 # lastly, as usual, let's write to file and check it other excel viewer apps.
+# note for cell M1 as we supplied empty value in above.
 excel.writeFile "excelin-sum-example.xlsx"
 ```
 
