@@ -1,3 +1,5 @@
+* 0.3.2:
+    * Fix row assignment when now row availables in new sheet.
 * 0.3.1:
     * Add support for filling and fetching formula cell.
     * Support fetching filled cells row.

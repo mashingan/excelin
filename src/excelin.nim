@@ -43,7 +43,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.1"
+  excelinVersion* = "0.3.2"
 
 type
   Excel* = ref object
@@ -163,12 +163,7 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## or will return an existing one.
   let sdata = s.body.getSheetData
   let rowsExists = sdata.len
-  if rowsExists < 1:
-    result = Row(sheet: s, body: <>row(r= "1", hidden="false",
-      collapsed="false", cellfill= $fill))
-    sdata.add result.body
-    return
-  elif rowNum > rowsExists:
+  if rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
       sdata.add <>row(r= $i, hidden="false", collapsed="false", cellfill= $fill)
   else:

@@ -188,3 +188,10 @@ suite "Excelin unit test":
     for cn in colnum:
       check cn[0].toNum == cn[1]
       check cn[1].toCol == cn[0]
+
+  test "can fetch arbitrary row number in new/empty sheet":
+    let (_, sheet) = newExcel()
+    let row2 = sheet.row 2
+    check row2.rowNum == 2
+    let row3 = sheet.row(3, cfFilled)
+    check row3.rowNum == 3
