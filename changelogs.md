@@ -1,3 +1,5 @@
+* 0.3.3:
+    * Fix toCol and toNum when the cell number or col string is more than 701 or "ZZ".
 * 0.3.2:
     * Fix row assignment when now row availables in new sheet.
 * 0.3.1:
