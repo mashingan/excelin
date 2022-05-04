@@ -25,6 +25,7 @@ toCol	excelin.html#toCol,Natural	excelin: toCol(n: Natural): string
 getCell	excelin.html#getCell,Row,string,typeof(nil)	excelin: getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R	
 getCellIt	excelin.html#getCellIt.t,Row,string,untyped	excelin: getCellIt[R](r: Row; col: string; body: untyped): untyped	
 `[]`	excelin.html#[],Row,string,typedesc	excelin: `[]`(r: Row; col: string; ret: typedesc): ret:type	
+clear	excelin.html#clear,Row	excelin: clear(row: Row)	
 addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
 deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
