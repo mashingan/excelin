@@ -1,3 +1,5 @@
+* 0.3.5:
+    * Fix unreaded .rels when reading excel.
 * 0.3.4:
     * Assign default values first when fetching cell data.
     * Remove unnecessary checking index 0 when converting col string to number in toNum.

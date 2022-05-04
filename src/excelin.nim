@@ -45,7 +45,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.4"
+  excelinVersion* = "0.3.5"
 
 type
   Excel* = ref object
@@ -626,7 +626,7 @@ proc readExcel*(path: string): Excel =
       result.workbook.rels = fileRep path
     elif wbpath.endsWith "sharedStrings.xml":
       result.sharedStrings = fileRep path
-    elif wbpath.endsWith(".xml"): # any others xml files
+    elif wbpath.endsWith(".xml") or wbpath.endsWith(".rels"): # any others xml/rels files
       let (_, f) = splitPath wbpath
       result.otherfiles[f] = path.fileRep
   if not found:
