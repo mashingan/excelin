@@ -1,3 +1,5 @@
+* 0.3.6:
+    * Fix unreaded embed files when reading excel.
 * 0.3.5:
     * Fix unreaded .rels when reading excel.
 * 0.3.4:

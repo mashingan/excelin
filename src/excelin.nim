@@ -45,7 +45,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.5"
+  excelinVersion* = "0.3.6"
 
 type
   Excel* = ref object
@@ -57,6 +57,7 @@ type
     sheets: TableRef[FilePath, Sheet]
     sharedStrings: FileRep
     otherfiles: TableRef[string, FileRep]
+    embedfiles: TableRef[string, EmbedFile]
     sheetCount: int
 
   InternalBody = object of RootObj
@@ -85,6 +86,7 @@ type
     sheet: Sheet
   FilePath = string
   FileRep = (FilePath, XmlNode)
+  EmbedFile = (FilePath, string)
 
   ExcelError* = object of CatchableError
     ## Error when the Excel file read is invalid, specifically Excel file
@@ -604,6 +606,7 @@ proc readExcel*(path: string): Excel =
   var found = false
   result.sheets = newTable[string, Sheet]()
   result.otherfiles = newTable[string, FileRep]()
+  result.embedfiles = newTable[string, EmbedFile]()
   for node in result.content.findAll("Override"):
     let wbpath = node.attr "PartName"
     if wbpath == "": continue
@@ -629,6 +632,9 @@ proc readExcel*(path: string): Excel =
     elif wbpath.endsWith(".xml") or wbpath.endsWith(".rels"): # any others xml/rels files
       let (_, f) = splitPath wbpath
       result.otherfiles[f] = path.fileRep
+    else:
+      let (_, f) = splitPath wbpath
+      result.embedfiles[f] = (path, reader.extractFile path)
   if not found:
     raise newException(ExcelError, "No workbook found, invalid excel file")
   if result.sharedStrings[1] == nil:
@@ -678,6 +684,11 @@ proc writeFile*(e: Excel, targetpath: string) =
     p.addContents $s.body
   for rep in e.otherfiles.values:
     rep[0].addContents $rep[1]
+  for embed in e.embedfiles.values:
+    archive.contents[embed[0]] = ArchiveEntry(
+      contents: embed[1],
+      lastModified: lastmod,
+    )
 
   archive.writeZipArchive targetpath
 
