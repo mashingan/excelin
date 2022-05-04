@@ -26,6 +26,7 @@ from std/strtabs import `[]=`
 from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
+from std/math import `^`
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -43,7 +44,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.2"
+  excelinVersion* = "0.3.3"
 
 type
   Excel* = ref object
@@ -196,13 +197,14 @@ proc toNum*(col: string): int =
   ## 0-based e.g.: "A".toNum == 0, "C".toNum == 2
   ## Complement of `toCol <#toCol,Natural,string>`_.
   runnableExamples:
-    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701), ("AAA", 702),
+      ("AAB", 703)]
     for cn in colnum:
       doAssert cn[0].toNum == cn[1]
   for i in countdown(col.len-1, 0):
     let cnum = col[col.len-i-1].ord - 'A'.ord + 1
     if i == 0: result += cnum
-    else: result += cnum * 26
+    else: result += cnum * (26 ^ i)
   dec result
 
 let atoz = toSeq('A'..'Z')
@@ -212,7 +214,8 @@ proc toCol*(n: Natural): string =
   ## The numeric should be 0-based, e.g.: 0.toCol == "A", 25.toCol == "Z"
   ## Complement of `toNum <#toNum,string,int>`_.
   runnableExamples:
-    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
+    let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701), ("AAA", 702),
+      ("AAB", 703)]
     for cn in colnum:
       doAssert cn[1].toCol == cn[0]
   if n < atoz.len:
@@ -220,7 +223,10 @@ proc toCol*(n: Natural): string =
   var count = n
   while count >= atoz.len:
     let c = count div atoz.len
-    result &= atoz[c-1]
+    if c >= atoz.len:
+      result &= (c-1).toCol
+    else:
+      result &= atoz[c-1]
     count = count mod atoz.len
   result &= atoz[count]
 
