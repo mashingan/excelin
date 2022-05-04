@@ -88,7 +88,11 @@ row1["H"] = -111
 # we can supply the optional argument `cfFilled` to make our cells in the row filled
 # preemptively.
 
-discard sheet.row(2, cfFilled) # default is cfSparse
+let row2 = sheet.row(2, cfFilled) # default is cfSparse
+clear row2
+
+# While example above the new row is already empty by default,
+# we can clear all cells in the row with `clear` proc.
  
 # now let's fetch the data we inputted
 doAssert row1["A", string] == "this is string"

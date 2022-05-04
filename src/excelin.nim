@@ -19,7 +19,8 @@ from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
 from std/strformat import fmt
-from std/times import DateTime, Time, now, format, toTime, toUnixFloat, parse
+from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
+  parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
 from std/strtabs import `[]=`
@@ -44,7 +45,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.3"
+  excelinVersion* = "0.3.4"
 
 type
   Excel* = ref object
@@ -203,8 +204,7 @@ proc toNum*(col: string): int =
       doAssert cn[0].toNum == cn[1]
   for i in countdown(col.len-1, 0):
     let cnum = col[col.len-i-1].ord - 'A'.ord + 1
-    if i == 0: result += cnum
-    else: result += cnum * (26 ^ i)
+    result += cnum * (26 ^ i)
   dec result
 
 let atoz = toSeq('A'..'Z')
@@ -347,6 +347,12 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## for the conversion otherwise it will return the default value, for example
   ## any ref object will return nil or for object will get the object with its field
   ## filled with default values.
+  when R is SomeSignedInt: result = R.low
+  elif R is SomeUnsignedInt: result = R.high
+  elif R is SomeFloat: result = NaN
+  elif R is DateTime: result = fromUnix(0).local
+  elif R is Time: result = fromUnix 0
+  else: discard
   let rnum = row.body.attr "r"
   let isSparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
@@ -364,10 +370,6 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
           break
     x
   if v == nil: return
-  when R is SomeSignedInt: result = int.low
-  elif R is SomeUnsignedInt: result = uint.high
-  elif R is SomeFloat: result = NaN
-  else: discard
   let t = v.innerText
   template fetchShared(t: string): untyped =
     let refpos = try: parseInt(t) except: -1
@@ -430,6 +432,9 @@ proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   ## Other than above mentioned types, see `getCell proc<#getCell,Row,string,typeof(nil)>`_
   ## for supplying the converting closure for getting the value.
   getCell[ret](r, col)
+
+proc clear*(row: Row) = row.body.clear
+  ## Clear all cells in the row.
 
 # when adding new sheet, need to update workbook to add
 # ✓ to sheets,

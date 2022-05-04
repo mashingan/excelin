@@ -1,7 +1,12 @@
+* 0.3.4:
+    * Assign default values first when fetching cell data.
+    * Remove unnecessary checking index 0 when converting col string to number in toNum.
+    * Add `clear` to remove all existing cells.
+    * Fix default value for `getCell` when fetching `DateTime` or `Time`
 * 0.3.3:
     * Fix toCol and toNum when the cell number or col string is more than 701 or "ZZ".
 * 0.3.2:
-    * Fix row assignment when now row availables in new sheet.
+    * Fix row assignment when no rows are available in new sheet.
 * 0.3.1:
     * Add support for filling and fetching formula cell.
     * Support fetching filled cells row.

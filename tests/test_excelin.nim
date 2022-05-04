@@ -7,6 +7,12 @@ from std/os import fileExists
 from std/sequtils import repeat
 from std/strutils import join
 from std/math import cbrt
+
+const v15Up = NimMajor >= 1 and NimMinor >= 5
+when v15up:
+  from std/math import isNaN
+else:
+  from std/math import classify, FloatClass
 import std/unittest
 
 import excelin
@@ -196,3 +202,19 @@ suite "Excelin unit test":
     check row2.rowNum == 2
     let row3 = sheet.row(3, cfFilled)
     check row3.rowNum == 3
+
+  test "can clear out all cells in row":
+    clear row1
+    check row1["A", string] == ""
+    check row1.getCell[:uint]("C") == uint.high
+    check row1["H", int] == int.low
+    check row1["B", DateTime].toTime.toUnix == 0
+    check row1["B", Time].toUnix == 0
+    when v15up:
+      check row1["E", float].isNaN
+    else:
+      check row1["E", float].classify == fcNan
+    checkpoint "fetching other values"
+    check row1["J", string] == ""
+    check row1["K", string] == ""
+    checkpoint "fetching shared string done"
