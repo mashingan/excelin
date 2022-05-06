@@ -1427,5 +1427,52 @@ when isMainModule:
   else:
     echo "sheet is nil"
 
-  #echo $empty.workbook.body
-  dump empty.sheetNames
+  {.hint[XDeclaredButNotUsed]:off.}
+
+  proc autofiltertest =
+    proc populateRow(row: Row, col, cat: string, data: array[3, float]) =
+      let startcol = col.toNum + 1
+      row[col] = cat
+      var sum = 0.0
+      for i, d in data:
+        row[(startcol+i).toCol] = d
+        sum += d
+      let rnum = row.rowNum
+      let eqrange = fmt"SUM({col}{rnum}:{(startcol+data.len-1).toCol}{rnum})" 
+      dump eqrange
+      row[(startcol+data.len).toCol] = Formula(equation: eqrange, valueStr: $sum)
+    let (excel, sheet) = newExcel()
+    let row5 = sheet.row 5
+    let startcol = "D".toNum
+    for i, s in ["Category", "Num1", "Num2", "Num3", "Total"]:
+      row5[(startcol+i).toCol] = s
+    let row6 = sheet.row 6
+    row6.populateRow("D", "A", [0.18460660235998017, 0.93463071023892952, 0.58647760893211043])
+    sheet.row(7).populateRow("D", "A", [0.50425224796279555, 0.25118866081991786, 0.26918159410869791])
+    sheet.row(8).populateRow("D", "A", [0.6006019062877066, 0.18319235857964333, 0.12254334000604317])
+    sheet.row(9).populateRow("D", "A", [0.78015011938458589, 0.78159963723670689, 6.7448346870105036E-2])
+    sheet.row(10).populateRow("D", "B", [0.63608141933645479, 0.35635845012920608, 0.67122053637107193])
+    sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
+
+    let autof = <>autoFilter(ref="D5:H11")
+    #autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
+    #[
+    autof.add <>filterColumn(colId="1",
+      newXmlTree("customFilters", [
+        <>costumFilter(operator="greaterThan", val="0"),
+        <>costumFilter(operator="lessThan", val="0.7"),
+      ], {"and": $true}.toXmlAttributes))
+    ]#
+    autof.add <>filterColumn(colId="1",
+      newXmlTree("customFilters", [
+        <>costumFilter(operator="greaterThan", val="0"),
+      ], {"and": $true}.toXmlAttributes))
+    autof.add <>filterColumn(colId="2",
+      newXmlTree("customFilters", [
+        <>costumFilter(operator="lessThan", val="0.7"),
+      ], {"and": $true}.toXmlAttributes))
+    sheet.body.add autof
+    dump sheet.body
+    excel.writeFile "generated-autofilter.xlsx"
+
+  autofiltertest()

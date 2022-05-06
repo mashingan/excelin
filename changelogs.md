@@ -1,6 +1,8 @@
 * 0.4.2:
-    * Add API to set ranges to sheet.
     * Add `createdAt` to set excel creation date properties.
+    * wip; Add `autoFilter` in the sheet.
+    * Add API to set ranges to sheet.
+    * add `createdAt` to set excel creation date properties.
 * 0.4.1:
     * Add `shareStyle` API for easy referring the same style.
     * Add `copyStyle` API for easy copying the same style.
