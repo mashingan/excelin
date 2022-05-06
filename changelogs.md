@@ -1,5 +1,6 @@
 * 0.3.7:
-    * Fix created properties when calling newExcel
+    * Change internal shared strings using tables.
+    * Fix created properties when calling newExcel.
 * 0.3.6:
     * Fix unreaded embed files when reading excel.
 * 0.3.5:

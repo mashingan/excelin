@@ -55,7 +55,7 @@ type
     rels: XmlNode
     workbook: Workbook
     sheets: TableRef[FilePath, Sheet]
-    sharedStrings: FileRep
+    sharedStrings: SharedStrings
     otherfiles: TableRef[string, FileRep]
     embedfiles: TableRef[string, EmbedFile]
     sheetCount: int
@@ -75,7 +75,6 @@ type
     ## The main object that will be used most of the time for many users.
     ## This object will represent a sheet in Excel file such as adding row
     ## getting row, and/or adding cell directly.
-    sharedStrings: XmlNode
     parent: Excel
     rid: string
     privName: string
@@ -87,6 +86,12 @@ type
   FilePath = string
   FileRep = (FilePath, XmlNode)
   EmbedFile = (FilePath, string)
+
+  SharedStrings = ref object of InternalBody
+    path: string
+    strtables: TableRef[string, int]
+    count: Natural
+    unique: Natural
 
   ExcelError* = object of CatchableError
     ## Error when the Excel file read is invalid, specifically Excel file
@@ -263,32 +268,20 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
     row.body.insert cnode, nodepos
 
 proc addSharedString(r: Row, col, s: string) =
-  var
-    pos = 0
-    found = false
-  let sharedStr = r.sheet.sharedStrings
-  for ss in sharedStr:
-    inc pos
-    if s == ss.innerText:
-      found = true
-      break
-
-  var
-    count = try: parseInt(sharedStr.attr "count") except: 0
-    uniq = try: parseInt(sharedStr.attr "uniqueCount") except: 0
-
-  inc count
-  if not found:
-    inc uniq
-    sharedStr.add <>si(newXmlTree("t",
-      [newText s], {"xml:space": "preserve"}.toXmlAttributes))
+  let sstr = r.sheet.parent.sharedStrings
+  var pos = sstr.count
+  if  s notin sstr.strtables:
+    inc sstr.unique
+    sstr.body.add <>si(newXmlTree("t", [newText s], {"xml:space": "preserve"}.toXmlAttributes))
+    sstr.strtables[s] = sstr.count
   else:
-    dec pos # shared string 0-based
+    pos = sstr.strtables[s]
 
+  inc sstr.count
   r.addCell col, "s", $pos
-  sharedStr.attrs = {"count": $count,
-    "uniqueCount": $uniq, "xmlns": mainns}.toXmlAttributes
+  sstr.body.attrs = {"count": $sstr.count, "uniqueCount": $sstr.unique, "xmlns": mainns}.toXmlAttributes
   r.sheet.modifiedAt
+
 
 proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
@@ -376,7 +369,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   template fetchShared(t: string): untyped =
     let refpos = try: parseInt(t) except: -1
     if refpos < 0: return
-    let tnode = row.sheet.sharedStrings[refpos]
+    let tnode = row.sheet.parent.sharedStrings.body[refpos]
     if tnode == nil: return
     tnode.innerText
   template retconv =
@@ -497,7 +490,6 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
-    sharedStrings: e.sharedStrings[1],
     parent: e,
     privName: name,
     rid: rid)
@@ -571,13 +563,15 @@ proc retrieveSheetsInfo(n: XmlNode): seq[XmlNode] =
 # ✓ add to package rels
 # ✓ update its path
 proc addSharedStrings(e: Excel) =
-  e.sharedStrings[0] = (e.workbook.path.parentDir / "sharedStrings.xml").unixSep
-  e.sharedStrings[1] = <>sst(xmlns=mainns, count="0", uniqueCount="0")
-  e.content.add <>Override(PartName="/" & e.sharedStrings[0],
+  let sstr = SharedStrings(strtables: newTable[string, int]())
+  sstr.path = (e.workbook.path.parentDir / "sharedStrings.xml").unixSep
+  sstr.body = <>sst(xmlns=mainns, count="0", uniqueCount="0")
+  e.content.add <>Override(PartName="/" & sstr.path,
     ContentType=spreadtypefmt % ["sharedStrings"])
   let relslen = e.workbook.rels[1].len
   e.workbook.rels[1].add <>Relationship(Target="sharedStrings.xml",
     Id=fmt"rId{relslen+1}", Type=relSharedStrScheme)
+  e.sharedStrings = sstr
 
 proc assignSheetInfo(e: Excel) =
   var mapRidName = initTable[string, string]()
@@ -589,6 +583,22 @@ proc assignSheetInfo(e: Excel) =
   for path, sheet in e.sheets:
     sheet.rid = mapFilenameRid[path.extractFilename]
     sheet.privName = mapRidName[sheet.rid]
+
+proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
+  result = SharedStrings(
+    path: path,
+    body: body,
+    count: try: parseInt(body.attr "count") except: 0,
+    unique: try: parseInt(body.attr "uniqueCount") except: 0,
+  )
+
+  var count = -1
+  result.strtables = newTable[string, int](body.len)
+  for node in body:
+    let tnode = node.child "t"
+    if tnode == nil: continue
+    inc count
+    result.strtables[tnode.innerText] = count
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -628,7 +638,7 @@ proc readExcel*(path: string): Excel =
     elif wbpath.endsWith "workbook.xml.rels":
       result.workbook.rels = fileRep path
     elif wbpath.endsWith "sharedStrings.xml":
-      result.sharedStrings = fileRep path
+      result.sharedStrings = path.readSharedStrings(extract path)
     elif wbpath.endsWith(".xml") or wbpath.endsWith(".rels"): # any others xml/rels files
       let (_, f) = splitPath wbpath
       result.otherfiles[f] = path.fileRep
@@ -637,11 +647,9 @@ proc readExcel*(path: string): Excel =
       result.embedfiles[f] = (path, reader.extractFile path)
   if not found:
     raise newException(ExcelError, "No workbook found, invalid excel file")
-  if result.sharedStrings[1] == nil:
+  if result.sharedStrings == nil:
     result.addSharedStrings
   result.assignSheetInfo
-  for _, s in result.sheets:
-    s.sharedStrings = result.sharedStrings[1]
 
   if "app.xml" in result.otherfiles:
     var (_, appnode) = result.otherfiles["app.xml"]
@@ -687,7 +695,7 @@ proc writeFile*(e: Excel, targetpath: string) =
   "_rels/.rels".addContents $e.rels
   e.workbook.path.addContents $e.workbook.body
   e.workbook.rels[0].addContents $e.workbook.rels[1]
-  e.sharedStrings[0].addContents $e.sharedStrings[1]
+  e.sharedStrings.path.addContents $e.sharedStrings.body
   for p, s in e.sheets:
     p.addContents $s.body
   for rep in e.otherfiles.values:
@@ -779,7 +787,7 @@ when isMainModule:
     row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
     dump row11[10.toCol, Formula]
     dump sheet.body
-    #dump empty.sharedStrings
+    #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
