@@ -253,11 +253,11 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
 
 proc addSharedString(r: Row, col, s: string) =
   let sstr = r.sheet.parent.sharedStrings
-  var pos = sstr.count
+  var pos = sstr.strtables.len
   if  s notin sstr.strtables:
     inc sstr.unique
     sstr.body.add <>si(newXmlTree("t", [newText s], {"xml:space": "preserve"}.toXmlAttributes))
-    sstr.strtables[s] = sstr.count
+    sstr.strtables[s] = pos
   else:
     pos = sstr.strtables[s]
 
