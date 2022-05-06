@@ -153,18 +153,6 @@ proc modifiedAt*[Node: Workbook|Sheet, T: DateTime | Time](w: Node, t: T = now()
   ## Update workbook or worksheet modification time.
   w.parent.modifiedAt t
 
-proc addRow*(s: Sheet): Row {.deprecated: "use `row(Sheet, Positive): Row` instead".} =
-  ## Add row directly from sheet after any existing row.
-  ## This will return a new pristine row to work further.
-  ## Row numbering is 1-based.
-  let sdata = s.body.getSheetData
-  let rowExists = sdata.len
-  result = Row(
-    sheet: s,
-    body: <>row(r= $(rowExists+1), hidden="false", collapsed="false"),
-  )
-  sdata.add result.body
-  s.modifiedAt
 
 proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## Add row by selecting which row number to work with.
@@ -183,10 +171,6 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   )
   sdata.add result.body
   s.modifiedAt
-
-proc addRow*(s: Sheet, rowNum: Positive): Row
-  {.deprecated: "use `row(Sheet, Positive): Row` instead".}
-  = s.row rowNum
 
 proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.

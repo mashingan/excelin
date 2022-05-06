@@ -1,4 +1,5 @@
 * 0.3.7:
+    * Remove deprecated, `addRow`.
     * Change internal shared strings using tables.
     * Fix created properties when calling newExcel.
 * 0.3.6:
