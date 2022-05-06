@@ -45,7 +45,7 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.6"
+  excelinVersion* = "0.3.7"
 
 type
   Excel* = ref object
@@ -663,6 +663,14 @@ proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
   ## The Sheet returned is by default has name "Sheet1" but user can
   ## use `name= proc<#name=,Sheet,string>`_ to change its name.
   let excel = readExcel emptyxlsx
+  const core = "core.xml"
+  if core in excel.otherfiles:
+    let (_, cxml) = excel.otherfiles[core]
+    if cxml != nil:
+      var created = cxml.child "dcterms:created"
+      clear created
+      created.add newText(now().format datefmt)
+
   (excel, excel.getSheet "Sheet1")
 
 proc writeFile*(e: Excel, targetpath: string) =
