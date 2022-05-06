@@ -1472,6 +1472,21 @@ when isMainModule:
         <>costumFilter(operator="lessThan", val="0.7"),
       ], {"and": $true}.toXmlAttributes))
     sheet.body.add autof
+    sheet.body.insert <>Dimension(ref="D5:H11"), 0
+    excel.otherfiles["sheet1.xml.rels"] = (
+      "xl/worksheets/_rels/sheet1.xml.rels",
+        <>Relationships(xmlns="http://schemas.openxmlformats.org/package/2006/relationships", 
+          <>Relationship(Id="rId1", Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+            Target="../drawings/drawing1.xml")),
+    )
+    excel.otherfiles["drawing1.xml"] = (
+      "xl/drawings/drawing1.xml",
+        newXmlTree("xdr:wsDr", [], {
+          "xmlns:a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+          "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+        }.toXmlAttributes),
+    )
+    sheet.body.add newXmlTree("drawing", [], {"r:id": "rId1"}.toXmlAttributes)
     dump sheet.body
     excel.writeFile "generated-autofilter.xlsx"
 
