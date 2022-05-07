@@ -318,20 +318,20 @@ proc hidden*(row: Row): bool =
   ## Check whether row is hidden
   "1" == row.body.attr "hidden"
 
-proc `height=`*(row: Row, height: Positive) =
-  ## Set the row height which sets its attribute to custom height
-  row.body.attrs["customHeight"] = "1"
-  row.body.attrs["ht"] = $height
+proc `height=`*(row: Row, height: Natural) =
+  ## Set the row height which sets its attribute to custom height.
+  ## If the height 0, will reset its custom height.
+  if height == 0:
+    for key in ["ht", "customHeight"]:
+      row.body.attrs.del key
+  else:
+    row.body.attrs["customHeight"] = "1"
+    row.body.attrs["ht"] = $height
 
-proc height*(row: Row): Positive =
-  ## Check the row height if it has custom height, if not will by default
-  ## returning Positive.high, highest value in Positive type
-  try: parseInt(row.body.attr "ht") except: Positive.high
-
-proc clearHeight*(row: Row) =
-  ## Remove any custom height format and its current height setting in row
-  for key in ["ht", "customHeight"]:
-    row.body.attrs.del key
+proc height*(row: Row): Natural =
+  ## Check the row height if it has custom height and its value set.
+  ## If not will by default return 0.
+  try: parseInt(row.body.attr "ht") except: 0
 
 proc `outlineLevel=`*(row: Row, level: Natural) =
   ## Set the outline level for the row. Level 0 means resetting the level.
