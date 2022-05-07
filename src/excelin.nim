@@ -23,7 +23,7 @@ from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/strtabs import `[]=`, pairs, newStringTable
+from std/strtabs import `[]=`, pairs, newStringTable, del
 from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
@@ -309,6 +309,43 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
 proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
   result = try: parseInt(r.body.attr "r") except: 1
+
+proc `hide=`*(row: Row, yes: bool) =
+  ## Hide the current row
+  row.body.attrs["hidden"] = $(if yes: 1 else: 0)
+
+proc hidden*(row: Row): bool =
+  ## Check whether row is hidden
+  "1" == row.body.attr "hidden"
+
+proc `height=`*(row: Row, height: Positive) =
+  ## Set the row height which sets its attribute to custom height
+  row.body.attrs["customHeight"] = "1"
+  row.body.attrs["ht"] = $height
+
+proc height*(row: Row): Positive =
+  ## Check the row height if it has custom height, if not will by default
+  ## returning Positive.high, highest value in Positive type
+  try: parseInt(row.body.attr "ht") except: Positive.high
+
+proc clearHeight*(row: Row) =
+  ## Remove any custom height format and its current height setting in row
+  for key in ["ht", "customHeight"]:
+    row.body.attrs.del key
+
+proc `outlineLevel=`*(row: Row, level: Natural) =
+  ## Set the outline level for the row. Level 0 means resetting the level.
+  if level == 0: row.body.attrs.del "outlineLevel"
+  else: row.body.attrs["outlineLevel"] = $level
+
+proc outlineLevel*(row: Row): Natural =
+  ## Check current row outline level. 0 when it's not outlined.
+  try: parseInt(row.body.attr "outlineLevel") except: 0
+
+proc `collapsed=`*(row: Row, yes: bool) =
+  ## Collapse the current row, usually used together with outline level.
+  if yes: row.body.attrs["collapsed"] = $1
+  else: row.body.attrs.del "collapsed"
 
 proc fetchCell(body: XmlNode, colrow: string): int =
   var count = -1
@@ -726,29 +763,15 @@ proc addEmptyStyles(e: Excel) =
   let relslen = e.workbook.rels[1].len
   e.workbook.rels[1].add <>Relationship(Target="styles.xml",
     Id=fmt"rId{relslen+1}", Type=relStylesScheme)
-  let defaultXf = <>xf(applyProtection="false", applyFont="false",
-      numFmtId="164", borderId="0", fillId="0",
-      fontId="0", applyBorder="false", <>alignment(shrinkToFit="false",
-      indent="0", vertical="bottom",
-      horizontal="general", textRotation="0", wrapText="false"),
-      <>protection(hidden="false", locked="true"))
   let styles = <>stylesSheet(xmlns=mainns,
     <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
-    <>fonts(count="1", <>font(<>sz(val="10"), <>name(val="Arial"),
-      <>family(val="2"))),
+    <>fonts(count= $0),
     <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
-    <>borders(diagonalUp="false", <>border(diagonalDown="false", count="1",
+    <>borders(count= $1, <>border(diagonalUp="false", diagonalDown="false",
       <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
-    <>cellStyleXfs(count="1", defaultXf),
-    <>cellXfs(count="1", defaultXf),
-    <>cellStyles(count="6",
-      <>cellStyle(xfId="0", name="Normal", builtinId="0"),
-      <>cellStyle(xfId="15", name="Comma", builtinId="3"),
-      <>cellStyle(xfId="16", name="Comma [0]", builtinId="6"),
-      <>cellStyle(xfId="17", name="Currency", builtinId="4"),
-      <>cellStyle(xfId="18", name="Currency [0]", builtinId="7"),
-      <>cellStyle(xfId="19", name="Percent", builtinId="5"),
-    ),
+    <>cellStyleXfs(count= $0),
+    <>cellXfs(count= $0),
+    <>cellStyles(count= $0),
     <>colors(<>indexedColors()))
   e.otherfiles["styles.xml"] = (path, styles)
 
@@ -884,6 +907,58 @@ proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   fills.add fillnode
   result[0] = count
 
+proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+  diagonalUp, diagonalDown = false): Border =
+  ## Border initializer. Use this instead of object constructor
+  ## to indicate style is ready to apply this border.
+  runnableExamples:
+    import std/with
+    import excelin
+
+    var b = border(diagonalUp = true)
+    with b:
+      start = borderProp(style = bsMedium) # border style
+      diagonalDown = true
+
+    doAssert b.diagonalUp
+    doAssert b.diagonalDown
+    doAssert b.start.style == bsMedium
+
+  Border(
+    edit: true,
+    start: start,
+    `end`: `end`,
+    top: top,
+    bottom: bottom,
+    vertical: vertical,
+    horizontal: horizontal,
+    diagonalUp: diagonalUp,
+    diagonalDown: diagonalDown)
+
+proc borderProp*(style = bsNone, color = ""): BorderProp =
+  BorderProp(edit: true, style: style, color: color)
+
+proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
+  Fill(edit: true, pattern: pattern, gradient: gradient)
+
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
+  PatternFill(edit: true, fgColor: fgColor, bgColor: "",
+    patternType: patternType)
+
+proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+  degree, left, right, top, bottom = 0.0): GradientFill =
+  GradientFill(
+    edit: true,
+    stop: stop,
+    `type`: `type`,
+    degree: degree,
+    left: left,
+    right: right,
+    top: top,
+    bottom: bottom,
+  )
+
+
 # To add style need to update:
 # ✗ numFmts
 # ✓ fonts
@@ -898,6 +973,8 @@ proc style*(row: Row, col: string,
   border = Border(),
   fill = Fill(),
   alignment: openarray[(string, string)] = []) =
+  ## Add style to cell in row by selectively providing the font, border, fill
+  ## and alignment styles.
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
@@ -1109,58 +1186,8 @@ proc `name=`*(s: Sheet, newname: string) =
       currattr["name"] = newname
       node.attrs = currattr
 
-proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
-  diagonalUp, diagonalDown = false): Border =
-  ## Border initializer. Use this instead of object constructor
-  ## to indicate style is ready to apply this border.
-  runnableExamples:
-    import std/with
-    import excelin
-
-    var b = border(diagonalUp = true)
-    with b:
-      start = borderProp(style = bsMedium) # border style
-      diagonalDown = true
-
-    doAssert b.diagonalUp
-    doAssert b.diagonalDown
-    doAssert b.start.style == bsMedium
-
-  Border(
-    edit: true,
-    start: start,
-    `end`: `end`,
-    top: top,
-    bottom: bottom,
-    vertical: vertical,
-    horizontal: horizontal,
-    diagonalUp: diagonalUp,
-    diagonalDown: diagonalDown)
-
-proc borderProp*(style = bsNone, color = ""): BorderProp =
-  BorderProp(edit: true, style: style, color: color)
-
-proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
-  Fill(edit: true, pattern: pattern, gradient: gradient)
-
-proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
-  PatternFill(edit: true, fgColor: fgColor, bgColor: "",
-    patternType: patternType)
-
-proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
-  degree, left, right, top, bottom = 0.0): GradientFill =
-  GradientFill(
-    edit: true,
-    stop: stop,
-    `type`: `type`,
-    degree: degree,
-    left: left,
-    right: right,
-    top: top,
-    bottom: bottom,
-  )
-
 when isMainModule:
+  import std/with
   let (empty, sheet) = newExcel()
 
   let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
@@ -1203,6 +1230,7 @@ when isMainModule:
       ),
       alignment = {"horizontal": "center", "vertical": "center",
         "wrapText": $true, "textRotation": $45})
+    row5.height = 200
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -1229,6 +1257,17 @@ when isMainModule:
       alignment = {"horizontal": "center", "vertical": "center", "wrapText": "true",
       "textRotation": "90"})
     row5.style "A", alignment = {"textRotation": $90} # edit existing style
+    template hideLevel(rnum, olevel: int): untyped =
+      let r = sheet.row rnum
+      with r:
+        hide = true
+        outlineLevel = olevel
+    13.hideLevel 3
+    14.hideLevel 2
+    15.hideLevel 1
+    16.hideLevel 1
+    sheet.row(16).collapsed = true
+
     #dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
