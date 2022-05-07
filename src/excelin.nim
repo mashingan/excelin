@@ -28,7 +28,7 @@ from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
 from std/math import `^`
-from std/colors import `$`, colWhite, colRed, colGreen
+from std/colors import `$`, colWhite, colRed, colGreen, colBlue
 
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
@@ -48,7 +48,7 @@ const
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.7"
+  excelinVersion* = "0.4.0"
 
 type
   Excel* = ref object
@@ -123,6 +123,28 @@ type
     family*: int
     charset*: int
     size*: Positive
+    bold*: bool
+    italic*: bool
+    strike*: bool
+    outline*: bool
+    shadow*: bool
+    condense*: bool
+    extend*: bool
+    color*: string
+    underline*: Underline
+    verticalAlign*: VerticalAlign
+
+  Underline* = enum
+    uNone = "none"
+    uSingle = "single"
+    uDouble = "double"
+    uSingleAccounting = "singleAccounting"
+    uDoubleAccounting = "doubleAccounting"
+
+  VerticalAlign* = enum
+    vaBaseline = "baseline"
+    vaSuperscript = "superscript"
+    vaSubscript = "subscript"
 
   Border* = object
     ## The object that will define the border we want to apply to cell.
@@ -735,34 +757,45 @@ template fetchStyles(row: Row): XmlNode =
   discard a
   r
 
-proc toXmlNode(f: Font): XmlNode =
-  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
-  if f.family >= 0:
-    result.add <>family(val= $f.family)
-  if f.charset >= 0:
-    result.add <>charset(val= $f.charset)
-
-proc addFont(styles: XmlNode, font: Font): (int, bool) =
-  var fontId = 0
-  var applyFont = false
-  if font.name != "":
-    let fontnode = font.toXmlNode
-    applyFont = true
-    var fonts = styles.child "fonts"
-    var fontCount = 0
-    if fonts == nil:
-      fonts = <>fonts(count= "1", fontnode)
-      styles.add fonts
-    else:
-      fontCount = try: parseInt(fonts.attr "count") except: 0
-      fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
-      fonts.add fontnode
-      fontId = fontCount
-  (fontId, applyFont)
-
 template retrieveColor(color: string): untyped =
   let r = if color.startsWith("#"): color[1..^1] else: color
   "FF" & r
+
+proc toXmlNode(f: Font): XmlNode =
+  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
+  template addElem(test, field: untyped): untyped =
+    if `test`:
+      result.add <>`field`(val= $f.`field`)
+
+  addElem f.family >= 0, family
+  addElem f.charset >= 0, charset
+  addElem f.strike, strike
+  addElem f.outline, outline
+  addElem f.shadow, shadow
+  addElem f.condense, condense
+  addElem f.extend, extend
+  if f.bold: result.add <>b(val= $f.bold)
+  if f.italic: result.add <>i(val= $f.italic)
+  if f.color != "": result.add <>color(rgb = retrieveColor(f.color))
+  result.add <>u(val= $f.underline)
+  result.add <>vertAlign(val= $f.verticalAlign)
+
+proc addFont(styles: XmlNode, font: Font): (int, bool) =
+  var fontId = 0
+  if font.name == "": return
+  let fontnode = font.toXmlNode
+  let applyFont = true
+  var fonts = styles.child "fonts"
+  var fontCount = 0
+  if fonts == nil:
+    fonts = <>fonts(count= "1", fontnode)
+    styles.add fonts
+  else:
+    fontCount = try: parseInt(fonts.attr "count") except: 0
+    fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+    fonts.add fontnode
+    fontId = fontCount
+  (fontId, applyFont)
 
 proc addBorder(styles: XmlNode, border: Border): (int, bool) =
   if not border.edit:
@@ -1157,7 +1190,10 @@ when isMainModule:
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
     row5.style("A",
-      Font(name: "DejaVu Sans Mono", size: 11, family: -1, charset: -1),
+      Font(name: "DejaVu Sans Mono", size: 11,
+        family: -1, charset: -1,
+        color: $colBlue,
+      ),
       border(
         top = borderProp(style = bsMedium, color = $colRed),
         bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
