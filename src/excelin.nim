@@ -587,28 +587,35 @@ proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
     result.strtables[tnode.innerText] = count
 
 proc addEmptyStyles(e: Excel) =
-  let path = "xl/styles.xml"
-  let abspath = "/" & path
-  e.content.add <>Override(PartName=abspath,
+  const path = "xl/styles.xml"
+  e.content.add <>Override(PartName="/" & path,
     ContentType=spreadtypefmt % ["styles"])
   let relslen = e.workbook.rels[1].len
   e.workbook.rels[1].add <>Relationship(Target="styles.xml",
     Id=fmt"rId{relslen+1}", Type=relStylesScheme)
-  let styles = <>stylesSheet(xmlns=mainns,
-    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
-    <>fonts(count="1", <>font(<>sz(val="10"), <>name(val="Arial"),
-      <>family(val="2"))),
-    <>fills(count="1", <>fill(<>patternFill="none")),
-    <>borders(count="1", <>border(<>begin(), newXmlTree("end", []),
-      <>top(), <>bottom())),
-    <>cellStyleXfs(count="0"),
-    <>cellXfs(count="1", <>xf(applyProtection="false", applyFont="false",
+  let defaultXf = <>xf(applyProtection="false", applyFont="false",
       numFmtId="164", borderId="0", fillId="0",
       fontId="0", applyBorder="false", <>alignment(shrinkToFit="false",
       indent="0", vertical="bottom",
       horizontal="general", textRotation="0", wrapText="false"),
-      <>protection(hidden="false", locked="true"))),
-    <>cellStyles(count="0"),
+      <>protection(hidden="false", locked="true"))
+  let styles = <>stylesSheet(xmlns=mainns,
+    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
+    <>fonts(count="1", <>font(<>sz(val="10"), <>name(val="Arial"),
+      <>family(val="2"))),
+    <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
+    <>borders(diagonalUp="false", <>border(diagonalDown="false", count="1",
+      <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
+    <>cellStyleXfs(count="1", defaultXf),
+    <>cellXfs(count="1", defaultXf),
+    <>cellStyles(count="6",
+      <>cellStyle(xfId="0", name="Normal", builtinId="0"),
+      <>cellStyle(xfId="15", name="Comma", builtinId="3"),
+      <>cellStyle(xfId="16", name="Comma [0]", builtinId="6"),
+      <>cellStyle(xfId="17", name="Currency", builtinId="4"),
+      <>cellStyle(xfId="18", name="Currency [0]", builtinId="7"),
+      <>cellStyle(xfId="19", name="Percent", builtinId="5"),
+    ),
     <>colors(<>indexedColors()))
   e.otherfiles["styles.xml"] = (path, styles)
 
@@ -880,10 +887,10 @@ when isMainModule:
       sum += i
     row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
     dump row11[10.toCol, Formula]
-    dump sheet.body
+    #dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
-    dump empty.otherfiles["styles.xml"]
+    #dump empty.otherfiles["styles.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
     echo "sheet is nil"
