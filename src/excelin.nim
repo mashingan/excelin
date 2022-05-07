@@ -11,7 +11,7 @@
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
-     attrs, `attrs=`, innerText, `[]`, insert, clear
+     attrs, `attrs=`, innerText, `[]`, insert, clear, XmlAttributes
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
   parseFloat, parseUint, toUpperAscii, join
@@ -23,7 +23,7 @@ from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/strtabs import `[]=`
+from std/strtabs import `[]=`, pairs
 from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
@@ -44,6 +44,7 @@ const
   spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+  relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
   excelinVersion* = "0.3.7"
 
@@ -248,6 +249,7 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
   if nodepos < 0:
     row.body.add cnode
   else:
+    cnode.attrs["s"] = row.body[nodepos].attr "s"
     row.body.delete nodepos
     row.body.insert cnode, nodepos
 
@@ -584,6 +586,108 @@ proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
     inc count
     result.strtables[tnode.innerText] = count
 
+proc addEmptyStyles(e: Excel) =
+  let path = "xl/styles.xml"
+  let abspath = "/" & path
+  e.content.add <>Override(PartName=abspath,
+    ContentType=spreadtypefmt % ["styles"])
+  let relslen = e.workbook.rels[1].len
+  e.workbook.rels[1].add <>Relationship(Target="styles.xml",
+    Id=fmt"rId{relslen+1}", Type=relStylesScheme)
+  let styles = <>stylesSheet(xmlns=mainns,
+    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
+    <>fonts(count="1", <>font(<>sz(val="10"), <>name(val="Arial"),
+      <>family(val="2"))),
+    <>fills(count="1", <>fill(<>patternFill="none")),
+    <>borders(count="1", <>border(<>begin(), newXmlTree("end", []),
+      <>top(), <>bottom())),
+    <>cellStyleXfs(count="0"),
+    <>cellXfs(count="1", <>xf(applyProtection="false", applyFont="false",
+      numFmtId="164", borderId="0", fillId="0",
+      fontId="0", applyBorder="false", <>alignment(shrinkToFit="false",
+      indent="0", vertical="bottom",
+      horizontal="general", textRotation="0", wrapText="false"),
+      <>protection(hidden="false", locked="true"))),
+    <>cellStyles(count="0"),
+    <>colors(<>indexedColors()))
+  e.otherfiles["styles.xml"] = (path, styles)
+
+template fetchStyles(row: Row): XmlNode =
+  let (a, r) = row.sheet.parent.otherfiles["styles.xml"]
+  discard a
+  r
+
+# To add style need to update:
+# ✗ numFmts
+# ✗ fonts
+# ✗ borders
+# ✗ fills
+# ✗ cellStyleXfs
+# ✗ cellXfs (the main reference for style in cell)
+# ✗ cellStyles (named styles)
+# ✗ colors (if any)
+proc style*(row: Row, col: string, font: XmlNode = nil, alignment: XmlAttributes = nil) =
+  let sparse = $cfSparse == row.body.attr "cellfill"
+  let rnum = row.rowNum
+  var pos = -1
+  let c =
+    if not sparse:
+      pos = col.toNum
+      row.body[pos]
+    else:
+      var x: XmlNode
+      for node in row.body:
+        inc pos
+        if fmt"{col}{rnum}" == node.attr "r" :
+          x = node
+          break
+      x
+  if c == nil: return
+
+  var fontId = 0
+  var applyFont = false
+  let styles = row.fetchStyles
+  if font != nil:
+    applyFont = true
+    var fonts = styles.child "fonts"
+    var fontCount = 0
+    if fonts == nil:
+      fonts = <>fonts(count= "1", font)
+      styles.add fonts
+    else:
+      fontCount = try: parseInt(fonts.attr "count") except: 0
+      fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+      fonts.add font
+      fontId = fontCount
+
+  var csxfs = styles.child "cellStyleXfs"
+  if csxfs == nil:
+    csxfs = <>cellStyleXfs(count="0")
+  let cxfs = styles.child "cellXfs"
+  if cxfs == nil: return
+  let xfid = cxfs.len
+  let xf = <>xf(applyProtection="false", applyAlignment="false", applyFont= $applyFont,
+    numFmtId="0", borderId="0", fillId="0", fontId= $fontId, applyBorder="false")
+  let alignNode = <>alignment(shrinkToFit="false", indent="0", vertical="bottom",
+    horizontal="general", textRotation="0", wrapText="false")
+  let protecc = <>protection(hidden="false", locked="true")
+
+  if alignment != nil:
+    let alignattr = alignNode.attrs
+    for k, v in alignment:
+      alignattr[k] = v
+    alignNode.attrs = alignattr
+
+  let cxfscount = try: parseInt(cxfs.attr "count") except: 0
+  cxfs.attrs["count"] = $(cxfscount+1)
+  csxfs.attrs["count"] = $(csxfs.len + 1)
+  xf.add alignNode
+  xf.add protecc
+  cxfs.add xf
+  csxfs.add xf
+  c.attrs["s"] = $xfid
+
+
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
   ## in case path is not exists, IOError when system errors
@@ -640,6 +744,9 @@ proc readExcel*(path: string): Excel =
     clear appnode
     appnode.add <>Application(newText "Excelin")
     appnode.add <>AppVersion(newText excelinVersion)
+
+  if "styles.xml" notin result.otherfiles:
+    result.addEmptyStyles
 
 proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
   ## Add information property to Excel file. Will add the properties
@@ -751,6 +858,8 @@ when isMainModule:
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
+    row5.style("A", <>font(<>name(val="Cambria"), <>sz(val="11")),
+      {"horizontal": "center", "wrapText": "true", "textRotation": "45"}.toXmlAttributes)
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -763,6 +872,7 @@ when isMainModule:
     let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
     row5["B"] = tobeShared
     row5["c"] = tobeShared
+    row5.style("B", alignment = {"wrapText": "true"}.toXmlAttributes)
     let row11 = sheet.row 11
     var sum = 0
     for i in 0 .. 9:
@@ -773,6 +883,7 @@ when isMainModule:
     dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
+    dump empty.otherfiles["styles.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
     echo "sheet is nil"
