@@ -13,6 +13,8 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Common operations](#common-operations)
 * [Working with sheets](#working-with-sheets)
 * [Cell formula](#cell-formula)
+* [Cell styling](#cell-styling)
+* [Row display](row-display)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -320,6 +322,140 @@ doAssert f1m.valueStr == ""
 # note for cell M1 as we supplied empty value in above.
 excel.writeFile "excelin-sum-example.xlsx"
 ```
+
+[Back to examples list](#examples)
+
+## Cell styling
+
+In this example we'll see various styling provided for cells in row.
+
+```nim
+import std/colors # to work with coloring
+from std/sequtils import repeat
+from std/strutils import join
+import excelin
+
+let (excel, sheet) = newExcel()
+let row2 = sheet.row 2
+
+## Let's fill some data.
+row2["D"] = "temperian temptest"
+
+## Now we want to set some style for this particular cell D2.
+row2.style("D",
+    Font( # Object constructor, if the name empty (or "") this will be ignored
+        name: "DejaVu Sans Mono",
+        size: 11,
+        charset: -1, # negative value means we ignore adding charset to font
+        family: -1,  # idem
+        color: $colBlue, # blue font
+    ),
+    border( # Function/proc, needed to mark for applying this border,
+            # simply using object constructor will make this styling ignored.
+            # The same borderProp too
+        top = borderProp(style = bsMedium, color = $colRed),
+        bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
+    ),
+    fillStyle( # idem with border function
+        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
+    ),
+    
+    # Lastly alignment as openarray of pair (string, string),
+    # using openarray for easier to iterate and can be selectively
+    # chosen which style to be applied, other attributes that not recognized
+    # by excel will do nothing.
+    alignment = {"horizontal": "center", "vertical": "center",
+        "wrapText": $true, "textRotation": $45})
+        
+# Libreoffice apparently doesn't support grid filling hence the bgColor is
+# ignored and only read the fgColor.
+# Above we setup the style after putting the value, the reverse is valid too.
+# i.e. set the style and put the value.
+
+row2.style("E",
+    border = border(`end` = borderProp(style = bsDashDot, color = $colAzure)),
+    alignment = {"wrapText": $true},
+)
+let longstr = "brown fox jumps over the lazy dog".repeat(5).join(";")
+row2["E"] = longstr
+
+# We can also modify set style and change the existing
+
+row2.style "D", alignment = {"textRotation": $90}
+
+# here, we changed the alignment style from diagonal direction (45∘)  to upstand (90∘).
+
+# Since the cell E2 is quite long and with its alignment has wrapText true, we can also
+# manually change the row height to see all the text.
+
+row2.height = 200
+
+# By definition, the value is point but it's not clear relation what's the point points.
+# So if we want to leave how the height for other application to read, we can reset by
+# setting the height 0
+
+row2.height = 0
+
+# But let's set back to 200 to see how it looks when written to excel file.
+
+row2.height = 200
+doAssert row2.height == 200
+
+# And of course we can check what's its set height like above,
+# return 0 if the height reset.
+
+excel.writeFile "excelin-example-row-style.xlsx"
+```
+
+This is what it looks like when viewed with Libreoffice.
+
+![cell style](assets/cell-style.png)
+
+[Back to examples list](#examples)
+
+## Row display
+
+In this example, we'll see how to hide, adding the outline level and collapse
+the row.
+
+```nim
+import std/with
+import excelin
+
+let (excel, sheet) = newExcel()
+
+template hideLevel(rnum, olevel: int): untyped =
+  let r = sheet.row rnum
+  with r:
+    hide = true
+    outlineLevel = olevel
+  r
+    
+sheet.row(2).hide = true
+discard 3.hideLevel 3
+discard 4.hideLevel 2
+discard 5.hideLevel 1
+let row6 = 6.hideLevel 1
+row6.collapsed = true
+
+let row7 = sheet.row 7
+row7.outlineLevel = 7 # we'll use this to reset the outline below
+
+# Above example we setup 3 rows, row 3 - 5 which each has different
+# outline level decreasing from 3 to 1.
+# For row 6, we set it to be collapsed by setting it true.
+# Let's reset the row 7 outline level by set it to 0.
+
+row7.outlineLevel = 0
+
+excel.writeFile "excelin-example-row-display.xlsx"
+```
+
+![rows outline collapsing](assets/rows-outline-collapsing.gif)
+
+As we can see above, the row 2 is hidden with outline level 0 so we can't see it anymore.  
+While row 3, 4, 5 has different outline level with row 6 has outline level 1 and it's collapsed.  
+So we can expand and collapse due different outline level.
 
 [Back to examples list](#examples)
 

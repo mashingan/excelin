@@ -9,13 +9,73 @@ cfSparse	excelin.html#cfSparse	CellFill.cfSparse
 cfFilled	excelin.html#cfFilled	CellFill.cfFilled	
 CellFill	excelin.html#CellFill	excelin: CellFill	
 Formula	excelin.html#Formula	excelin: Formula	
+Font	excelin.html#Font	excelin: Font	
+uNone	excelin.html#uNone	Underline.uNone	
+uSingle	excelin.html#uSingle	Underline.uSingle	
+uDouble	excelin.html#uDouble	Underline.uDouble	
+uSingleAccounting	excelin.html#uSingleAccounting	Underline.uSingleAccounting	
+uDoubleAccounting	excelin.html#uDoubleAccounting	Underline.uDoubleAccounting	
+Underline	excelin.html#Underline	excelin: Underline	
+vaBaseline	excelin.html#vaBaseline	VerticalAlign.vaBaseline	
+vaSuperscript	excelin.html#vaSuperscript	VerticalAlign.vaSuperscript	
+vaSubscript	excelin.html#vaSubscript	VerticalAlign.vaSubscript	
+VerticalAlign	excelin.html#VerticalAlign	excelin: VerticalAlign	
+Border	excelin.html#Border	excelin: Border	
+BorderProp	excelin.html#BorderProp	excelin: BorderProp	
+bsNone	excelin.html#bsNone	BorderStyle.bsNone	
+bsThin	excelin.html#bsThin	BorderStyle.bsThin	
+bsMedium	excelin.html#bsMedium	BorderStyle.bsMedium	
+bsDashed	excelin.html#bsDashed	BorderStyle.bsDashed	
+bsDotted	excelin.html#bsDotted	BorderStyle.bsDotted	
+bsThick	excelin.html#bsThick	BorderStyle.bsThick	
+bsDouble	excelin.html#bsDouble	BorderStyle.bsDouble	
+bsHair	excelin.html#bsHair	BorderStyle.bsHair	
+bsMediumDashed	excelin.html#bsMediumDashed	BorderStyle.bsMediumDashed	
+bsDashDot	excelin.html#bsDashDot	BorderStyle.bsDashDot	
+bsMediumDashDot	excelin.html#bsMediumDashDot	BorderStyle.bsMediumDashDot	
+bsDashDotDot	excelin.html#bsDashDotDot	BorderStyle.bsDashDotDot	
+bsMediumDashDotDot	excelin.html#bsMediumDashDotDot	BorderStyle.bsMediumDashDotDot	
+bsSlantDashDot	excelin.html#bsSlantDashDot	BorderStyle.bsSlantDashDot	
+BorderStyle	excelin.html#BorderStyle	excelin: BorderStyle	
+Fill	excelin.html#Fill	excelin: Fill	
+PatternFill	excelin.html#PatternFill	excelin: PatternFill	
+ptNone	excelin.html#ptNone	PatternType.ptNone	
+ptSolid	excelin.html#ptSolid	PatternType.ptSolid	
+ptMediumGray	excelin.html#ptMediumGray	PatternType.ptMediumGray	
+ptDarkGray	excelin.html#ptDarkGray	PatternType.ptDarkGray	
+ptLightGray	excelin.html#ptLightGray	PatternType.ptLightGray	
+ptDarkHorizontal	excelin.html#ptDarkHorizontal	PatternType.ptDarkHorizontal	
+ptDarkVertical	excelin.html#ptDarkVertical	PatternType.ptDarkVertical	
+ptDarkDown	excelin.html#ptDarkDown	PatternType.ptDarkDown	
+ptDarkUp	excelin.html#ptDarkUp	PatternType.ptDarkUp	
+ptDarkGrid	excelin.html#ptDarkGrid	PatternType.ptDarkGrid	
+ptDarkTrellis	excelin.html#ptDarkTrellis	PatternType.ptDarkTrellis	
+ptLightHorizontal	excelin.html#ptLightHorizontal	PatternType.ptLightHorizontal	
+ptLightVertical	excelin.html#ptLightVertical	PatternType.ptLightVertical	
+ptLightDown	excelin.html#ptLightDown	PatternType.ptLightDown	
+ptLightUp	excelin.html#ptLightUp	PatternType.ptLightUp	
+ptLightGrid	excelin.html#ptLightGrid	PatternType.ptLightGrid	
+ptLightTrellis	excelin.html#ptLightTrellis	PatternType.ptLightTrellis	
+ptGray125	excelin.html#ptGray125	PatternType.ptGray125	
+ptGray0625	excelin.html#ptGray0625	PatternType.ptGray0625	
+PatternType	excelin.html#PatternType	excelin: PatternType	
+GradientFill	excelin.html#GradientFill	excelin: GradientFill	
+GradientStop	excelin.html#GradientStop	excelin: GradientStop	
+gtLinear	excelin.html#gtLinear	GradientType.gtLinear	
+gtPath	excelin.html#gtPath	GradientType.gtPath	
+GradientType	excelin.html#GradientType	excelin: GradientType	
 getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
 modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
 modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
-addRow	excelin.html#addRow,Sheet	excelin: addRow(s: Sheet): Row	
 row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive; fill = cfSparse): Row	
-addRow	excelin.html#addRow,Sheet,Positive	excelin: addRow(s: Sheet; rowNum: Positive): Row	
 rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive	
+hide=	excelin.html#hide=,Row,bool	excelin: hide=(row: Row; yes: bool)	
+hidden	excelin.html#hidden,Row	excelin: hidden(row: Row): bool	
+height=	excelin.html#height=,Row,Natural	excelin: height=(row: Row; height: Natural)	
+height	excelin.html#height,Row	excelin: height(row: Row): Natural	
+outlineLevel=	excelin.html#outlineLevel=,Row,Natural	excelin: outlineLevel=(row: Row; level: Natural)	
+outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natural	
+collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 toNum	excelin.html#toNum,string	excelin: toNum(col: string): int	
 toCol	excelin.html#toCol,Natural	excelin: toCol(n: Natural): string	
 `[]=`	excelin.html#[]=,Row,string,string	excelin: `[]=`(row: Row; col: string; s: string)	
@@ -29,6 +89,12 @@ getCellIt	excelin.html#getCellIt.t,Row,string,untyped	excelin: getCellIt[R](r: R
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
 addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
 deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	
+border	excelin.html#border_2	excelin: border(start, end, top, bottom, vertical, horizontal = BorderProp();\n       diagonalUp, diagonalDown = false): Border	
+borderProp	excelin.html#borderProp,string	excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp	
+fillStyle	excelin.html#fillStyle	excelin: fillStyle(pattern = PatternFill(); gradient = GradientFill()): Fill	
+patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill	
+gradientFill	excelin.html#gradientFill,float,float,float,float,float	excelin: gradientFill(stop = GradientStop(); type = gtLinear;\n             degree, left, right, top, bottom = 0.0): GradientFill	
+style	excelin.html#style,Row,string,openArray[]	excelin: style(row: Row; col: string; font = Font(size: 1); border = Border();\n      fill = Fill(); alignment: openArray[(string, string)] = [])	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
 newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)	
