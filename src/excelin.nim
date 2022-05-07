@@ -14,7 +14,7 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      attrs, `attrs=`, innerText, `[]`, insert, clear, XmlAttributes
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join
+  parseFloat, parseUint, toUpperAscii, join, startsWith
 from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
@@ -23,7 +23,7 @@ from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/strtabs import `[]=`, pairs
+from std/strtabs import `[]=`, pairs, newStringTable
 from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
@@ -110,21 +110,38 @@ type
     equation*: string
     valueStr*: string
 
+  Font* = object
+    ## Cell font styling. Provide name if it's intended to style the cell.
+    ## If no name is supplied, it will ignored. Field `family` and `charset`
+    ## are optionals but in order to be optional, provide it with negative value
+    ## because there's value for family and charset 0. Since by default int is 0,
+    ## it could be yield different style if the family and charset are not intended
+    ## to be filled but not assigned with negative value.
+    name*: string
+    family*: int
+    charset*: int
+    size*: Positive
+
   Border* = object
+    ## The object that will define the border we want to apply to cell.
+    ## Use `border <border,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,bool,bool>`_
+    ## to initialize working border instead because the indication whether border can be edited is private.
+    edit: bool
     start*: BorderProp # left
     `end`*: BorderProp # right
     top*: BorderProp
     bottom*: BorderProp
     vertical*: BorderProp
     horizontal*: BorderProp
-
-  Font* = object
-    name*: string
-    family*: int
-    charset*: int
-    size*: Positive
+    diagonalUp*: bool
+    diagonalDown*: bool
 
   BorderProp* = object
+    ## The object that will define the style and color we want to apply to border
+    ## Use `borderProp<borderProp,BorderStyle,string>`_
+    ## to initialize working border prop instead because the indication whether
+    ## border properties filled is private.
+    edit: bool ## indicate whether border properties is filled
     style*: BorderStyle
     color*: string #in RGB
 
@@ -683,6 +700,48 @@ proc addFont(styles: XmlNode, font: Font): (int, bool) =
       fontId = fontCount
   (fontId, applyFont)
 
+proc addBorder(styles: XmlNode, border: Border): (int, bool) =
+  if not border.edit:
+    return
+  var
+    bnodes = styles.child "borders"
+    bcount = -1
+    borderId = 0
+  let applyBorder = true
+  if bnodes == nil:
+    bnodes = <>borders(count= $0)
+    styles.add bnodes
+    bcount = 1
+  else:
+    bcount = try: parseInt(bnodes.attr "count") except: 0
+    borderId = bcount
+
+  let bnode = <>border(diagonalUp= $border.diagonalUp,
+    diagonalDown= $border.diagonalDown)
+
+  template addBorderProp(fname: string, field: untyped) =
+    let fld = border.`field`
+    let elem = newXmlTree(fname, [], newStringTable())
+    if fld.edit:
+      elem.attrs["style"] = $fld.style
+      if fld.color != "":
+        let rgb = if fld.color.startsWith("#"): fld.color[1..^1]
+                  else: fld.color
+        elem.add <>color(rgb = rgb)
+    bnode.add elem
+
+  addBorderProp("start", start)
+  addBorderProp("end", `end`)
+  addBorderProp("top", top)
+  addBorderProp("bottom", bottom)
+  addBorderProp("vertical", vertical)
+  addBorderProp("horizontal", horizontal)
+
+  bnodes.attrs["count"] = $(bcount+1)
+  bnodes.add bnode
+
+  (borderId, applyBorder)
+
 # To add style need to update:
 # ✗ numFmts
 # ✓ fonts
@@ -694,6 +753,7 @@ proc addFont(styles: XmlNode, font: Font): (int, bool) =
 # ✗ colors (if any)
 proc style*(row: Row, col: string,
   font = Font(size: 1),
+  border = Border(),
   alignment: openarray[(string, string)] = []) =
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
@@ -719,6 +779,7 @@ proc style*(row: Row, col: string,
   let (fontId, applyFont) = styles.addFont font
   let styleId = try: parseInt(c.attr "s") except: 0
   let applyAlignment = alignment.len > 0
+  let (borderId, applyBorder) = styles.addBorder border
 
   var csxfs = styles.child "cellStyleXfs"
   if csxfs == nil:
@@ -729,7 +790,7 @@ proc style*(row: Row, col: string,
   let xf =
     if styleId == 0:
       <>xf(applyProtection="false", applyAlignment= $applyAlignment, applyFont= $applyFont,
-        numFmtId="0", borderId="0", fillId="0", fontId= $fontId, applyBorder="false")
+        numFmtId="0", borderId= $borderId, fillId="0", fontId= $fontId, applyBorder= $applyBorder)
     else:
       cxfs[styleId]
   let alignNode =
@@ -758,6 +819,9 @@ proc style*(row: Row, col: string,
       xf.attrs["fontId"] = $fontId
       xf.attrs["applyFont"] = $applyFont
     xf.attrs["applyAlignment"] = $true
+    if border.edit:
+      xf.attrs["applyBorder"] = $true
+      xf.attrs["borderId"] = $borderId
 
 
 proc readExcel*(path: string): Excel =
@@ -900,8 +964,24 @@ proc `name=`*(s: Sheet, newname: string) =
       currattr["name"] = newname
       node.attrs = currattr
 
+proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+  diagonalUp, diagonalDown = false): Border =
+  Border(
+    edit: true,
+    start: start,
+    `end`: `end`,
+    top: top,
+    bottom: bottom,
+    vertical: vertical,
+    horizontal: horizontal,
+    diagonalUp: diagonalUp,
+    diagonalDown: diagonalDown)
+
+proc borderProp*(style = bsNone, color = ""): BorderProp =
+  BorderProp(edit: true, style: style, color: color)
 
 when isMainModule:
+  import colors
   let (empty, sheet) = newExcel()
 
   let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
@@ -930,8 +1010,14 @@ when isMainModule:
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
-    row5.style("A", Font(name: "DejaVu Sans Mono", size: 11, family: -1, charset: -1),
-      {"horizontal": "center", "vertical": "center", "wrapText": $true, "textRotation": $45})
+    row5.style("A",
+      Font(name: "DejaVu Sans Mono", size: 11, family: -1, charset: -1),
+      border(
+        top = borderProp(style = bsMedium, color = $colRed),
+        bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
+      ),
+      alignment = {"horizontal": "center", "vertical": "center",
+        "wrapText": $true, "textRotation": $45})
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -955,7 +1041,7 @@ when isMainModule:
 
     let row12 = sheet.row 12
     row12.style("C", Font(name: "Cambria", size: 11, family: -1, charset: -1),
-      {"horizontal": "center", "vertical": "center", "wrapText": "true",
+      alignment = {"horizontal": "center", "vertical": "center", "wrapText": "true",
       "textRotation": "90"})
     row5.style "A", alignment = {"textRotation": $90} # edit existing style
     #dump sheet.body
