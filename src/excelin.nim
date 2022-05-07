@@ -11,10 +11,10 @@
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
-     attrs, `attrs=`, innerText, `[]`, insert, clear
+     attrs, `attrs=`, innerText, `[]`, insert, clear, XmlAttributes
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join
+  parseFloat, parseUint, toUpperAscii, join, startsWith
 from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
@@ -23,11 +23,13 @@ from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/strtabs import `[]=`
+from std/strtabs import `[]=`, pairs, newStringTable, del
 from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
 from std/math import `^`
+from std/colors import `$`, colWhite, colRed, colGreen, colBlue
+
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -44,8 +46,9 @@ const
   spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+  relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.3.6"
+  excelinVersion* = "0.4.0"
 
 type
   Excel* = ref object
@@ -55,7 +58,7 @@ type
     rels: XmlNode
     workbook: Workbook
     sheets: TableRef[FilePath, Sheet]
-    sharedStrings: FileRep
+    sharedStrings: SharedStrings
     otherfiles: TableRef[string, FileRep]
     embedfiles: TableRef[string, EmbedFile]
     sheetCount: int
@@ -75,7 +78,6 @@ type
     ## The main object that will be used most of the time for many users.
     ## This object will represent a sheet in Excel file such as adding row
     ## getting row, and/or adding cell directly.
-    sharedStrings: XmlNode
     parent: Excel
     rid: string
     privName: string
@@ -87,6 +89,12 @@ type
   FilePath = string
   FileRep = (FilePath, XmlNode)
   EmbedFile = (FilePath, string)
+
+  SharedStrings = ref object of InternalBody
+    path: string
+    strtables: TableRef[string, int]
+    count: Natural
+    unique: Natural
 
   ExcelError* = object of CatchableError
     ## Error when the Excel file read is invalid, specifically Excel file
@@ -103,6 +111,137 @@ type
     ## which already calculated beforehand.
     equation*: string
     valueStr*: string
+
+  Font* = object
+    ## Cell font styling. Provide name if it's intended to style the cell.
+    ## If no name is supplied, it will ignored. Field `family` and `charset`
+    ## are optionals but in order to be optional, provide it with negative value
+    ## because there's value for family and charset 0. Since by default int is 0,
+    ## it could be yield different style if the family and charset are not intended
+    ## to be filled but not assigned with negative value.
+    name*: string
+    family*: int
+    charset*: int
+    size*: Positive
+    bold*: bool
+    italic*: bool
+    strike*: bool
+    outline*: bool
+    shadow*: bool
+    condense*: bool
+    extend*: bool
+    color*: string
+    underline*: Underline
+    verticalAlign*: VerticalAlign
+
+  Underline* = enum
+    uNone = "none"
+    uSingle = "single"
+    uDouble = "double"
+    uSingleAccounting = "singleAccounting"
+    uDoubleAccounting = "doubleAccounting"
+
+  VerticalAlign* = enum
+    vaBaseline = "baseline"
+    vaSuperscript = "superscript"
+    vaSubscript = "subscript"
+
+  Border* = object
+    ## The object that will define the border we want to apply to cell.
+    ## Use `border <border,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,bool,bool>`_
+    ## to initialize working border instead because the indication whether border can be edited is private.
+    edit: bool
+    start*: BorderProp # left
+    `end`*: BorderProp # right
+    top*: BorderProp
+    bottom*: BorderProp
+    vertical*: BorderProp
+    horizontal*: BorderProp
+    diagonalUp*: bool
+    diagonalDown*: bool
+
+  BorderProp* = object
+    ## The object that will define the style and color we want to apply to border
+    ## Use `borderProp<borderProp,BorderStyle,string>`_
+    ## to initialize working border prop instead because the indication whether
+    ## border properties filled is private.
+    edit: bool ## indicate whether border properties is filled
+    style*: BorderStyle
+    color*: string #in RGB
+
+  BorderStyle* = enum
+    bsNone = "none"
+    bsThin = "thin"
+    bsMedium = "medium"
+    bsDashed = "dashed"
+    bsDotted = "dotted"
+    bsThick = "thick"
+    bsDouble = "double"
+    bsHair = "hair"
+    bsMediumDashed = "mediumDashed"
+    bsDashDot = "dashDot"
+    bsMediumDashDot = "mediumDashDot"
+    bsDashDotDot = "dashDotDot"
+    bsMediumDashDotDot = "mediumDashDotDot"
+    bsSlantDashDot = "slantDashDot"
+
+  Fill* = object
+    ## Fill cell style. Use `fillStyle <fillStyle,PatternFill,GradientFill>`_
+    ## to initialize this object to indicate cell will be edited with this Fill.
+    edit: bool
+    pattern*: PatternFill
+    gradient*: GradientFill
+
+  PatternFill* = object
+    ## Pattern to fill the cell. Use `patternFill<patternFill,string,string,PatternType>`_
+    ## to initialize.
+    edit: bool
+    fgColor*: string
+    bgColor: string
+    patternType*: PatternType
+
+  PatternType* = enum
+    ptNone = "none"
+    ptSolid = "solid"
+    ptMediumGray = "mediumGray"
+    ptDarkGray = "darkGray"
+    ptLightGray = "lightGray"
+    ptDarkHorizontal = "darkHorizontal"
+    ptDarkVertical = "darkVertical"
+    ptDarkDown = "darkDown"
+    ptDarkUp = "darkUp"
+    ptDarkGrid = "darkGrid"
+    ptDarkTrellis = "darkTrellis"
+    ptLightHorizontal = "lightHorizontal"
+    ptLightVertical = "lightVertical"
+    ptLightDown = "lightDown"
+    ptLightUp = "lightUp"
+    ptLightGrid = "lightGrid"
+    ptLightTrellis = "lightTrellis"
+    ptGray125 = "gray125"
+    ptGray0625 = "gray0625"
+
+  GradientFill* = object
+    ## Gradient to fill the cell. Use
+    ## `gradientFill<gradientFill,GradientStop,GradientType,float,float,float,float,float>`_
+    ## to initialize.
+    edit: bool
+    stop*: GradientStop
+    `type`*: GradientType
+    degree*: float
+    left*: float
+    right*: float
+    top*: float
+    bottom*: float
+
+  GradientStop* = object
+    ## Indicate where the gradient will stop with its color at stopping position.
+    color*: string
+    position*: float
+
+  GradientType* = enum
+    gtLinear = "linear"
+    gtPath = "path"
 
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
@@ -148,18 +287,6 @@ proc modifiedAt*[Node: Workbook|Sheet, T: DateTime | Time](w: Node, t: T = now()
   ## Update workbook or worksheet modification time.
   w.parent.modifiedAt t
 
-proc addRow*(s: Sheet): Row {.deprecated: "use `row(Sheet, Positive): Row` instead".} =
-  ## Add row directly from sheet after any existing row.
-  ## This will return a new pristine row to work further.
-  ## Row numbering is 1-based.
-  let sdata = s.body.getSheetData
-  let rowExists = sdata.len
-  result = Row(
-    sheet: s,
-    body: <>row(r= $(rowExists+1), hidden="false", collapsed="false"),
-  )
-  sdata.add result.body
-  s.modifiedAt
 
 proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## Add row by selecting which row number to work with.
@@ -179,13 +306,46 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   sdata.add result.body
   s.modifiedAt
 
-proc addRow*(s: Sheet, rowNum: Positive): Row
-  {.deprecated: "use `row(Sheet, Positive): Row` instead".}
-  = s.row rowNum
-
 proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
   result = try: parseInt(r.body.attr "r") except: 1
+
+proc `hide=`*(row: Row, yes: bool) =
+  ## Hide the current row
+  row.body.attrs["hidden"] = $(if yes: 1 else: 0)
+
+proc hidden*(row: Row): bool =
+  ## Check whether row is hidden
+  "1" == row.body.attr "hidden"
+
+proc `height=`*(row: Row, height: Natural) =
+  ## Set the row height which sets its attribute to custom height.
+  ## If the height 0, will reset its custom height.
+  if height == 0:
+    for key in ["ht", "customHeight"]:
+      row.body.attrs.del key
+  else:
+    row.body.attrs["customHeight"] = "1"
+    row.body.attrs["ht"] = $height
+
+proc height*(row: Row): Natural =
+  ## Check the row height if it has custom height and its value set.
+  ## If not will by default return 0.
+  try: parseInt(row.body.attr "ht") except: 0
+
+proc `outlineLevel=`*(row: Row, level: Natural) =
+  ## Set the outline level for the row. Level 0 means resetting the level.
+  if level == 0: row.body.attrs.del "outlineLevel"
+  else: row.body.attrs["outlineLevel"] = $level
+
+proc outlineLevel*(row: Row): Natural =
+  ## Check current row outline level. 0 when it's not outlined.
+  try: parseInt(row.body.attr "outlineLevel") except: 0
+
+proc `collapsed=`*(row: Row, yes: bool) =
+  ## Collapse the current row, usually used together with outline level.
+  if yes: row.body.attrs["collapsed"] = $1
+  else: row.body.attrs.del "collapsed"
 
 proc fetchCell(body: XmlNode, colrow: string): int =
   var count = -1
@@ -259,36 +419,25 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
   if nodepos < 0:
     row.body.add cnode
   else:
+    cnode.attrs["s"] = row.body[nodepos].attr "s"
     row.body.delete nodepos
     row.body.insert cnode, nodepos
 
 proc addSharedString(r: Row, col, s: string) =
-  var
-    pos = 0
-    found = false
-  let sharedStr = r.sheet.sharedStrings
-  for ss in sharedStr:
-    inc pos
-    if s == ss.innerText:
-      found = true
-      break
-
-  var
-    count = try: parseInt(sharedStr.attr "count") except: 0
-    uniq = try: parseInt(sharedStr.attr "uniqueCount") except: 0
-
-  inc count
-  if not found:
-    inc uniq
-    sharedStr.add <>si(newXmlTree("t",
-      [newText s], {"xml:space": "preserve"}.toXmlAttributes))
+  let sstr = r.sheet.parent.sharedStrings
+  var pos = sstr.strtables.len
+  if  s notin sstr.strtables:
+    inc sstr.unique
+    sstr.body.add <>si(newXmlTree("t", [newText s], {"xml:space": "preserve"}.toXmlAttributes))
+    sstr.strtables[s] = pos
   else:
-    dec pos # shared string 0-based
+    pos = sstr.strtables[s]
 
+  inc sstr.count
   r.addCell col, "s", $pos
-  sharedStr.attrs = {"count": $count,
-    "uniqueCount": $uniq, "xmlns": mainns}.toXmlAttributes
+  sstr.body.attrs = {"count": $sstr.count, "uniqueCount": $sstr.unique, "xmlns": mainns}.toXmlAttributes
   r.sheet.modifiedAt
+
 
 proc `[]=`*(row: Row, col: string, s: string) =
   ## Add cell with overload for value string. Supplied column
@@ -376,7 +525,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   template fetchShared(t: string): untyped =
     let refpos = try: parseInt(t) except: -1
     if refpos < 0: return
-    let tnode = row.sheet.sharedStrings[refpos]
+    let tnode = row.sheet.parent.sharedStrings.body[refpos]
     if tnode == nil: return
     tnode.innerText
   template retconv =
@@ -497,7 +646,6 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
-    sharedStrings: e.sharedStrings[1],
     parent: e,
     privName: name,
     rid: rid)
@@ -571,13 +719,15 @@ proc retrieveSheetsInfo(n: XmlNode): seq[XmlNode] =
 # ✓ add to package rels
 # ✓ update its path
 proc addSharedStrings(e: Excel) =
-  e.sharedStrings[0] = (e.workbook.path.parentDir / "sharedStrings.xml").unixSep
-  e.sharedStrings[1] = <>sst(xmlns=mainns, count="0", uniqueCount="0")
-  e.content.add <>Override(PartName="/" & e.sharedStrings[0],
+  let sstr = SharedStrings(strtables: newTable[string, int]())
+  sstr.path = (e.workbook.path.parentDir / "sharedStrings.xml").unixSep
+  sstr.body = <>sst(xmlns=mainns, count="0", uniqueCount="0")
+  e.content.add <>Override(PartName="/" & sstr.path,
     ContentType=spreadtypefmt % ["sharedStrings"])
   let relslen = e.workbook.rels[1].len
   e.workbook.rels[1].add <>Relationship(Target="sharedStrings.xml",
     Id=fmt"rId{relslen+1}", Type=relSharedStrScheme)
+  e.sharedStrings = sstr
 
 proc assignSheetInfo(e: Excel) =
   var mapRidName = initTable[string, string]()
@@ -589,6 +739,312 @@ proc assignSheetInfo(e: Excel) =
   for path, sheet in e.sheets:
     sheet.rid = mapFilenameRid[path.extractFilename]
     sheet.privName = mapRidName[sheet.rid]
+
+proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
+  result = SharedStrings(
+    path: path,
+    body: body,
+    count: try: parseInt(body.attr "count") except: 0,
+    unique: try: parseInt(body.attr "uniqueCount") except: 0,
+  )
+
+  var count = -1
+  result.strtables = newTable[string, int](body.len)
+  for node in body:
+    let tnode = node.child "t"
+    if tnode == nil: continue
+    inc count
+    result.strtables[tnode.innerText] = count
+
+proc addEmptyStyles(e: Excel) =
+  const path = "xl/styles.xml"
+  e.content.add <>Override(PartName="/" & path,
+    ContentType=spreadtypefmt % ["styles"])
+  let relslen = e.workbook.rels[1].len
+  e.workbook.rels[1].add <>Relationship(Target="styles.xml",
+    Id=fmt"rId{relslen+1}", Type=relStylesScheme)
+  let styles = <>stylesSheet(xmlns=mainns,
+    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
+    <>fonts(count= $0),
+    <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
+    <>borders(count= $1, <>border(diagonalUp="false", diagonalDown="false",
+      <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
+    <>cellStyleXfs(count= $0),
+    <>cellXfs(count= $0),
+    <>cellStyles(count= $0),
+    <>colors(<>indexedColors()))
+  e.otherfiles["styles.xml"] = (path, styles)
+
+template fetchStyles(row: Row): XmlNode =
+  let (a, r) = row.sheet.parent.otherfiles["styles.xml"]
+  discard a
+  r
+
+template retrieveColor(color: string): untyped =
+  let r = if color.startsWith("#"): color[1..^1] else: color
+  "FF" & r
+
+proc toXmlNode(f: Font): XmlNode =
+  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
+  template addElem(test, field: untyped): untyped =
+    if `test`:
+      result.add <>`field`(val= $f.`field`)
+
+  addElem f.family >= 0, family
+  addElem f.charset >= 0, charset
+  addElem f.strike, strike
+  addElem f.outline, outline
+  addElem f.shadow, shadow
+  addElem f.condense, condense
+  addElem f.extend, extend
+  if f.bold: result.add <>b(val= $f.bold)
+  if f.italic: result.add <>i(val= $f.italic)
+  if f.color != "": result.add <>color(rgb = retrieveColor(f.color))
+  result.add <>u(val= $f.underline)
+  result.add <>vertAlign(val= $f.verticalAlign)
+
+proc addFont(styles: XmlNode, font: Font): (int, bool) =
+  var fontId = 0
+  if font.name == "": return
+  let fontnode = font.toXmlNode
+  let applyFont = true
+  var fonts = styles.child "fonts"
+  var fontCount = 0
+  if fonts == nil:
+    fonts = <>fonts(count= "1", fontnode)
+    styles.add fonts
+  else:
+    fontCount = try: parseInt(fonts.attr "count") except: 0
+    fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+    fonts.add fontnode
+    fontId = fontCount
+  (fontId, applyFont)
+
+proc addBorder(styles: XmlNode, border: Border): (int, bool) =
+  if not border.edit:
+    return
+  var
+    bnodes = styles.child "borders"
+    bcount = -1
+    borderId = 0
+  let applyBorder = true
+  if bnodes == nil:
+    bnodes = <>borders(count= $0)
+    styles.add bnodes
+    bcount = 1
+  else:
+    bcount = try: parseInt(bnodes.attr "count") except: 0
+    borderId = bcount
+
+  let bnode = <>border(diagonalUp= $border.diagonalUp,
+    diagonalDown= $border.diagonalDown)
+
+  template addBorderProp(fname: string, field: untyped) =
+    let fld = border.`field`
+    let elem = newXmlTree(fname, [], newStringTable())
+    if fld.edit:
+      elem.attrs["style"] = $fld.style
+      if fld.color != "":
+        elem.add <>color(rgb = retrieveColor(fld.color))
+    bnode.add elem
+
+  addBorderProp("start", start)
+  addBorderProp("end", `end`)
+  addBorderProp("top", top)
+  addBorderProp("bottom", bottom)
+  addBorderProp("vertical", vertical)
+  addBorderProp("horizontal", horizontal)
+
+  bnodes.attrs["count"] = $(bcount+1)
+  bnodes.add bnode
+
+  (borderId, applyBorder)
+
+proc addPattern(fillnode: XmlNode, patt: PatternFill) =
+  if not patt.edit: return
+  let patternNode = <>patternFill(patternType= $patt.patternType)
+
+  if patt.fgColor != "":
+    patternNode.add <>fgColor(rgb = retrieveColor(patt.fgColor))
+  if patt.bgColor != "":
+    patternNode.add <>bgColor(rgb = retrieveColor(patt.bgColor))
+
+  fillnode.add patternNode
+
+proc addGradient(fillnode: XmlNode, grad: GradientFill) =
+  if not grad.edit: return
+  let gradientNode = newXmlTree("gradientFill", [
+    <>stop(position= $grad.stop.position,
+      <>color(rgb= retrieveColor(grad.stop.color)))
+  ], {
+    "type": $grad.`type`,
+    "degree": $grad.degree,
+    "left": $grad.left,
+    "right": $grad.right,
+    "top": $grad.top,
+    "bottom": $grad.bottom,
+  }.toXmlAttributes)
+
+  fillnode.add gradientNode
+
+proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
+  if not fill.edit: return
+  var fills = styles.child "fills"
+  var count = -1
+  result[1] = true
+  if fills == nil:
+    count = 0
+    fills = <>fills(count= $0)
+    styles.add fills
+  else:
+    count = try: parseInt(fills.attr "count") except: 0
+
+  let fillnode = <>fill()
+  fillnode.addPattern fill.pattern
+  fillnode.addGradient fill.gradient
+
+  fills.attrs["count"] = $(count+1)
+  fills.add fillnode
+  result[0] = count
+
+proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+  diagonalUp, diagonalDown = false): Border =
+  ## Border initializer. Use this instead of object constructor
+  ## to indicate style is ready to apply this border.
+  runnableExamples:
+    import std/with
+    import excelin
+
+    var b = border(diagonalUp = true)
+    with b:
+      start = borderProp(style = bsMedium) # border style
+      diagonalDown = true
+
+    doAssert b.diagonalUp
+    doAssert b.diagonalDown
+    doAssert b.start.style == bsMedium
+
+  Border(
+    edit: true,
+    start: start,
+    `end`: `end`,
+    top: top,
+    bottom: bottom,
+    vertical: vertical,
+    horizontal: horizontal,
+    diagonalUp: diagonalUp,
+    diagonalDown: diagonalDown)
+
+proc borderProp*(style = bsNone, color = ""): BorderProp =
+  BorderProp(edit: true, style: style, color: color)
+
+proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
+  Fill(edit: true, pattern: pattern, gradient: gradient)
+
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
+  PatternFill(edit: true, fgColor: fgColor, bgColor: "",
+    patternType: patternType)
+
+proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+  degree, left, right, top, bottom = 0.0): GradientFill =
+  GradientFill(
+    edit: true,
+    stop: stop,
+    `type`: `type`,
+    degree: degree,
+    left: left,
+    right: right,
+    top: top,
+    bottom: bottom,
+  )
+
+
+# To add style need to update:
+# ✗ numFmts
+# ✓ fonts
+# ✗ borders
+# ✗ fills
+# ✗ cellStyleXfs
+# ✓ cellXfs (the main reference for style in cell)
+# ✗ cellStyles (named styles)
+# ✗ colors (if any)
+proc style*(row: Row, col: string,
+  font = Font(size: 1),
+  border = Border(),
+  fill = Fill(),
+  alignment: openarray[(string, string)] = []) =
+  ## Add style to cell in row by selectively providing the font, border, fill
+  ## and alignment styles.
+  let sparse = $cfSparse == row.body.attr "cellfill"
+  let rnum = row.rowNum
+  var pos = -1
+  var c =
+    if not sparse:
+      pos = col.toNum
+      row.body[pos]
+    else:
+      var x: XmlNode
+      for node in row.body:
+        inc pos
+        if fmt"{col}{rnum}" == node.attr "r" :
+          x = node
+          break
+      x
+  if c == nil:
+    pos = row.body.len
+    row[col] = ""
+    c = row.body[pos]
+
+  let styles = row.fetchStyles
+  let (fontId, applyFont) = styles.addFont font
+  let styleId = try: parseInt(c.attr "s") except: 0
+  let applyAlignment = alignment.len > 0
+  let (borderId, applyBorder) = styles.addBorder border
+  let (fillId, applyFill) = styles.addFill fill
+
+  var csxfs = styles.child "cellStyleXfs"
+  if csxfs == nil:
+    csxfs = <>cellStyleXfs(count="0")
+  let cxfs = styles.child "cellXfs"
+  if cxfs == nil: return
+  let xfid = cxfs.len
+  let xf =
+    if styleId == 0:
+      <>xf(applyProtection="false", applyAlignment= $applyAlignment, applyFont= $applyFont,
+        numFmtId="0", borderId= $borderId, fillId= $fillId, fontId= $fontId, applyBorder= $applyBorder)
+    else:
+      cxfs[styleId]
+  let alignNode =
+    if styleId == 0:
+      <>alignment(shrinkToFit="false", indent="0", vertical="bottom",
+        horizontal="general", textRotation="0", wrapText="false")
+    else:
+      xf.child "alignment"
+  let protecc = if styleId == 0: <>protection(hidden="false", locked="true")
+                else: xf.child "protection"
+
+  for (k, v) in alignment:
+    alignNode.attrs[k] = v
+
+  if styleId == 0:
+    let cxfscount = try: parseInt(cxfs.attr "count") except: 0
+    cxfs.attrs["count"] = $(cxfscount+1)
+    csxfs.attrs["count"] = $(csxfs.len + 1)
+    xf.add alignNode
+    xf.add protecc
+    cxfs.add xf
+    csxfs.add xf
+    c.attrs["s"] = $xfid
+  else:
+    if font.name != "":
+      xf.attrs["fontId"] = $fontId
+      xf.attrs["applyFont"] = $applyFont
+    xf.attrs["applyAlignment"] = $true
+    if border.edit:
+      xf.attrs["applyBorder"] = $true
+      xf.attrs["borderId"] = $borderId
+    if applyFill: xf.attrs["fillId"] = $fillId
+
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -628,7 +1084,7 @@ proc readExcel*(path: string): Excel =
     elif wbpath.endsWith "workbook.xml.rels":
       result.workbook.rels = fileRep path
     elif wbpath.endsWith "sharedStrings.xml":
-      result.sharedStrings = fileRep path
+      result.sharedStrings = path.readSharedStrings(extract path)
     elif wbpath.endsWith(".xml") or wbpath.endsWith(".rels"): # any others xml/rels files
       let (_, f) = splitPath wbpath
       result.otherfiles[f] = path.fileRep
@@ -637,17 +1093,18 @@ proc readExcel*(path: string): Excel =
       result.embedfiles[f] = (path, reader.extractFile path)
   if not found:
     raise newException(ExcelError, "No workbook found, invalid excel file")
-  if result.sharedStrings[1] == nil:
+  if result.sharedStrings == nil:
     result.addSharedStrings
   result.assignSheetInfo
-  for _, s in result.sheets:
-    s.sharedStrings = result.sharedStrings[1]
 
   if "app.xml" in result.otherfiles:
     var (_, appnode) = result.otherfiles["app.xml"]
     clear appnode
     appnode.add <>Application(newText "Excelin")
     appnode.add <>AppVersion(newText excelinVersion)
+
+  if "styles.xml" notin result.otherfiles:
+    result.addEmptyStyles
 
 proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
   ## Add information property to Excel file. Will add the properties
@@ -663,6 +1120,14 @@ proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
   ## The Sheet returned is by default has name "Sheet1" but user can
   ## use `name= proc<#name=,Sheet,string>`_ to change its name.
   let excel = readExcel emptyxlsx
+  const core = "core.xml"
+  if core in excel.otherfiles:
+    let (_, cxml) = excel.otherfiles[core]
+    if cxml != nil:
+      var created = cxml.child "dcterms:created"
+      clear created
+      created.add newText(now().format datefmt)
+
   (excel, excel.getSheet "Sheet1")
 
 proc writeFile*(e: Excel, targetpath: string) =
@@ -679,7 +1144,7 @@ proc writeFile*(e: Excel, targetpath: string) =
   "_rels/.rels".addContents $e.rels
   e.workbook.path.addContents $e.workbook.body
   e.workbook.rels[0].addContents $e.workbook.rels[1]
-  e.sharedStrings[0].addContents $e.sharedStrings[1]
+  e.sharedStrings.path.addContents $e.sharedStrings.body
   for p, s in e.sheets:
     p.addContents $s.body
   for rep in e.otherfiles.values:
@@ -721,8 +1186,8 @@ proc `name=`*(s: Sheet, newname: string) =
       currattr["name"] = newname
       node.attrs = currattr
 
-
 when isMainModule:
+  import std/with
   let (empty, sheet) = newExcel()
 
   let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
@@ -751,6 +1216,21 @@ when isMainModule:
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
+    row5.style("A",
+      Font(name: "DejaVu Sans Mono", size: 11,
+        family: -1, charset: -1,
+        color: $colBlue,
+      ),
+      border(
+        top = borderProp(style = bsMedium, color = $colRed),
+        bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
+      ),
+      fillStyle(
+        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
+      ),
+      alignment = {"horizontal": "center", "vertical": "center",
+        "wrapText": $true, "textRotation": $45})
+    row5.height = 200
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -763,6 +1243,7 @@ when isMainModule:
     let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
     row5["B"] = tobeShared
     row5["c"] = tobeShared
+    row5.style("B", alignment = {"wrapText": "true"})
     let row11 = sheet.row 11
     var sum = 0
     for i in 0 .. 9:
@@ -770,9 +1251,27 @@ when isMainModule:
       sum += i
     row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
     dump row11[10.toCol, Formula]
-    dump sheet.body
-    #dump empty.sharedStrings
+
+    let row12 = sheet.row 12
+    row12.style("C", Font(name: "Cambria", size: 11, family: -1, charset: -1),
+      alignment = {"horizontal": "center", "vertical": "center", "wrapText": "true",
+      "textRotation": "90"})
+    row5.style "A", alignment = {"textRotation": $90} # edit existing style
+    template hideLevel(rnum, olevel: int): untyped =
+      let r = sheet.row rnum
+      with r:
+        hide = true
+        outlineLevel = olevel
+    13.hideLevel 3
+    14.hideLevel 2
+    15.hideLevel 1
+    16.hideLevel 1
+    sheet.row(16).collapsed = true
+
+    #dump sheet.body
+    #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
+    #dump empty.otherfiles["styles.xml"]
     empty.writeFile "generated-add-rows.xlsx"
   else:
     echo "sheet is nil"
