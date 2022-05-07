@@ -633,7 +633,7 @@ template fetchStyles(row: Row): XmlNode =
 # ✗ cellXfs (the main reference for style in cell)
 # ✗ cellStyles (named styles)
 # ✗ colors (if any)
-proc style*(row: Row, col: string, font: XmlNode = nil, alignment: XmlAttributes = nil) =
+proc style*(row: Row, col: string, font: XmlNode = nil, alignment: openarray[(string, string)] = []) =
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
@@ -682,11 +682,8 @@ proc style*(row: Row, col: string, font: XmlNode = nil, alignment: XmlAttributes
     horizontal="general", textRotation="0", wrapText="false")
   let protecc = <>protection(hidden="false", locked="true")
 
-  if alignment != nil:
-    let alignattr = alignNode.attrs
-    for k, v in alignment:
-      alignattr[k] = v
-    alignNode.attrs = alignattr
+  for (k, v) in alignment:
+    alignNode.attrs[k] = v
 
   let cxfscount = try: parseInt(cxfs.attr "count") except: 0
   cxfs.attrs["count"] = $(cxfscount+1)
@@ -869,7 +866,7 @@ when isMainModule:
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
     row5.style("A", <>font(<>name(val="Cambria"), <>sz(val="11")),
-      {"horizontal": "center", "wrapText": "true", "textRotation": "45"}.toXmlAttributes)
+      {"horizontal": "center", "wrapText": "true", "textRotation": "45"})
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -882,7 +879,7 @@ when isMainModule:
     let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
     row5["B"] = tobeShared
     row5["c"] = tobeShared
-    row5.style("B", alignment = {"wrapText": "true"}.toXmlAttributes)
+    row5.style("B", alignment = {"wrapText": "true"})
     let row11 = sheet.row 11
     var sum = 0
     for i in 0 .. 9:
@@ -894,7 +891,7 @@ when isMainModule:
     let row12 = sheet.row 12
     row12.style("C", <>font(<>name(val="Cambria"), <>sz(val="11")),
       {"horizontal": "center", "vertical": "center", "wrapText": "true",
-      "textRotation": "90"}.toXmlAttributes)
+      "textRotation": "90"})
     dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
