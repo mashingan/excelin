@@ -28,6 +28,8 @@ from std/sugar import dump, `->`
 from std/strscans import scanf
 from std/sha1 import secureHash, `$`
 from std/math import `^`
+from std/colors import `$`, colWhite, colRed, colGreen
+
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
@@ -160,6 +162,64 @@ type
     bsDashDotDot = "dashDotDot"
     bsMediumDashDotDot = "mediumDashDotDot"
     bsSlantDashDot = "slantDashDot"
+
+  Fill* = object
+    ## Fill cell style. Use `fillStyle <fillStyle,PatternFill,GradientFill>`_
+    ## to initialize this object to indicate cell will be edited with this Fill.
+    edit: bool
+    pattern*: PatternFill
+    gradient*: GradientFill
+
+  PatternFill* = object
+    ## Pattern to fill the cell. Use `patternFill<patternFill,string,string,PatternType>`_
+    ## to initialize.
+    edit: bool
+    fgColor*: string
+    bgColor: string
+    patternType*: PatternType
+
+  PatternType* = enum
+    ptNone = "none"
+    ptSolid = "solid"
+    ptMediumGray = "mediumGray"
+    ptDarkGray = "darkGray"
+    ptLightGray = "lightGray"
+    ptDarkHorizontal = "darkHorizontal"
+    ptDarkVertical = "darkVertical"
+    ptDarkDown = "darkDown"
+    ptDarkUp = "darkUp"
+    ptDarkGrid = "darkGrid"
+    ptDarkTrellis = "darkTrellis"
+    ptLightHorizontal = "lightHorizontal"
+    ptLightVertical = "lightVertical"
+    ptLightDown = "lightDown"
+    ptLightUp = "lightUp"
+    ptLightGrid = "lightGrid"
+    ptLightTrellis = "lightTrellis"
+    ptGray125 = "gray125"
+    ptGray0625 = "gray0625"
+
+  GradientFill* = object
+    ## Gradient to fill the cell. Use
+    ## `gradientFill<gradientFill,GradientStop,GradientType,float,float,float,float,float>`_
+    ## to initialize.
+    edit: bool
+    stop*: GradientStop
+    `type`*: GradientType
+    degree*: float
+    left*: float
+    right*: float
+    top*: float
+    bottom*: float
+
+  GradientStop* = object
+    ## Indicate where the gradient will stop with its color at stopping position.
+    color*: string
+    position*: float
+
+  GradientType* = enum
+    gtLinear = "linear"
+    gtPath = "path"
 
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
@@ -700,6 +760,10 @@ proc addFont(styles: XmlNode, font: Font): (int, bool) =
       fontId = fontCount
   (fontId, applyFont)
 
+template retrieveColor(color: string): untyped =
+  let r = if color.startsWith("#"): color[1..^1] else: color
+  "FF" & r
+
 proc addBorder(styles: XmlNode, border: Border): (int, bool) =
   if not border.edit:
     return
@@ -725,9 +789,7 @@ proc addBorder(styles: XmlNode, border: Border): (int, bool) =
     if fld.edit:
       elem.attrs["style"] = $fld.style
       if fld.color != "":
-        let rgb = if fld.color.startsWith("#"): fld.color[1..^1]
-                  else: fld.color
-        elem.add <>color(rgb = rgb)
+        elem.add <>color(rgb = retrieveColor(fld.color))
     bnode.add elem
 
   addBorderProp("start", start)
@@ -742,6 +804,53 @@ proc addBorder(styles: XmlNode, border: Border): (int, bool) =
 
   (borderId, applyBorder)
 
+proc addPattern(fillnode: XmlNode, patt: PatternFill) =
+  if not patt.edit: return
+  let patternNode = <>patternFill(patternType= $patt.patternType)
+
+  if patt.fgColor != "":
+    patternNode.add <>fgColor(rgb = retrieveColor(patt.fgColor))
+  if patt.bgColor != "":
+    patternNode.add <>bgColor(rgb = retrieveColor(patt.bgColor))
+
+  fillnode.add patternNode
+
+proc addGradient(fillnode: XmlNode, grad: GradientFill) =
+  if not grad.edit: return
+  let gradientNode = newXmlTree("gradientFill", [
+    <>stop(position= $grad.stop.position,
+      <>color(rgb= retrieveColor(grad.stop.color)))
+  ], {
+    "type": $grad.`type`,
+    "degree": $grad.degree,
+    "left": $grad.left,
+    "right": $grad.right,
+    "top": $grad.top,
+    "bottom": $grad.bottom,
+  }.toXmlAttributes)
+
+  fillnode.add gradientNode
+
+proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
+  if not fill.edit: return
+  var fills = styles.child "fills"
+  var count = -1
+  result[1] = true
+  if fills == nil:
+    count = 0
+    fills = <>fills(count= $0)
+    styles.add fills
+  else:
+    count = try: parseInt(fills.attr "count") except: 0
+
+  let fillnode = <>fill()
+  fillnode.addPattern fill.pattern
+  fillnode.addGradient fill.gradient
+
+  fills.attrs["count"] = $(count+1)
+  fills.add fillnode
+  result[0] = count
+
 # To add style need to update:
 # ✗ numFmts
 # ✓ fonts
@@ -754,6 +863,7 @@ proc addBorder(styles: XmlNode, border: Border): (int, bool) =
 proc style*(row: Row, col: string,
   font = Font(size: 1),
   border = Border(),
+  fill = Fill(),
   alignment: openarray[(string, string)] = []) =
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
@@ -780,6 +890,7 @@ proc style*(row: Row, col: string,
   let styleId = try: parseInt(c.attr "s") except: 0
   let applyAlignment = alignment.len > 0
   let (borderId, applyBorder) = styles.addBorder border
+  let (fillId, applyFill) = styles.addFill fill
 
   var csxfs = styles.child "cellStyleXfs"
   if csxfs == nil:
@@ -790,7 +901,7 @@ proc style*(row: Row, col: string,
   let xf =
     if styleId == 0:
       <>xf(applyProtection="false", applyAlignment= $applyAlignment, applyFont= $applyFont,
-        numFmtId="0", borderId= $borderId, fillId="0", fontId= $fontId, applyBorder= $applyBorder)
+        numFmtId="0", borderId= $borderId, fillId= $fillId, fontId= $fontId, applyBorder= $applyBorder)
     else:
       cxfs[styleId]
   let alignNode =
@@ -822,6 +933,7 @@ proc style*(row: Row, col: string,
     if border.edit:
       xf.attrs["applyBorder"] = $true
       xf.attrs["borderId"] = $borderId
+    if applyFill: xf.attrs["fillId"] = $fillId
 
 
 proc readExcel*(path: string): Excel =
@@ -966,6 +1078,21 @@ proc `name=`*(s: Sheet, newname: string) =
 
 proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
   diagonalUp, diagonalDown = false): Border =
+  ## Border initializer. Use this instead of object constructor
+  ## to indicate style is ready to apply this border.
+  runnableExamples:
+    import std/with
+    import excelin
+
+    var b = border(diagonalUp = true)
+    with b:
+      start = borderProp(style = bsMedium) # border style
+      diagonalDown = true
+
+    doAssert b.diagonalUp
+    doAssert b.diagonalDown
+    doAssert b.start.style == bsMedium
+
   Border(
     edit: true,
     start: start,
@@ -980,8 +1107,27 @@ proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
 proc borderProp*(style = bsNone, color = ""): BorderProp =
   BorderProp(edit: true, style: style, color: color)
 
+proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
+  Fill(edit: true, pattern: pattern, gradient: gradient)
+
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
+  PatternFill(edit: true, fgColor: fgColor, bgColor: "",
+    patternType: patternType)
+
+proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+  degree, left, right, top, bottom = 0.0): GradientFill =
+  GradientFill(
+    edit: true,
+    stop: stop,
+    `type`: `type`,
+    degree: degree,
+    left: left,
+    right: right,
+    top: top,
+    bottom: bottom,
+  )
+
 when isMainModule:
-  import colors
   let (empty, sheet) = newExcel()
 
   let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
@@ -1015,6 +1161,9 @@ when isMainModule:
       border(
         top = borderProp(style = bsMedium, color = $colRed),
         bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
+      ),
+      fillStyle(
+        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
       ),
       alignment = {"horizontal": "center", "vertical": "center",
         "wrapText": $true, "textRotation": $45})

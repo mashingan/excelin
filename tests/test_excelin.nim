@@ -13,7 +13,7 @@ when v15up:
   from std/math import isNaN
 else:
   from std/math import classify, FloatClass
-import std/unittest
+import std/[unittest, with]
 
 import excelin
 
@@ -218,3 +218,26 @@ suite "Excelin unit test":
     check row1["J", string] == ""
     check row1["K", string] == ""
     checkpoint "fetching shared string done"
+
+  test "can initialize border and its properties for style":
+    var b = border(diagonalUp = true)
+    with b:
+      start = borderProp(style = bsMedium) # border style
+      diagonalDown = true
+
+    check b.diagonalUp
+    check b.diagonalDown
+    check b.start.style == bsMedium
+
+    let b2 = border(
+      start = borderProp(style = bsThick),
+      `end` = borderProp(style = bsThick),
+      top = borderProp(style = bsDotted),
+      bottom = borderProp(style = bsDotted))
+
+    check not b2.diagonalUp
+    check not b2.diagonalDown
+    check b2.start.style == bsThick
+    check b2.`end`.style == bsThick
+    check b2.top.style == bsDotted
+    check b2.bottom.style == bsDotted
