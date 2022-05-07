@@ -110,6 +110,40 @@ type
     equation*: string
     valueStr*: string
 
+  Border* = object
+    start*: BorderProp # left
+    `end`*: BorderProp # right
+    top*: BorderProp
+    bottom*: BorderProp
+    vertical*: BorderProp
+    horizontal*: BorderProp
+
+  Font* = object
+    name*: string
+    family*: int
+    charset*: int
+    size*: Positive
+
+  BorderProp* = object
+    style*: BorderStyle
+    color*: string #in RGB
+
+  BorderStyle* = enum
+    bsNone = "none"
+    bsThin = "thin"
+    bsMedium = "medium"
+    bsDashed = "dashed"
+    bsDotted = "dotted"
+    bsThick = "thick"
+    bsDouble = "double"
+    bsHair = "hair"
+    bsMediumDashed = "mediumDashed"
+    bsDashDot = "dashDot"
+    bsMediumDashDot = "mediumDashDot"
+    bsDashDotDot = "dashDotDot"
+    bsMediumDashDotDot = "mediumDashDotDot"
+    bsSlantDashDot = "slantDashDot"
+
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
@@ -624,17 +658,42 @@ template fetchStyles(row: Row): XmlNode =
   discard a
   r
 
+proc toXmlNode(f: Font): XmlNode =
+  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
+  if f.family >= 0:
+    result.add <>family(val= $f.family)
+  if f.charset >= 0:
+    result.add <>charset(val= $f.charset)
+
+proc addFont(styles: XmlNode, font: Font): (int, bool) =
+  var fontId = 0
+  var applyFont = false
+  if font.name != "":
+    let fontnode = font.toXmlNode
+    applyFont = true
+    var fonts = styles.child "fonts"
+    var fontCount = 0
+    if fonts == nil:
+      fonts = <>fonts(count= "1", fontnode)
+      styles.add fonts
+    else:
+      fontCount = try: parseInt(fonts.attr "count") except: 0
+      fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+      fonts.add fontnode
+      fontId = fontCount
+  (fontId, applyFont)
+
 # To add style need to update:
 # ✗ numFmts
-# ✗ fonts
+# ✓ fonts
 # ✗ borders
 # ✗ fills
 # ✗ cellStyleXfs
-# ✗ cellXfs (the main reference for style in cell)
+# ✓ cellXfs (the main reference for style in cell)
 # ✗ cellStyles (named styles)
 # ✗ colors (if any)
 proc style*(row: Row, col: string,
-  font: openarray[(string, string)] = [],
+  font = Font(size: 1),
   alignment: openarray[(string, string)] = []) =
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
@@ -656,24 +715,10 @@ proc style*(row: Row, col: string,
     row[col] = ""
     c = row.body[pos]
 
-  var fontId = 0
-  var applyFont = false
   let styles = row.fetchStyles
-  if font.len > 0:
-    let fontnode = <>font()
-    for (k, v) in font:
-      fontnode.add newXmlTree(k, [], {"val": v}.toXmlAttributes)
-    applyFont = true
-    var fonts = styles.child "fonts"
-    var fontCount = 0
-    if fonts == nil:
-      fonts = <>fonts(count= "1", fontnode)
-      styles.add fonts
-    else:
-      fontCount = try: parseInt(fonts.attr "count") except: 0
-      fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
-      fonts.add fontnode
-      fontId = fontCount
+  let (fontId, applyFont) = styles.addFont font
+  let styleId = try: parseInt(c.attr "s") except: 0
+  let applyAlignment = alignment.len > 0
 
   var csxfs = styles.child "cellStyleXfs"
   if csxfs == nil:
@@ -681,23 +726,38 @@ proc style*(row: Row, col: string,
   let cxfs = styles.child "cellXfs"
   if cxfs == nil: return
   let xfid = cxfs.len
-  let xf = <>xf(applyProtection="false", applyAlignment="false", applyFont= $applyFont,
-    numFmtId="0", borderId="0", fillId="0", fontId= $fontId, applyBorder="false")
-  let alignNode = <>alignment(shrinkToFit="false", indent="0", vertical="bottom",
-    horizontal="general", textRotation="0", wrapText="false")
-  let protecc = <>protection(hidden="false", locked="true")
+  let xf =
+    if styleId == 0:
+      <>xf(applyProtection="false", applyAlignment= $applyAlignment, applyFont= $applyFont,
+        numFmtId="0", borderId="0", fillId="0", fontId= $fontId, applyBorder="false")
+    else:
+      cxfs[styleId]
+  let alignNode =
+    if styleId == 0:
+      <>alignment(shrinkToFit="false", indent="0", vertical="bottom",
+        horizontal="general", textRotation="0", wrapText="false")
+    else:
+      xf.child "alignment"
+  let protecc = if styleId == 0: <>protection(hidden="false", locked="true")
+                else: xf.child "protection"
 
   for (k, v) in alignment:
     alignNode.attrs[k] = v
 
-  let cxfscount = try: parseInt(cxfs.attr "count") except: 0
-  cxfs.attrs["count"] = $(cxfscount+1)
-  csxfs.attrs["count"] = $(csxfs.len + 1)
-  xf.add alignNode
-  xf.add protecc
-  cxfs.add xf
-  csxfs.add xf
-  c.attrs["s"] = $xfid
+  if styleId == 0:
+    let cxfscount = try: parseInt(cxfs.attr "count") except: 0
+    cxfs.attrs["count"] = $(cxfscount+1)
+    csxfs.attrs["count"] = $(csxfs.len + 1)
+    xf.add alignNode
+    xf.add protecc
+    cxfs.add xf
+    csxfs.add xf
+    c.attrs["s"] = $xfid
+  else:
+    if font.name != "":
+      xf.attrs["fontId"] = $fontId
+      xf.attrs["applyFont"] = $applyFont
+    xf.attrs["applyAlignment"] = $true
 
 
 proc readExcel*(path: string): Excel =
@@ -870,8 +930,8 @@ when isMainModule:
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
-    row5.style("A", {"name": "Cambria", "sz": "11"},
-      {"horizontal": "center", "wrapText": "true", "textRotation": "45"})
+    row5.style("A", Font(name: "DejaVu Sans Mono", size: 11, family: -1, charset: -1),
+      {"horizontal": "center", "vertical": "center", "wrapText": $true, "textRotation": $45})
     let row6 = sheet.row 6
     row6["B"] = 5
     row6["A"] = -1
@@ -894,10 +954,11 @@ when isMainModule:
     dump row11[10.toCol, Formula]
 
     let row12 = sheet.row 12
-    row12.style("C", {"name": "Cambria", "sz": "11"},
+    row12.style("C", Font(name: "Cambria", size: 11, family: -1, charset: -1),
       {"horizontal": "center", "vertical": "center", "wrapText": "true",
       "textRotation": "90"})
-    dump sheet.body
+    row5.style "A", alignment = {"textRotation": $90} # edit existing style
+    #dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
     #dump empty.otherfiles["styles.xml"]
