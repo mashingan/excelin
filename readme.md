@@ -14,6 +14,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Working with sheets](#working-with-sheets)
 * [Cell formula](#cell-formula)
 * [Cell styling](#cell-styling)
+* [Row display](row-display)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -409,6 +410,52 @@ excel.writeFile "excelin-example-row-style.xlsx"
 This is what it looks like when viewed with Libreoffice.
 
 ![cell style](assets/cell-style.png)
+
+[Back to examples list](#examples)
+
+## Row display
+
+In this example, we'll see how to hide, adding the outline level and collapse
+the row.
+
+```nim
+import std/with
+import excelin
+
+let (excel, sheet) = newExcel()
+
+template hideLevel(rnum, olevel: int): untyped =
+  let r = sheet.row rnum
+  with r:
+    hide = true
+    outlineLevel = olevel
+  r
+    
+sheet.row(2).hide = true
+discard 3.hideLevel 3
+discard 4.hideLevel 2
+discard 5.hideLevel 1
+let row6 = 6.hideLevel 1
+row6.collapsed = true
+
+let row7 = sheet.row 7
+row7.outlineLevel = 7 # we'll use this to reset the outline below
+
+# Above example we setup 3 rows, row 3 - 5 which each has different
+# outline level decreasing from 3 to 1.
+# For row 6, we set it to be collapsed by setting it true.
+# Let's reset the row 7 outline level by set it to 0.
+
+row7.outlineLevel = 0
+
+excel.writeFile "excelin-example-row-display.xlsx"
+```
+
+![rows outline collapsing](assets/rows-outline-collapsing.gif)
+
+As we can see above, the row 2 is hidden with outline level 0 so we can't see it anymore.  
+While row 3, 4, 5 has different outline level with row 6 has outline level 1 and it's collapsed.  
+So we can expand and collapse due different outline level.
 
 [Back to examples list](#examples)
 
