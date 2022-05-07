@@ -11,7 +11,7 @@
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
-     attrs, `attrs=`, innerText, `[]`, insert, clear, XmlAttributes
+     attrs, `attrs=`, innerText, `[]`, insert, clear
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
   parseFloat, parseUint, toUpperAscii, join, startsWith
@@ -148,7 +148,7 @@ type
 
   Border* = object
     ## The object that will define the border we want to apply to cell.
-    ## Use `border <border,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,bool,bool>`_
+    ## Use `border <#border,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,bool,bool>`_
     ## to initialize working border instead because the indication whether border can be edited is private.
     edit: bool
     start*: BorderProp # left
@@ -162,7 +162,7 @@ type
 
   BorderProp* = object
     ## The object that will define the style and color we want to apply to border
-    ## Use `borderProp<borderProp,BorderStyle,string>`_
+    ## Use `borderProp<#borderProp,BorderStyle,string>`_
     ## to initialize working border prop instead because the indication whether
     ## border properties filled is private.
     edit: bool ## indicate whether border properties is filled
@@ -186,14 +186,14 @@ type
     bsSlantDashDot = "slantDashDot"
 
   Fill* = object
-    ## Fill cell style. Use `fillStyle <fillStyle,PatternFill,GradientFill>`_
+    ## Fill cell style. Use `fillStyle <#fillStyle,PatternFill,GradientFill>`_
     ## to initialize this object to indicate cell will be edited with this Fill.
     edit: bool
     pattern*: PatternFill
     gradient*: GradientFill
 
   PatternFill* = object
-    ## Pattern to fill the cell. Use `patternFill<patternFill,string,string,PatternType>`_
+    ## Pattern to fill the cell. Use `patternFill<#patternFill,string,string,PatternType>`_
     ## to initialize.
     edit: bool
     fgColor*: string
@@ -223,7 +223,7 @@ type
 
   GradientFill* = object
     ## Gradient to fill the cell. Use
-    ## `gradientFill<gradientFill,GradientStop,GradientType,float,float,float,float,float>`_
+    ## `gradientFill<#gradientFill,GradientStop,GradientType,float,float,float,float,float>`_
     ## to initialize.
     edit: bool
     stop*: GradientStop

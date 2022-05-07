@@ -1,7 +1,9 @@
-* 0.3.7:
-    * Fix mispoint when adding new shared strings.
-    * Remove deprecated, `addRow`.
-    * Change internal shared strings using tables.
+* 0.4.0:
+    * Add cell styles API.
+    * Add row display API.
+    * Remove deprecated `addRow`.
+    * Fix mispoint when adding new shared strings
+    * Change internal shared strings implementation.
     * Fix created properties when calling newExcel.
 * 0.3.6:
     * Fix unreaded embed files when reading excel.
