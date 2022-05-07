@@ -637,7 +637,7 @@ proc style*(row: Row, col: string, font: XmlNode = nil, alignment: XmlAttributes
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
-  let c =
+  var c =
     if not sparse:
       pos = col.toNum
       row.body[pos]
@@ -649,7 +649,10 @@ proc style*(row: Row, col: string, font: XmlNode = nil, alignment: XmlAttributes
           x = node
           break
       x
-  if c == nil: return
+  if c == nil:
+    pos = row.body.len
+    row[col] = ""
+    c = row.body[pos]
 
   var fontId = 0
   var applyFont = false
@@ -887,7 +890,12 @@ when isMainModule:
       sum += i
     row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
     dump row11[10.toCol, Formula]
-    #dump sheet.body
+
+    let row12 = sheet.row 12
+    row12.style("C", <>font(<>name(val="Cambria"), <>sz(val="11")),
+      {"horizontal": "center", "vertical": "center", "wrapText": "true",
+      "textRotation": "90"}.toXmlAttributes)
+    dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
     #dump empty.otherfiles["styles.xml"]
