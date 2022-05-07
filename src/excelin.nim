@@ -633,7 +633,9 @@ template fetchStyles(row: Row): XmlNode =
 # ✗ cellXfs (the main reference for style in cell)
 # ✗ cellStyles (named styles)
 # ✗ colors (if any)
-proc style*(row: Row, col: string, font: XmlNode = nil, alignment: openarray[(string, string)] = []) =
+proc style*(row: Row, col: string,
+  font: openarray[(string, string)] = [],
+  alignment: openarray[(string, string)] = []) =
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
@@ -657,17 +659,20 @@ proc style*(row: Row, col: string, font: XmlNode = nil, alignment: openarray[(st
   var fontId = 0
   var applyFont = false
   let styles = row.fetchStyles
-  if font != nil:
+  if font.len > 0:
+    let fontnode = <>font()
+    for (k, v) in font:
+      fontnode.add newXmlTree(k, [], {"val": v}.toXmlAttributes)
     applyFont = true
     var fonts = styles.child "fonts"
     var fontCount = 0
     if fonts == nil:
-      fonts = <>fonts(count= "1", font)
+      fonts = <>fonts(count= "1", fontnode)
       styles.add fonts
     else:
       fontCount = try: parseInt(fonts.attr "count") except: 0
       fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
-      fonts.add font
+      fonts.add fontnode
       fontId = fontCount
 
   var csxfs = styles.child "cellStyleXfs"
@@ -865,7 +870,7 @@ when isMainModule:
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
     row5["A"] = "yeehaa"
-    row5.style("A", <>font(<>name(val="Cambria"), <>sz(val="11")),
+    row5.style("A", {"name": "Cambria", "sz": "11"},
       {"horizontal": "center", "wrapText": "true", "textRotation": "45"})
     let row6 = sheet.row 6
     row6["B"] = 5
@@ -889,7 +894,7 @@ when isMainModule:
     dump row11[10.toCol, Formula]
 
     let row12 = sheet.row 12
-    row12.style("C", <>font(<>name(val="Cambria"), <>sz(val="11")),
+    row12.style("C", {"name": "Cambria", "sz": "11"},
       {"horizontal": "center", "vertical": "center", "wrapText": "true",
       "textRotation": "90"})
     dump sheet.body
