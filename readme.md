@@ -14,7 +14,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Working with sheets](#working-with-sheets)
 * [Cell formula](#cell-formula)
 * [Cell styling](#cell-styling)
-* [Row display](row-display)
+* [Row display](#row-display)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:

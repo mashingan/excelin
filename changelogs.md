@@ -1,3 +1,5 @@
+* 0.4.1:
+    * Add `shareStyle` API for easy referring the same style.
 * 0.4.0:
     * Add cell styles API.
     * Add row display API.

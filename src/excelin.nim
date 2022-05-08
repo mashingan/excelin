@@ -14,7 +14,7 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      attrs, `attrs=`, innerText, `[]`, insert, clear
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join, startsWith
+  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
 from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
@@ -48,7 +48,7 @@ const
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.0"
+  excelinVersion* = "0.4.1"
 
 type
   Excel* = ref object
@@ -1045,6 +1045,48 @@ proc style*(row: Row, col: string,
       xf.attrs["borderId"] = $borderId
     if applyFill: xf.attrs["fillId"] = $fillId
 
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0
+
+proc retrieveCell(row: Row, col: string): XmlNode =
+  if $cfSparse == row.body.attr "cellfill":
+    let colrow = fmt"{col}{row.rowNum}"
+    let fetchpos = row.body.fetchCell colrow
+    if fetchpos < 0: nil
+    else: row.body[fetchpos]
+  else:
+    row.body[col.toNum]
+
+proc shareStyle*(row: Row, col: string, targets: varargs[string]) =
+  ## Share style from source row and col string to any arbitrary cells
+  ## in format {Col}{Num} e.g. A1, B2, C3 etc.
+  let cnode = row.retrieveCell col
+  if cnode == nil: return
+  let sid = cnode.attr "s"
+  if sid == "" or sid == "0": return
+
+  for cr in targets:
+    let (tgcol, tgrow) = cr.colrow
+    #let ctgt = row.sheet.row(tgrow).retrieveCell tgcol
+    let tgtrownode = row(row.sheet, tgrow)
+    let ctgt = tgtrownode.retrieveCell tgcol
+    if ctgt == nil: continue
+    ctgt.attrs["s"] = sid
+
+proc shareStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
+  ## Share style from source {col}{row} to targets {col}{row},
+  ## i.e. `sheet.shareStyle("A1", "B2", "C3")`
+  ## which shared the style in cell A1 to B2 and C3.
+  let (sourceCol, sourceRow) = source.colrow
+  let row = sheet.row sourceRow
+  row.shareStyle sourceCol, targets
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1195,7 +1237,6 @@ when isMainModule:
     doAssert cn[0].toNum == cn[1]
     doAssert cn[1].toCol == cn[0]
 
-  empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
     let row = sheet.row(1, cfFilled)
     row["A"] = "hehe"
@@ -1209,9 +1250,7 @@ when isMainModule:
     dump row["B", int]
     dump row.getCell[:uint]("C")
     dump row["D", float]
-    empty.writeFile "generate-modified.xlsx"
     row["D"] = now() # modify to date time
-    empty.writeFile "generate-modified-cell.xlsx"
     #empty.deleteSheet "hehe"
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
@@ -1262,11 +1301,27 @@ when isMainModule:
       with r:
         hide = true
         outlineLevel = olevel
-    13.hideLevel 3
-    14.hideLevel 2
-    15.hideLevel 1
-    16.hideLevel 1
-    sheet.row(16).collapsed = true
+      r
+    discard 13.hideLevel 3
+    discard 14.hideLevel 2
+    discard 15.hideLevel 1
+    let row16 = 16.hideLevel 1
+    row16.collapsed = false
+    row16.hide = false
+
+    for i in 0 ..< 5:
+      let colstyle = i.toCol
+      row16[colstyle] = colstyle
+
+    sheet.row(13)["B"] = "bebebe"
+    sheet.row(14)["C"] = "cecece"
+    sheet.row(15)["D"] = "dedede"
+
+    row16.style "A", font = Font(name: "DejaVu Sans Mono", size: 11,
+      family: -1, charset: -1)
+
+    row16.shareStyle("A", "B16", "C16", "D16", "E16")
+    sheet.shareStyle("A16", "B13", "C14", "D15")
 
     #dump sheet.body
     #dump empty.sharedStrings.body
