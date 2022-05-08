@@ -49,7 +49,7 @@ const
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.1"
+  excelinVersion* = "0.4.2"
 
 type
   Excel* = ref object
@@ -1227,19 +1227,28 @@ proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
   for p in prop:
     propnode.add newXmlTree(p[0], [newText p[1]])
 
-proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
-  ## Return a new Excel and Sheet at the same time to work for both.
-  ## The Sheet returned is by default has name "Sheet1" but user can
-  ## use `name= proc<#name=,Sheet,string>`_ to change its name.
-  let excel = readExcel emptyxlsx
+proc createdAt*(excel: Excel, at: DateTime|Time = now()) =
+  ## Set the created at properties to our excel.
+  ## Useful when we're creating an excel from template so
+  ## we set the creation date to current date which different
+  ## with template created date.
   const core = "core.xml"
   if core in excel.otherfiles:
     let (_, cxml) = excel.otherfiles[core]
     if cxml != nil:
       var created = cxml.child "dcterms:created"
+      if created == nil:
+        created = newXmlTree("dcterms:created", [])
+        cxml.add created
       clear created
-      created.add newText(now().format datefmt)
+      created.add newText(at.format datefmt)
 
+proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
+  ## Return a new Excel and Sheet at the same time to work for both.
+  ## The Sheet returned is by default has name "Sheet1" but user can
+  ## use `name= proc<#name=,Sheet,string>`_ to change its name.
+  let excel = readExcel emptyxlsx
+  excel.createdAt
   (excel, excel.getSheet "Sheet1")
 
 proc writeFile*(e: Excel, targetpath: string) =
