@@ -94,6 +94,10 @@ fillStyle	excelin.html#fillStyle	excelin: fillStyle(pattern = PatternFill(); gra
 patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill	
 gradientFill	excelin.html#gradientFill,float,float,float,float,float	excelin: gradientFill(stop = GradientStop(); type = gtLinear;\n             degree, left, right, top, bottom = 0.0): GradientFill	
 style	excelin.html#style,Row,string,openArray[]	excelin: style(row: Row; col: string; font = Font(size: 1); border = Border();\n      fill = Fill(); alignment: openArray[(string, string)] = [])	
+shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
+shareStyle	excelin.html#shareStyle,Sheet,string,varargs[string]	excelin: shareStyle(sheet: Sheet; source: string; targets: varargs[string])	
+copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
+copyStyle	excelin.html#copyStyle,Sheet,string,varargs[string]	excelin: copyStyle(sheet: Sheet; source: string; targets: varargs[string])	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
 newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)	

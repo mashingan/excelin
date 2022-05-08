@@ -14,7 +14,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Working with sheets](#working-with-sheets)
 * [Cell formula](#cell-formula)
 * [Cell styling](#cell-styling)
-* [Row display](row-display)
+* [Row display](#row-display)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -384,13 +384,31 @@ row2["E"] = longstr
 row2.style "D", alignment = {"textRotation": $90}
 
 # here, we changed the alignment style from diagonal direction (45∘)  to upstand (90∘).
+# We can also share a cell style to other cells and since it's shared, any changes to
+# other cells for its styling will affect all others cell it's related.
 
+sheet.shareStyle("D2", "D4", "E4", "F4")
+row2.shareStyle("D", "D4", "E4", "F4")
+
+# Above, we shares D2 cell style to cells D4, E4, and F4 using two differents
+# proc which work same. This way we can work whether we only have the sheet
+# or we already have the row.
+
+# Another way is to copyStyle, as its named so, we copy style from source cell
+# to target cell(s). This way any changes to any cells it's copied from and to
+# will not affect each others.
+
+sheet.copyStyle("D2", "D5", "E5", "F5")
+row2.copyStyle("D", "D5", "E5", "F5")
+
+
+# Now we want to see the cell in its row.
 # Since the cell E2 is quite long and with its alignment has wrapText true, we can also
 # manually change the row height to see all the text.
 
 row2.height = 200
 
-# By definition, the value is point but it's not clear relation what's the point points.
+# By definition, the value is point but it's not clear the relation what's the point points.
 # So if we want to leave how the height for other application to read, we can reset by
 # setting the height 0
 

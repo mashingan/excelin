@@ -11,10 +11,11 @@
 
 from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
-     attrs, `attrs=`, innerText, `[]`, insert, clear
+     attrs, `attrs=`, innerText, `[]`, insert, clear, XmlNodeKind, kind,
+     tag
 from std/xmlparser import parseXml
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join, startsWith
+  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
 from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
@@ -48,7 +49,7 @@ const
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.0"
+  excelinVersion* = "0.4.1"
 
 type
   Excel* = ref object
@@ -406,6 +407,7 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
     let cellsTotal = row.body.len
     let colnum = toNum col
     if colnum < cellsTotal:
+      cnode.attrs["s"] = row.body[colnum].attr "s"
       row.body.delete colnum
       row.body.insert cnode, colnum
     else:
@@ -1045,6 +1047,116 @@ proc style*(row: Row, col: string,
       xf.attrs["borderId"] = $borderId
     if applyFill: xf.attrs["fillId"] = $fillId
 
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0
+
+proc retrieveCell(row: Row, col: string): XmlNode =
+  if $cfSparse == row.body.attr "cellfill":
+    let colrow = fmt"{col}{row.rowNum}"
+    let fetchpos = row.body.fetchCell colrow
+    if fetchpos < 0:
+      row[col] = ""
+      row.body[row.body.len-1]
+    else: row.body[fetchpos]
+  else:
+    row.body[col.toNum]
+
+proc shareStyle*(row: Row, col: string, targets: varargs[string]) =
+  ## Share style from source row and col string to any arbitrary cells
+  ## in format {Col}{Num} e.g. A1, B2, C3 etc. Changing the shared
+  ## style will affect entire cells that has shared style.
+  let cnode = row.retrieveCell col
+  if cnode == nil: return
+  let sid = cnode.attr "s"
+  if sid == "" or sid == "0": return
+
+  for cr in targets:
+    let (tgcol, tgrow) = cr.colrow
+    #let ctgt = row.sheet.row(tgrow).retrieveCell tgcol
+    let tgtrownode = row(row.sheet, tgrow)
+    let ctgt = tgtrownode.retrieveCell tgcol
+    if ctgt == nil: continue
+    ctgt.attrs["s"] = sid
+
+proc shareStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
+  ## Share style from source {col}{row} to targets {col}{row},
+  ## i.e. `sheet.shareStyle("A1", "B2", "C3")`
+  ## which shared the style in cell A1 to B2 and C3.
+  let (sourceCol, sourceRow) = source.colrow
+  let row = sheet.row sourceRow
+  row.shareStyle sourceCol, targets
+
+proc copyTo(src, dest: XmlNode) =
+  if src == nil or dest == nil or
+    dest.kind != xnElement or src.kind != xnElement or
+    src.tag != dest.tag:
+    return
+
+  for k, v in src.attrs:
+    dest.attrs[k] = v
+
+  for child in src:
+    let newchild = newXmlTree(child.tag, [], newStringTable())
+    child.copyTo newchild
+    dest.add newchild
+
+
+proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
+  ## Copy style from row and col source to targets. The difference
+  ## with `shareStyle proc<#shareStyle<Row,string,varargs[]>`_ is
+  ## copy will make a new same style. So changing targets cell
+  ## style later won't affect the source and vice versa.
+  let cnode = row.retrieveCell col
+  if cnode == nil: return
+  let sid = cnode.attr "s"
+  if sid == "" or sid == "0": return
+  let styles = row.fetchStyles
+  if styles == nil: return
+  let cxfs = styles.child "cellXfs"
+  if cxfs == nil or cxfs.len < 1: return
+  var csxfs = styles.child "cellStyleXfs"
+  if csxfs == nil:
+    csxfs = <>cellStyleXfs(count= $0)
+    styles.add csxfs
+  let stylepos = try: parseInt(sid) except: -1
+  if stylepos < 0 or stylepos >= cxfs.len: return
+  var stylescount = cxfs.len
+  let refxf = cxfs[stylepos]
+
+  var count = 0
+  for cr in targets:
+    let (tgcol, tgrow) = cr.colrow
+    let ctgt = row.sheet.row(tgrow).retrieveCell tgcol
+    if ctgt == nil: continue
+
+    let newxf = newXmlTree("xf", [], newStringTable())
+    refxf.copyTo newxf
+
+    ctgt.attrs["s"] = $stylescount
+    inc stylescount
+    inc count
+
+    cxfs.add newxf
+    csxfs.add newxf
+
+  cxfs.attrs["count"] = $stylescount
+  csxfs.attrs["count"] = $(csxfs.len+count)
+
+proc copyStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
+  ## Copy style from source {col}{row} to targets {col}{row},
+  ## i.e. `sheet.shareStyle("A1", "B2", "C3")`
+  ## which copied style from cell A1 to B2 and C3.
+  let (sourceCol, sourceRow) = source.colrow
+  let row = sheet.row sourceRow
+  row.copyStyle sourceCol, targets
+
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1195,7 +1307,6 @@ when isMainModule:
     doAssert cn[0].toNum == cn[1]
     doAssert cn[1].toCol == cn[0]
 
-  empty.writeFile "generate-base-empty.xlsx"
   if sheet != nil:
     let row = sheet.row(1, cfFilled)
     row["A"] = "hehe"
@@ -1209,9 +1320,7 @@ when isMainModule:
     dump row["B", int]
     dump row.getCell[:uint]("C")
     dump row["D", float]
-    empty.writeFile "generate-modified.xlsx"
     row["D"] = now() # modify to date time
-    empty.writeFile "generate-modified-cell.xlsx"
     #empty.deleteSheet "hehe"
     #empty.writeFile "generate-deleted-sheet.xlsx"
     let row5 = sheet.row 5
@@ -1260,13 +1369,33 @@ when isMainModule:
     template hideLevel(rnum, olevel: int): untyped =
       let r = sheet.row rnum
       with r:
-        hide = true
+        #hide = true
         outlineLevel = olevel
-    13.hideLevel 3
-    14.hideLevel 2
-    15.hideLevel 1
-    16.hideLevel 1
-    sheet.row(16).collapsed = true
+      r
+    let row13 = 13.hideLevel 3
+    let row14 = 14.hideLevel 2
+    let row15 = 15.hideLevel 1
+    let row16 = 16.hideLevel 1
+    row16.collapsed = false
+    row16.hide = false
+
+    for i in 0 ..< 5:
+      let colstyle = i.toCol
+      row16[colstyle] = colstyle
+
+    row16.style "A", font = Font(name: "DejaVu Sans Mono", size: 11,
+      family: -1, charset: -1)
+
+    row16.shareStyle("A", "B16", "C16", "D16", "E16")
+    sheet.shareStyle("A16", "B13", "C14", "D15")
+    row13["B"] = "bebebe"
+    row14["C"] = "cecece"
+    row15["D"] = "dedede"
+
+    row16.copyStyle("A", "C13", "D14", "E15")
+    row13["C"] = "copied style from A16"
+    row14["D"] = "copied style from A16"
+    row15["E"] = "copied style from A16"
 
     #dump sheet.body
     #dump empty.sharedStrings.body

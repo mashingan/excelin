@@ -228,7 +228,7 @@ window.addEventListener('DOMContentLoaded', main);
   <a class="reference reference-toplevel" href="#10" id="60">Consts</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#excelinVersion"
-    title="excelinVersion = &quot;0.4.0&quot;">excelinVersion</a></li>
+    title="excelinVersion = &quot;0.4.1&quot;">excelinVersion</a></li>
 
   </ul>
 </li>
@@ -283,6 +283,13 @@ window.addEventListener('DOMContentLoaded', main);
   <ul class="simple nested-toc-section">collapsed=
       <li><a class="reference" href="#collapsed%3D%2CRow%2Cbool"
     title="collapsed=(row: Row; yes: bool)">collapsed=(row: Row; yes: bool)</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">copyStyle
+      <li><a class="reference" href="#copyStyle%2CRow%2Cstring%2Cvarargs%5Bstring%5D"
+    title="copyStyle(row: Row; col: string; targets: varargs[string])">copyStyle(row: Row; col: string; targets: varargs[string])</a></li>
+  <li><a class="reference" href="#copyStyle%2CSheet%2Cstring%2Cvarargs%5Bstring%5D"
+    title="copyStyle(sheet: Sheet; source: string; targets: varargs[string])">copyStyle(sheet: Sheet; source: string; targets: varargs[string])</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">deleteSheet
@@ -389,6 +396,13 @@ window.addEventListener('DOMContentLoaded', main);
     title="rowNum(r: Row): Positive">rowNum(r: Row): Positive</a></li>
 
   </ul>
+  <ul class="simple nested-toc-section">shareStyle
+      <li><a class="reference" href="#shareStyle%2CRow%2Cstring%2Cvarargs%5Bstring%5D"
+    title="shareStyle(row: Row; col: string; targets: varargs[string])">shareStyle(row: Row; col: string; targets: varargs[string])</a></li>
+  <li><a class="reference" href="#shareStyle%2CSheet%2Cstring%2Cvarargs%5Bstring%5D"
+    title="shareStyle(sheet: Sheet; source: string; targets: varargs[string])">shareStyle(sheet: Sheet; source: string; targets: varargs[string])</a></li>
+
+  </ul>
   <ul class="simple nested-toc-section">sheetNames
       <li><a class="reference" href="#sheetNames%2CExcel"
     title="sheetNames(e: Excel): seq[string]">sheetNames(e: Excel): seq[string]</a></li>
@@ -464,9 +478,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object that will define the border we want to apply to cell. Use <a class="reference external" href="#border,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,BorderProp,bool,bool">border</a> to initialize working border instead because the indication whether border can be edited is private.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L149"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L150"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L149" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L150" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -480,9 +494,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object that will define the style and color we want to apply to border Use <a class="reference external" href="#borderProp,BorderStyle,string">borderProp</a> to initialize working border prop instead because the indication whether border properties filled is private.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L163"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L164"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -497,9 +511,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L172"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L173"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L172" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L173" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -510,9 +524,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L103"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L104"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L103" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L104" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -531,9 +545,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object the represent as Excel file, mostly used for reading the Excel and writing it to Zip file and to memory buffer (at later version).
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L54"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L55"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L54" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L55" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -544,9 +558,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Error when the Excel file read is invalid, specifically Excel file that doesn't have workbook.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L99"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L100"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L99" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L100" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -560,9 +574,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Fill cell style. Use <a class="reference external" href="#fillStyle,PatternFill,GradientFill">fillStyle</a> to initialize this object to indicate cell will be edited with this Fill.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L188"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L189"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L188" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L189" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -587,9 +601,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Cell font styling. Provide name if it's intended to style the cell. If no name is supplied, it will ignored. Field <tt class="docutils literal"><span class="pre"><span class="Identifier">family</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Identifier">charset</span></span></tt> are optionals but in order to be optional, provide it with negative value because there's value for family and charset 0. Since by default int is 0, it could be yield different style if the family and charset are not intended to be filled but not assigned with negative value.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L115"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L116"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L115" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L116" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -602,9 +616,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Object exclusively working with formula in a cell. The equation is simply formula representative and the valueStr is the value in its string format, which already calculated beforehand.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L107"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L108"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L107" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L108" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -623,9 +637,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Gradient to fill the cell. Use <a class="reference external" href="#gradientFill,GradientStop,GradientType,float,float,float,float,float">gradientFill</a> to initialize.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L224"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L225"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -638,9 +652,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Indicate where the gradient will stop with its color at stopping position.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L237"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L238"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L237" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L238" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -651,9 +665,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L242"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L243"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L242" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L243" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -668,9 +682,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Pattern to fill the cell. Use <a class="reference external" href="#patternFill,string,string,PatternType">patternFill</a> to initialize.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L195"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L196"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L195" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L196" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -689,9 +703,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L203"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L204"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L203" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L204" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -703,9 +717,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object that will be used for working with values within cells of a row. Users can get the value within cell and set its value.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L85"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L86"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L85" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L86" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -719,9 +733,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The main object that will be used most of the time for many users. This object will represent a sheet in Excel file such as adding row getting row, and/or adding cell directly.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L77"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L78"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L77" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L78" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -733,9 +747,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L137"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L138"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L137" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L138" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -747,9 +761,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L144"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L145"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L144" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L145" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -764,9 +778,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The object that used for managing package information of Excel file. Most users won't need to use this.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L69"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L70"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L69" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L70" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -776,14 +790,14 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#10">Consts</a></h1>
 <dl class="item">
 <div id="excelinVersion">
-<dt><pre><a href="excelin.html#excelinVersion"><span class="Identifier">excelinVersion</span></a> <span class="Other">=</span> <span class="StringLit">&quot;0.4.0&quot;</span></pre></dt>
+<dt><pre><a href="excelin.html#excelinVersion"><span class="Identifier">excelinVersion</span></a> <span class="Other">=</span> <span class="StringLit">&quot;0.4.1&quot;</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L51"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L52"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L51" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L52" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -799,9 +813,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get Excel file as string. Currently implemented by writing to temporary dir first because there's no API to get the data directly.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1160"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1272"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1160" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1272" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -812,9 +826,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add cell with overload for truthy value.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L456"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L458"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L456" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L458" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -824,9 +838,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add cell with overload for DateTime or Time. The saved value will be in string format of <tt class="docutils literal"><span class="pre"><span class="Identifier">yyyy</span><span class="Operator">-</span><span class="Identifier">MM</span><span class="Operator">-</span><span class="Identifier">dd</span><span class="CharLit">'T'</span><span class="Identifier">HH</span><span class="Punctuation">:</span><span class="Identifier">mm</span><span class="Punctuation">:</span><span class="Identifier">ss</span><span class="CharLit">'.'</span><span class="Identifier">fffzz</span></span></tt> e.g. <tt class="docutils literal"><span class="pre"><span class="DecNumber">2200</span><span class="Operator">-</span><span class="DecNumber">10</span><span class="Operator">-</span><span class="DecNumber">01</span><span class="Identifier">T11</span><span class="Punctuation">:</span><span class="DecNumber">22</span><span class="Punctuation">:</span><span class="FloatNumber">33.456</span><span class="Operator">-</span><span class="DecNumber">03</span></span></tt>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L461"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L463"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L461" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L463" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -837,9 +851,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L468"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L470"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L468" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L470" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -849,9 +863,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add cell with overload for any number.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L451"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L453"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L451" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L453" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -862,9 +876,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add cell with overload for value string. Supplied column is following the Excel convention starting from A -  Z, AA - AZ ...
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L442"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L444"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L442" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L444" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -881,9 +895,9 @@ Getting cell value from supplied return typedesc. This is overload of basic supp
 <p>Other than above mentioned types, see <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell proc</a> for supplying the converting closure for getting the value.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L574"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L576"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L574" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L576" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -899,9 +913,9 @@ Add new sheet to excel with supplied name and return it to enable further workin
 <span class="Identifier">doAssert</span> <span class="Identifier">newsheet</span><span class="Operator">.</span><span class="Identifier">name</span> <span class="Operator">==</span> <span class="StringLit">&quot;Sheet2&quot;</span> <span class="Comment"># instead of to be Sheet1</span></pre><p>This is because the counter for sheet will not be reduced despite of deleting the sheet in order to reduce maintaining relation-id cross reference.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L596"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L598"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L596" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L598" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -924,9 +938,9 @@ Border initializer. Use this instead of object constructor to indicate style is 
 <span class="Identifier">doAssert</span> <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">diagonalDown</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">start</span><span class="Operator">.</span><span class="Identifier">style</span> <span class="Operator">==</span> <span class="Identifier">bsMedium</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L910"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L912"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L910" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L912" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -936,9 +950,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L938"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L940"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L938" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L940" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -948,9 +962,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Clear all cells in the row.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L587"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L589"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L587" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L589" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -960,9 +974,35 @@ class="link-seesrc" target="_blank">Source</a>
 
 Collapse the current row, usually used together with outline level.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L345"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L346"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L345" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L346" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="copyStyle,Row,string,varargs[string]">
+<dt><pre><span class="Keyword">proc</span> <a href="#copyStyle%2CRow%2Cstring%2Cvarargs%5Bstring%5D"><span class="Identifier">copyStyle</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">targets</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Copy style from row and col source to targets. The difference with <a class="reference external" href="Row,string,varargs[]">shareStyle proc&lt;#shareStyle</a> is copy will make a new same style. So changing targets cell style later won't affect the source and vice versa.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1111"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1111" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="copyStyle,Sheet,string,varargs[string]">
+<dt><pre><span class="Keyword">proc</span> <a href="#copyStyle%2CSheet%2Cstring%2Cvarargs%5Bstring%5D"><span class="Identifier">copyStyle</span></a><span class="Other">(</span><span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">source</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">targets</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Copy style from source {col}{row} to targets {col}{row}, i.e. <tt class="docutils literal"><span class="pre"><span class="Identifier">sheet</span><span class="Operator">.</span><span class="Identifier">shareStyle</span><span class="Punctuation">(</span><span class="StringLit">&quot;A1&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;B2&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;C3&quot;</span><span class="Punctuation">)</span></span></tt> which copied style from cell A1 to B2 and C3.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1152"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1152" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -972,9 +1012,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Delete sheet based on its name. Will ignore when it cannot find the name. Delete the first (or older) sheet when there's a same name. Check <a class="reference external" href="#sheetNames,Excel">sheetNames proc</a> to get available names.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L664"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L666"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L664" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L666" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -985,9 +1025,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L941"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L943"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L941" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L943" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1013,9 +1053,9 @@ Get cell value from row with optional function to convert it. When conversion fu
    <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">parse</span><span class="Punctuation">(</span><span class="StringLit">&quot;yyyy/MM/dd&quot;</span><span class="Punctuation">)</span><span class="Punctuation">)</span><span class="Punctuation">)</span></pre><p>Any other type that other than mentioned above should provide the closure proc for the conversion otherwise it will return the default value, for example any ref object will return nil or for object will get the object with its field filled with default values.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L473"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L475"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L473" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L475" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1025,9 +1065,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L249"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L250"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L249" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L250" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1039,9 +1079,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L948"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L950"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L948" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L950" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1051,9 +1091,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L331"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L332"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L331" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L332" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1063,9 +1103,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set the row height which sets its attribute to custom height. If the height 0, will reset its custom height.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L321"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L322"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L321" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L322" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1075,9 +1115,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Check whether row is hidden
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L317"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L318"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L317" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L318" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1087,9 +1127,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Hide the current row
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L313"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L314"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L313" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L314" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1100,9 +1140,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Update workbook or worksheet modification time.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L286"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L287"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L286" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L287" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1112,9 +1152,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Update Excel modification time.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L276"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L277"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L276" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L277" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1124,9 +1164,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get the name of current sheet
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1177"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1289"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1177" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1289" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1136,9 +1176,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Update sheet's name.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1180"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1292"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1180" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1292" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1150,9 +1190,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Return a new Excel and Sheet at the same time to work for both. The Sheet returned is by default has name &quot;Sheet1&quot; but user can use <a class="reference external" href="#name=,Sheet,string">name= proc</a> to change its name.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1118"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1230"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1118" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1230" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1162,9 +1202,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L341"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L342"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L341" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L342" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1174,9 +1214,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set the outline level for the row. Level 0 means resetting the level.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L336"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L337"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L336" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L337" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1187,9 +1227,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L944"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L946"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L944" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L946" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1200,9 +1240,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add information property to Excel file. Will add the properties to the existing.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1109"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1221"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1109" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1221" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1214,9 +1254,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Read Excel file from supplied path. Will raise OSError in case path is not exists, IOError when system errors during reading the file, ExcelError when the Excel file is not valid (Excel file that has no workbook).
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1049"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1161"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1049" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1161" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1227,9 +1267,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add row by selecting which row number to work with. This will return new row if there's no existing row or will return an existing one.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L291"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L292"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L291" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L292" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1239,9 +1279,35 @@ class="link-seesrc" target="_blank">Source</a>
 
 Getting the current row number of Row object users working it.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L309"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L310"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L309" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="shareStyle,Row,string,varargs[string]">
+<dt><pre><span class="Keyword">proc</span> <a href="#shareStyle%2CRow%2Cstring%2Cvarargs%5Bstring%5D"><span class="Identifier">shareStyle</span></a><span class="Other">(</span><span class="Identifier">row</span><span class="Other">:</span> <a href="excelin.html#Row"><span class="Identifier">Row</span></a><span class="Other">;</span> <span class="Identifier">col</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">targets</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Share style from source row and col string to any arbitrary cells in format {Col}{Num} e.g. A1, B2, C3 etc. Changing the shared style will affect entire cells that has shared style.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1071"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1071" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="shareStyle,Sheet,string,varargs[string]">
+<dt><pre><span class="Keyword">proc</span> <a href="#shareStyle%2CSheet%2Cstring%2Cvarargs%5Bstring%5D"><span class="Identifier">shareStyle</span></a><span class="Other">(</span><span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">source</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">targets</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+Share style from source {col}{row} to targets {col}{row}, i.e. <tt class="docutils literal"><span class="pre"><span class="Identifier">sheet</span><span class="Operator">.</span><span class="Identifier">shareStyle</span><span class="Punctuation">(</span><span class="StringLit">&quot;A1&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;B2&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;C3&quot;</span><span class="Punctuation">)</span></span></tt> which shared the style in cell A1 to B2 and C3.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1088"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1088" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1251,9 +1317,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Return all availables sheet names within an Excel file.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1173"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1285"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1173" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1285" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1265,9 +1331,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add style to cell in row by selectively providing the font, border, fill and alignment styles.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L971"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L973"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L971" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L973" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1282,9 +1348,9 @@ Convert our numeric column to string representation. The numeric should be 0-bas
 <span class="Keyword">for</span> <span class="Identifier">cn</span> <span class="Keyword">in</span> <span class="Identifier">colnum</span><span class="Punctuation">:</span>
   <span class="Identifier">doAssert</span> <span class="Identifier">cn</span><span class="Punctuation">[</span><span class="DecNumber">1</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toCol</span> <span class="Operator">==</span> <span class="Identifier">cn</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L374"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L375"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L374" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L375" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1299,9 +1365,9 @@ Convert our column string to its numeric representation. Make sure the supplied 
 <span class="Keyword">for</span> <span class="Identifier">cn</span> <span class="Keyword">in</span> <span class="Identifier">colnum</span><span class="Punctuation">:</span>
   <span class="Identifier">doAssert</span> <span class="Identifier">cn</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toNum</span> <span class="Operator">==</span> <span class="Identifier">cn</span><span class="Punctuation">[</span><span class="DecNumber">1</span><span class="Punctuation">]</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L357"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L358"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L357" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L358" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1312,9 +1378,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Write Excel to file in target path. Raise OSError when it can't write to the intended path.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1133"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L1245"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1133" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L1245" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1336,9 +1402,9 @@ Shorthand for <a class="reference external" href="#getCell,Row,string,typeof(nil
 <span class="Identifier">doAssert</span> <span class="Identifier">dt</span><span class="Operator">.</span><span class="Identifier">month</span> <span class="Operator">==</span> <span class="Identifier">mDec</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">dt</span><span class="Operator">.</span><span class="Identifier">monthday</span> <span class="Operator">=</span> <span class="DecNumber">1</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L556"
+href="https://github.com/mashingan/excelin/tree/version-1-6/src/excelin.nim#L558"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L556" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L558" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1352,7 +1418,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-07 20:33:26 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-08 09:10:18 UTC</small>
       </div>
     </div>
   </div>
