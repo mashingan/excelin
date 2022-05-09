@@ -49,7 +49,7 @@ const
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.1"
+  excelinVersion* = "0.4.2"
 
 type
   Excel* = ref object
@@ -243,6 +243,36 @@ type
   GradientType* = enum
     gtLinear = "linear"
     gtPath = "path"
+
+  Range* = (string, string)
+    ## Range of table which consist of top left cell and bottom right cell.
+
+  FilterType* = enum
+    ftFilter
+    ftCustom
+
+  Filter* = object
+    ## Filtering that supplied to column id in sheet range. Ignored if the sheet
+    ## hasn't set its auto filter range.
+    case kind*: FilterType
+    of ftFilter:
+      valuesStr*: seq[string]
+    of ftCustom:
+      logic*: CustomFilterLogic
+      customs*: seq[(FilterOperator, string)]
+
+  FilterOperator* = enum
+    foEq = "equal"
+    foLt = "lessThan"
+    foLte = "lessThanOrEqual"
+    foNeq = "notEqual"
+    foGte = "greaterThanOrEqual"
+    foGt = "greaterThan"
+
+  CustomFilterLogic* = enum
+    cflAnd = "and"
+    cflOr = "or"
+    cflXor = "xor"
 
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
@@ -1157,6 +1187,86 @@ proc copyStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
   let row = sheet.row sourceRow
   row.copyStyle sourceCol, targets
 
+template `$`(r: Range): string =
+  var dim = r[0]
+  if r[1] != "":
+    dim &= ":" & r[1]
+  dim
+
+proc `ranges=`*(sheet: Sheet, `range`: Range) =
+  ## Set the ranges of data/table within sheet.
+
+  var dim = $`range`
+  if dim == "": dim = "A1"
+  var dimn = sheet.body.child "dimension"
+  if dimn == nil:
+    dimn = <>dimension(ref=dim)
+    sheet.body.insert dimn, 0
+  else:
+    dimn.attrs["ref"] = dim
+
+proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
+  ## Add auto filter to selected range. Setting this range
+  ## will override the previous range setting to sheet.
+  ## Providing with range ("", "") will delete the auto filter
+  ## in the sheet.
+  if `range`[0] == "" and `range`[1] == "":
+    var
+      autoFilterPos = -1
+      autoFilterFound = false
+    for n in sheet.body:
+      inc autoFilterPos
+      if n.tag == "autoFilter":
+        autoFilterFound = true
+        break
+    if autoFilterFound:
+      sheet.body.delete autoFilterPos
+    return
+  sheet.ranges = `range`
+  var autoFilter = sheet.body.child "autoFilter"
+  let dim = $`range`
+  if autoFilter == nil:
+    autoFilter = <>autoFilter(ref=dim)
+    sheet.body.add autoFilter
+  else:
+    autoFilter.attrs["ref"] = dim
+
+  var sheetPr = sheet.body.child "sheetPr"
+  if sheetPr == nil:
+    sheetPr = <>sheetPr(filterMode= $true)
+    sheet.body.add sheetPr
+  else:
+    sheetPr.attrs["filterMode"] = $true
+
+proc autoFilter*(sheet: Sheet): Range =
+  ## Retrieve the set range for auto filter. Mainly used to check
+  ## whether the range for set is already set to add filtering to
+  ## its column number range (0-based).
+  let autoFilter = sheet.body.child "autoFilter"
+  if autoFilter == nil: return
+  discard scanf(autoFilter.attr "ref", "$w:$w", result[0], result[1])
+
+proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
+  ## Set filter to the sheet range. Ignored if sheet hasn't
+  ## set its auto filter range. Set the col with default Filter()
+  ## to reset it.
+  let autoFilter = sheet.body.child "autoFilter"
+  if autoFilter == nil: return
+  let fcolumns = <>filterColumn(colId= $colId)
+  case filter.kind
+  of ftFilter:
+    let filters = <>filters()
+    for val in filter.valuesStr:
+      filters.add <>filter(val=val)
+    fcolumns.add filters
+  of ftCustom:
+    let cusf = newXmlTree("customFilters", [],
+      { $filter.logic: $true }.toXmlAttributes)
+    for (op, val) in filter.customs:
+      cusf.add <>costumFilter(operator= $op, val=val)
+    fcolumns.add cusf
+
+  autoFilter.add fcolumns
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1227,19 +1337,28 @@ proc `prop=`*(e: Excel, prop: varargs[(string, string)]) =
   for p in prop:
     propnode.add newXmlTree(p[0], [newText p[1]])
 
-proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
-  ## Return a new Excel and Sheet at the same time to work for both.
-  ## The Sheet returned is by default has name "Sheet1" but user can
-  ## use `name= proc<#name=,Sheet,string>`_ to change its name.
-  let excel = readExcel emptyxlsx
+proc createdAt*(excel: Excel, at: DateTime|Time = now()) =
+  ## Set the created at properties to our excel.
+  ## Useful when we're creating an excel from template so
+  ## we set the creation date to current date which different
+  ## with template created date.
   const core = "core.xml"
   if core in excel.otherfiles:
     let (_, cxml) = excel.otherfiles[core]
     if cxml != nil:
       var created = cxml.child "dcterms:created"
+      if created == nil:
+        created = newXmlTree("dcterms:created", [])
+        cxml.add created
       clear created
-      created.add newText(now().format datefmt)
+      created.add newText(at.format datefmt)
 
+proc newExcel*(appName = "Excelin"): (Excel, Sheet) =
+  ## Return a new Excel and Sheet at the same time to work for both.
+  ## The Sheet returned is by default has name "Sheet1" but user can
+  ## use `name= proc<#name=,Sheet,string>`_ to change its name.
+  let excel = readExcel emptyxlsx
+  excel.createdAt
   (excel, excel.getSheet "Sheet1")
 
 proc writeFile*(e: Excel, targetpath: string) =
@@ -1335,7 +1454,7 @@ when isMainModule:
         bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
       ),
       fillStyle(
-        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
+        pattern = patternFill(patternType = ptDarkGray, fgColor = $colRed)
       ),
       alignment = {"horizontal": "center", "vertical": "center",
         "wrapText": $true, "textRotation": $45})
@@ -1405,5 +1524,51 @@ when isMainModule:
   else:
     echo "sheet is nil"
 
-  #echo $empty.workbook.body
-  dump empty.sheetNames
+  {.hint[XDeclaredButNotUsed]:off.}
+
+  proc autofiltertest =
+    proc populateRow(row: Row, col, cat: string, data: array[3, float]) =
+      let startcol = col.toNum + 1
+      row[col] = cat
+      var sum = 0.0
+      for i, d in data:
+        row[(startcol+i).toCol] = d
+        sum += d
+      let rnum = row.rowNum
+      let eqrange = fmt"SUM({col}{rnum}:{(startcol+data.len-1).toCol}{rnum})" 
+      dump eqrange
+      row[(startcol+data.len).toCol] = Formula(equation: eqrange, valueStr: $sum)
+    let (excel, sheet) = newExcel()
+    let row5 = sheet.row 5
+    let startcol = "D".toNum
+    for i, s in ["Category", "Num1", "Num2", "Num3", "Total"]:
+      row5[(startcol+i).toCol] = s
+    let row6 = sheet.row 6
+    row6.populateRow("D", "A", [0.18460660235998017, 0.93463071023892952, 0.58647760893211043])
+    sheet.row(7).populateRow("D", "A", [0.50425224796279555, 0.25118866081991786, 0.26918159410869791])
+    sheet.row(8).populateRow("D", "A", [0.6006019062877066, 0.18319235857964333, 0.12254334000604317])
+    sheet.row(9).populateRow("D", "A", [0.78015011938458589, 0.78159963723670689, 6.7448346870105036E-2])
+    sheet.row(10).populateRow("D", "B", [0.63608141933645479, 0.35635845012920608, 0.67122053637107193])
+    sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
+
+    sheet.ranges = ("D5", "H11")
+    #[
+    let autof = <>autoFilter(ref="D5:H11")
+    autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
+    autof.add <>filterColumn(colId="1",
+      newXmlTree("customFilters", [
+        <>costumFilter(operator="greaterThan", val="0"),
+        <>costumFilter(operator="lessThan", val="0.7"),
+      ], {"and": $true}.toXmlAttributes))
+    sheet.body.child("sheetPr").attrs["filterMode"] = $true
+    sheet.body.add autof
+    ]#
+    sheet.autoFilter = ("D5", "H11")
+    sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
+    sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
+      customs: @[(foGt, $0), (foLt, $0.7)])
+    dump sheet.autoFilter
+    dump sheet.body
+    excel.writeFile "generated-autofilter.xlsx"
+
+  autofiltertest()

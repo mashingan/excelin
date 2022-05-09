@@ -15,6 +15,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Cell formula](#cell-formula)
 * [Cell styling](#cell-styling)
 * [Row display](#row-display)
+* [Sheet auto filter](sheet-auto-filter)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -474,6 +475,91 @@ excel.writeFile "excelin-example-row-display.xlsx"
 As we can see above, the row 2 is hidden with outline level 0 so we can't see it anymore.  
 While row 3, 4, 5 has different outline level with row 6 has outline level 1 and it's collapsed.  
 So we can expand and collapse due different outline level.
+
+[Back to examples list](#examples)
+
+## Sheet auto filter
+
+In this example, we'll see how to add auto filter by setting ranges to sheet.
+
+```nim
+from std/strformat import fmt
+import excelin
+
+# Let's add a function for easier to populate data in row.
+proc populateRow(row: Row, col, cat: string, data: array[3, float]) =
+  let startcol = col.toNum + 1
+  row[col] = cat
+  var sum = 0.0
+  for i, d in data:
+    row[(startcol+i).toCol] = d
+    sum += d
+  let rnum = row.rowNum
+  let eqrange = fmt"SUM({col}{rnum}:{(startcol+data.len-1).toCol}{rnum})" 
+  dump eqrange
+  row[(startcol+data.len).toCol] = Formula(equation: eqrange, valueStr: $sum)
+
+# The row data we will work in will be in format
+# D{rnum}: string (Category)
+# E{rnum}: float (Num1)
+# F{rnum}: float (Num2)
+# G{rnum}: float (Num3)
+# H{rnum}: float (Total) with formula SUM(E{rnum}:G{rnum})
+
+let (excel, sheet) = newExcel()
+let row5 = sheet.row 5
+let startcol = "D".toNum
+for i, s in ["Category", "Num1", "Num2", "Num3", "Total"]:
+  row5[(startcol+i).toCol] = s
+  
+# Above, we set the row 5 starting from D to H i.e. D5:H5  
+# as header for data we will work on.
+
+sheet.row(6).populateRow("D", "A", [0.18460660235998017, 0.93463071023892952, 0.58647760893211043])
+sheet.row(7).populateRow("D", "A", [0.50425224796279555, 0.25118866081991786, 0.26918159410869791])
+sheet.row(8).populateRow("D", "A", [0.6006019062877066, 0.18319235857964333, 0.12254334000604317])
+sheet.row(9).populateRow("D", "A", [0.78015011938458589, 0.78159963723670689, 6.7448346870105036E-2])
+sheet.row(10).populateRow("D", "B", [0.63608141933645479, 0.35635845012920608, 0.67122053637107193])
+sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
+
+sheet.ranges = ("D5", "H11")
+sheet.autoFilter = ("D5", "H11")
+
+# We set the range to sheet by assigning Range which is (top left cell, bottom right cell).
+# Setting up range will not setup the auto filter but setup the auto filter will setup
+# sheet range.
+# We can remove the auto filter by supplying it with empty range ("", "").
+
+
+# Let's fill the filtering itself.
+
+sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
+
+# Here, we setup simple filter that will be equal to what value it's provided.
+# In above case, we filter the Category column which has value "A", and "B" so
+# we only get the column that has Category "A". We can also the valuesStr with
+# @["A", "B"] to get both of data. If there's N data we want to match, supply
+# those all in valuesStr field.
+
+# Below we see another supported filter, custom logic filter
+
+sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
+  customs: @[(foGt, $0), (foLt, $0.7)])
+
+# here we provide the filter with filter type custom (ftCustom)
+# with its logic "and" (cflAnd).
+# In this custom filter, we set the column 1, which Num1 to be
+# value greater than 0 (foGt) and less than 0.7 (foLt)
+
+excel.writeFile "excelin-example-autofilter.xlsx"
+
+```
+
+![resulted sheet auto filter range](assets/sheet-autofilter.png)
+
+Above is the result from Google docs. Libreoffice doesn't change.  
+As we can see, the columns are not filtered even though we set it.  
+Haven't checked with Microsoft Excel.
 
 [Back to examples list](#examples)
 

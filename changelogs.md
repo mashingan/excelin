@@ -1,3 +1,6 @@
+* 0.4.2:
+    * Add ranges= and autoFilter proc to sheet.
+    * Add `createdAt` to set excel creation date properties.
 * 0.4.1:
     * Add `shareStyle` API for easy referring the same style.
     * Add `copyStyle` API for easy copying the same style.

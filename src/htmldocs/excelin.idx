@@ -64,6 +64,22 @@ GradientStop	excelin.html#GradientStop	excelin: GradientStop
 gtLinear	excelin.html#gtLinear	GradientType.gtLinear	
 gtPath	excelin.html#gtPath	GradientType.gtPath	
 GradientType	excelin.html#GradientType	excelin: GradientType	
+Range	excelin.html#Range	excelin: Range	
+ftFilter	excelin.html#ftFilter	FilterType.ftFilter	
+ftCustom	excelin.html#ftCustom	FilterType.ftCustom	
+FilterType	excelin.html#FilterType	excelin: FilterType	
+Filter	excelin.html#Filter	excelin: Filter	
+foEq	excelin.html#foEq	FilterOperator.foEq	
+foLt	excelin.html#foLt	FilterOperator.foLt	
+foLte	excelin.html#foLte	FilterOperator.foLte	
+foNeq	excelin.html#foNeq	FilterOperator.foNeq	
+foGte	excelin.html#foGte	FilterOperator.foGte	
+foGt	excelin.html#foGt	FilterOperator.foGt	
+FilterOperator	excelin.html#FilterOperator	excelin: FilterOperator	
+cflAnd	excelin.html#cflAnd	CustomFilterLogic.cflAnd	
+cflOr	excelin.html#cflOr	CustomFilterLogic.cflOr	
+cflXor	excelin.html#cflXor	CustomFilterLogic.cflXor	
+CustomFilterLogic	excelin.html#CustomFilterLogic	excelin: CustomFilterLogic	
 getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
 modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
 modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
@@ -99,8 +115,13 @@ shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyl
 shareStyle	excelin.html#shareStyle,Sheet,string,varargs[string]	excelin: shareStyle(sheet: Sheet; source: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Sheet,string,varargs[string]	excelin: copyStyle(sheet: Sheet; source: string; targets: varargs[string])	
+ranges=	excelin.html#ranges=,Sheet,Range	excelin: ranges=(sheet: Sheet; range: Range)	
+autoFilter=	excelin.html#autoFilter=,Sheet,Range	excelin: autoFilter=(sheet: Sheet; range: Range)	
+autoFilter	excelin.html#autoFilter,Sheet	excelin: autoFilter(sheet: Sheet): Range	
+filterCol	excelin.html#filterCol,Sheet,Natural,Filter	excelin: filterCol(sheet: Sheet; colId: Natural; filter: Filter)	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
+createdAt	excelin.html#createdAt,Excel	excelin: createdAt(excel: Excel; at: DateTime | Time = now())	
 newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&quot;): (Excel, Sheet)	
 writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targetpath: string)	
 `$`	excelin.html#$,Excel	excelin: `$`(e: Excel): string	
