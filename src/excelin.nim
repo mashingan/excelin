@@ -245,7 +245,34 @@ type
     gtPath = "path"
 
   Range* = (string, string)
-    # Range of table which consist of top left cell and bottom right cell.
+    ## Range of table which consist of top left cell and bottom right cell.
+
+  FilterType* = enum
+    ftFilter
+    ftCustom
+
+  Filter* = object
+    ## Filtering that supplied to column id in sheet range. Ignored if the sheet
+    ## hasn't set its auto filter range.
+    case kind*: FilterType
+    of ftFilter:
+      valuesStr*: seq[string]
+    of ftCustom:
+      logic*: CustomFilterLogic
+      customs*: seq[(FilterOperator, string)]
+
+  FilterOperator* = enum
+    foEq = "equal"
+    foLt = "lessThan"
+    foLte = "lessThanOrEqual"
+    foNeq = "notEqual"
+    foGte = "greaterThanOrEqual"
+    foGt = "greaterThan"
+
+  CustomFilterLogic* = enum
+    cflAnd = "and"
+    cflOr = "or"
+    cflXor = "xor"
 
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
@@ -1169,7 +1196,8 @@ template `$`(r: Range): string =
 proc `ranges=`*(sheet: Sheet, `range`: Range) =
   ## Set the ranges of data/table within sheet.
 
-  let dim = $`range`
+  var dim = $`range`
+  if dim == "": dim = "A1"
   var dimn = sheet.body.child "dimension"
   if dimn == nil:
     dimn = <>dimension(ref=dim)
@@ -1177,8 +1205,23 @@ proc `ranges=`*(sheet: Sheet, `range`: Range) =
   else:
     dimn.attrs["ref"] = dim
 
-proc `autoFilter=`(sheet: Sheet, `range`: Range) =
-  ## Add auto filter to selected range.
+proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
+  ## Add auto filter to selected range. Setting this range
+  ## will override the previous range setting to sheet.
+  ## Providing with range ("", "") will delete the auto filter
+  ## in the sheet.
+  if `range`[0] == "" and `range`[1] == "":
+    var
+      autoFilterPos = -1
+      autoFilterFound = false
+    for n in sheet.body:
+      inc autoFilterPos
+      if n.tag == "autoFilter":
+        autoFilterFound = true
+        break
+    if autoFilterFound:
+      sheet.body.delete autoFilterPos
+    return
   sheet.ranges = `range`
   var autoFilter = sheet.body.child "autoFilter"
   let dim = $`range`
@@ -1187,6 +1230,43 @@ proc `autoFilter=`(sheet: Sheet, `range`: Range) =
     sheet.body.add autoFilter
   else:
     autoFilter.attrs["ref"] = dim
+
+  var sheetPr = sheet.body.child "sheetPr"
+  if sheetPr == nil:
+    sheetPr = <>sheetPr(filterMode= $true)
+    sheet.body.add sheetPr
+  else:
+    sheetPr.attrs["filterMode"] = $true
+
+proc autoFilter*(sheet: Sheet): Range =
+  ## Retrieve the set range for auto filter. Mainly used to check
+  ## whether the range for set is already set to add filtering to
+  ## its column number range (0-based).
+  let autoFilter = sheet.body.child "autoFilter"
+  if autoFilter == nil: return
+  discard scanf(autoFilter.attr "ref", "$w:$w", result[0], result[1])
+
+proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
+  ## Set filter to the sheet range. Ignored if sheet hasn't
+  ## set its auto filter range. Set the col with default Filter()
+  ## to reset it.
+  let autoFilter = sheet.body.child "autoFilter"
+  if autoFilter == nil: return
+  let fcolumns = <>filterColumn(colId= $colId)
+  case filter.kind
+  of ftFilter:
+    let filters = <>filters()
+    for val in filter.valuesStr:
+      filters.add <>filter(val=val)
+    fcolumns.add filters
+  of ftCustom:
+    let cusf = newXmlTree("customFilters", [],
+      { $filter.logic: $true }.toXmlAttributes)
+    for (op, val) in filter.customs:
+      cusf.add <>costumFilter(operator= $op, val=val)
+    fcolumns.add cusf
+
+  autoFilter.add fcolumns
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1484,6 +1564,10 @@ when isMainModule:
     sheet.body.add autof
     ]#
     sheet.autoFilter = ("D5", "H11")
+    sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
+    sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
+      customs: @[(foGt, $0), (foLt, $0.7)])
+    dump sheet.autoFilter
     dump sheet.body
     excel.writeFile "generated-autofilter.xlsx"
 
