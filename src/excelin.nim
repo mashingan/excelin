@@ -978,7 +978,27 @@ proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   fills.add fillnode
   result[0] = count
 
-proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+# Had to add for API style consistency.
+proc fontStyle*(name = string, size = 10, family, charset = -1,
+  bold, italic, strike, outline, shadow, condense, extend = false,
+  color = "", underline = uNone, verticalAlign = vaBaseline) =
+  Font(
+    name: name,
+    size: size,
+    family: family,
+    charset: charset,
+    bold: bold,
+    italic: italic,
+    strike: strike,
+    outline: outline,
+    shadow: shadow,
+    condense: condense,
+    extend: extend,
+    underline: underline,
+    verticalAlign: verticalAlign,
+  )
+
+proc borderStyle*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
   diagonalUp, diagonalDown = false): Border =
   ## Border initializer. Use this instead of object constructor
   ## to indicate style is ready to apply this border.
@@ -1006,17 +1026,31 @@ proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
     diagonalUp: diagonalUp,
     diagonalDown: diagonalDown)
 
-proc borderProp*(style = bsNone, color = ""): BorderProp =
+proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+  diagonalUp, diagonalDown = false): Border 
+  {. deprecated: "use borderStyle" .} =
+  borderStyle(start, `end`, top, bottom, vertical, horizontal,
+    diagonalUp, diagonalDown)
+
+proc borderPropStyle*(style = bsNone, color = ""): BorderProp =
   BorderProp(edit: true, style: style, color: color)
+
+proc borderProp*(style = bsNone, color = ""): BorderProp
+  {. deprecated: "use borderPropStyle" .} =
+  borderPropStyle(style, color)
 
 proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
   Fill(edit: true, pattern: pattern, gradient: gradient)
 
-proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
+proc patternFillStyle*(fgColor = $colWhite; patternType = ptNone): PatternFill =
   PatternFill(edit: true, fgColor: fgColor, bgColor: "",
     patternType: patternType)
 
-proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill 
+  {. deprecated: "use patternFillStyle" .} =
+  patternFillStyle(fgColor, patternType)
+
+proc gradientFillStyle*(stop = GradientStop(), `type` = gtLinear,
   degree, left, right, top, bottom = 0.0): GradientFill =
   GradientFill(
     edit: true,
@@ -1029,6 +1063,23 @@ proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
     bottom: bottom,
   )
 
+proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+  degree, left, right, top, bottom = 0.0): GradientFill 
+  {. deprecated: "use gradientFillStyle" .} =
+  gradientFillStyle(stop, `type`, degree, left, right, top, bottom)
+
+
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0
+
+proc shareStyle*(row: Row, col: string, targets: varargs[string])
 
 # To add style need to update:
 # ✗ numFmts
