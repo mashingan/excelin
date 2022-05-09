@@ -117,6 +117,12 @@ type
     equation*: string
     valueStr*: string
 
+  Hyperlink* = object
+    ## Object that will be used to fill cell with external link.
+    target*: string
+    text*: string
+    tooltip*: string
+
   Font* = object
     ## Cell font styling. Provide name if it's intended to style the cell.
     ## If no name is supplied, it will ignored. Field `family` and `charset`
@@ -507,6 +513,27 @@ proc `[]=`*(row: Row, col: string, f: Formula) =
     @[<>f(newText f.equation), <>v(newText f.valueStr)]
   row.sheet.modifiedAt
 
+proc `[]=`*(row: Row, col: string, h: Hyperlink) =
+  let sheetrelname = fmt"{row.sheet.filename}.rels"
+  if sheetrelname notin row.sheet.parent.otherfiles: return
+  let (_, sheetrel) = row.sheet.parent.otherfiles[sheetrelname]
+  row[col] = h.text
+  let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
+  let colrnum = fmt"{col}{row.rowNum}"
+  let ridn = sheetrel.len + 1 # rId is 1-based
+  let rid = fmt"rId{ridn}"
+
+  let hlink = newXmlTree("hyperlink", [], {
+    "ref": colrnum,
+    "r:id": rid}.toXmlAttributes)
+  if h.tooltip != "": hlink.attrs["tooltip"] = h.tooltip
+  hlinks.add hlink
+
+  sheetrel.add <>Relationship(Type=relHyperlink, Target=h.target,
+    Id=rid, TargetMode="external")
+
+  row.sheet.modifiedAt
+
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## Get cell value from row with optional function to convert it.
   ## When conversion function is supplied, it will be used instead of
@@ -587,6 +614,23 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is Formula:
     result = Formula(equation: v.child("f").innerText,
       valueStr: v.child("v").innerText)
+  elif R is Hyperlink:
+    result.text = if isInnerStr: t else: fetchShared t
+    let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
+    var rid = ""
+    for hlink in hlinks:
+      if fmt"{col}{row.rowNum}" == hlink.attr "ref":
+        result.tooltip = hlink.attr "tooltip"
+        rid = hlink.attr "r:id"
+        break
+    let sheetrelname = fmt"{row.sheet.filename}.rels"
+    if rid == "" or sheetrelname notin row.sheet.parent.otherfiles:
+      return
+    var ridn: int
+    if not scanf(rid, "rId$i", ridn): return
+    let (_, rels) = row.sheet.parent.otherfiles[sheetrelname]
+    let rel = rels[ridn-1]
+    result.target = rel.attr "Target"
   else:
     discard
 
@@ -855,7 +899,6 @@ proc addFont(styles: XmlNode, font: Font): (int, bool) =
 
   let fonts = styles.retrieveChildOrNew "fonts"
   let fontCount = try: parseInt(fonts.attr "count") except: 0
-  fonts.add fontnode
   fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
   fonts.add fontnode
   let fontId = fontCount
@@ -1502,6 +1545,18 @@ when isMainModule:
     row13["C"] = "copied style from A16"
     row14["D"] = "copied style from A16"
     row15["E"] = "copied style from A16"
+
+    let row17 = sheet.row 17
+    row17["B"] = Hyperlink(target: "https://github.com/mashingan/excelin",
+      text: "excelin github page", tooltip: "excelin temptest's page")
+    row17.style "B", font = Font(
+      name: "Verdana",
+      underline: uDouble,
+      family: -1, charset: -1,
+      size: 12,
+      color: $colRed,
+    )
+    dump row17["B", Hyperlink]
 
     #dump sheet.body
     #dump empty.sharedStrings.body
