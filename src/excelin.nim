@@ -52,7 +52,7 @@ const
   relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
   packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.2"
+  excelinVersion* = "0.4.3"
 
 type
   Excel* = ref object
@@ -308,7 +308,7 @@ proc getSheet*(e: Excel, name: string): Sheet =
     return
   e.sheets[thepath]
 
-template retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
+proc retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
   var r = node.child name
   if r == nil:
     r = newXmlTree(name, [], newStringTable())
