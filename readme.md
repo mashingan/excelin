@@ -557,9 +557,15 @@ excel.writeFile "excelin-example-autofilter.xlsx"
 
 ![resulted sheet auto filter range](assets/sheet-autofilter.png)
 
-Above is the result from Google docs. Libreoffice doesn't change.  
+Above is the result from Google sheet. Libreoffice doesn't change.  
 As we can see, the columns are not filtered even though we set it.  
-Haven't checked with Microsoft Excel.
+
+![resulted sheet auto filter range in wps spreadsheet](assets/sheet-autofilter-wps.png)
+
+While this is screenshot when checked with WPS spreadsheet. The difference
+with Google sheet that in WPS the column 0 (Category) and column 1 (Num1)
+has different icon because the filtering already defined in those two
+columns in our example.
 
 [Back to examples list](#examples)
 
