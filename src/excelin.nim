@@ -298,11 +298,12 @@ proc getSheet*(e: Excel, name: string): Sheet =
     return
   e.sheets[thepath]
 
-
-proc getSheetData(s: XmlNode): XmlNode =
-  result = s.child "sheetData"
-  if result == nil:
-    result = <>sheetData()
+template retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
+  var r = node.child name
+  if r == nil:
+    r = newXmlTree(name, [], newStringTable())
+    node.add r
+  r
 
 proc modifiedAt*[T: DateTime | Time](e: Excel, t: T = now()) =
   ## Update Excel modification time.
@@ -323,7 +324,7 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## Add row by selecting which row number to work with.
   ## This will return new row if there's no existing row
   ## or will return an existing one.
-  let sdata = s.body.getSheetData
+  let sdata = s.body.retrieveChildOrNew "sheetData"
   let rowsExists = sdata.len
   if rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
@@ -650,10 +651,7 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   var name = name
   if name == "":
     name = fmt"Sheet{e.sheetCount}"
-  var wbsheets = e.workbook.body.child "sheets"
-  if wbsheets == nil:
-    wbsheets = <>sheets()
-    e.workbook.body.add wbsheets
+  let wbsheets = e.workbook.body.retrieveChildOrNew "sheets"
   let rel = e.workbook.rels
   var availableId: int
   discard scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId)
@@ -836,37 +834,25 @@ proc toXmlNode(f: Font): XmlNode =
   result.add <>vertAlign(val= $f.verticalAlign)
 
 proc addFont(styles: XmlNode, font: Font): (int, bool) =
-  var fontId = 0
   if font.name == "": return
   let fontnode = font.toXmlNode
   let applyFont = true
-  var fonts = styles.child "fonts"
-  var fontCount = 0
-  if fonts == nil:
-    fonts = <>fonts(count= "1", fontnode)
-    styles.add fonts
-  else:
-    fontCount = try: parseInt(fonts.attr "count") except: 0
-    fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
-    fonts.add fontnode
-    fontId = fontCount
+
+  let fonts = styles.retrieveChildOrNew "fonts"
+  let fontCount = try: parseInt(fonts.attr "count") except: 0
+  fonts.add fontnode
+  fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+  fonts.add fontnode
+  let fontId = fontCount
   (fontId, applyFont)
 
 proc addBorder(styles: XmlNode, border: Border): (int, bool) =
-  if not border.edit:
-    return
-  var
-    bnodes = styles.child "borders"
-    bcount = -1
-    borderId = 0
+  if not border.edit: return
+
   let applyBorder = true
-  if bnodes == nil:
-    bnodes = <>borders(count= $0)
-    styles.add bnodes
-    bcount = 1
-  else:
-    bcount = try: parseInt(bnodes.attr "count") except: 0
-    borderId = bcount
+  let bnodes = styles.retrieveChildOrNew "borders"
+  let bcount = try: parseInt(bnodes.attr "count") except: 0
+  let borderId = bcount
 
   let bnode = <>border(diagonalUp= $border.diagonalUp,
     diagonalDown= $border.diagonalDown)
@@ -921,15 +907,10 @@ proc addGradient(fillnode: XmlNode, grad: GradientFill) =
 
 proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   if not fill.edit: return
-  var fills = styles.child "fills"
-  var count = -1
+
   result[1] = true
-  if fills == nil:
-    count = 0
-    fills = <>fills(count= $0)
-    styles.add fills
-  else:
-    count = try: parseInt(fills.attr "count") except: 0
+  let fills = styles.retrieveChildOrNew "fills"
+  let count = try: parseInt(fills.attr "count") except: 0
 
   let fillnode = <>fill()
   fillnode.addPattern fill.pattern
@@ -1034,9 +1015,7 @@ proc style*(row: Row, col: string,
   let (borderId, applyBorder) = styles.addBorder border
   let (fillId, applyFill) = styles.addFill fill
 
-  var csxfs = styles.child "cellStyleXfs"
-  if csxfs == nil:
-    csxfs = <>cellStyleXfs(count="0")
+  let csxfs = styles.retrieveChildOrNew "cellStyleXfs"
   let cxfs = styles.child "cellXfs"
   if cxfs == nil: return
   let xfid = cxfs.len
@@ -1151,10 +1130,7 @@ proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
   if styles == nil: return
   let cxfs = styles.child "cellXfs"
   if cxfs == nil or cxfs.len < 1: return
-  var csxfs = styles.child "cellStyleXfs"
-  if csxfs == nil:
-    csxfs = <>cellStyleXfs(count= $0)
-    styles.add csxfs
+  let csxfs = styles.retrieveChildOrNew "cellStyleXfs"
   let stylepos = try: parseInt(sid) except: -1
   if stylepos < 0 or stylepos >= cxfs.len: return
   var stylescount = cxfs.len
@@ -1198,12 +1174,8 @@ proc `ranges=`*(sheet: Sheet, `range`: Range) =
 
   var dim = $`range`
   if dim == "": dim = "A1"
-  var dimn = sheet.body.child "dimension"
-  if dimn == nil:
-    dimn = <>dimension(ref=dim)
-    sheet.body.insert dimn, 0
-  else:
-    dimn.attrs["ref"] = dim
+  let dimn = sheet.body.retrieveChildOrNew "dimension"
+  dimn.attrs["ref"] = dim
 
 proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
   ## Add auto filter to selected range. Setting this range
@@ -1223,20 +1195,10 @@ proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
       sheet.body.delete autoFilterPos
     return
   sheet.ranges = `range`
-  var autoFilter = sheet.body.child "autoFilter"
   let dim = $`range`
-  if autoFilter == nil:
-    autoFilter = <>autoFilter(ref=dim)
-    sheet.body.add autoFilter
-  else:
-    autoFilter.attrs["ref"] = dim
+  (sheet.body.retrieveChildOrNew "autoFilter").attrs["ref"] = dim
 
-  var sheetPr = sheet.body.child "sheetPr"
-  if sheetPr == nil:
-    sheetPr = <>sheetPr(filterMode= $true)
-    sheet.body.add sheetPr
-  else:
-    sheetPr.attrs["filterMode"] = $true
+  (sheet.body.retrieveChildOrNew "sheetPr").attrs["filterMode"] = $true
 
 proc autoFilter*(sheet: Sheet): Range =
   ## Retrieve the set range for auto filter. Mainly used to check
@@ -1346,10 +1308,7 @@ proc createdAt*(excel: Excel, at: DateTime|Time = now()) =
   if core in excel.otherfiles:
     let (_, cxml) = excel.otherfiles[core]
     if cxml != nil:
-      var created = cxml.child "dcterms:created"
-      if created == nil:
-        created = newXmlTree("dcterms:created", [])
-        cxml.add created
+      var created = cxml.retrieveChildOrNew "dcterms:created"
       clear created
       created.add newText(at.format datefmt)
 
@@ -1552,23 +1511,12 @@ when isMainModule:
     sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
 
     sheet.ranges = ("D5", "H11")
-    #[
-    let autof = <>autoFilter(ref="D5:H11")
-    autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
-    autof.add <>filterColumn(colId="1",
-      newXmlTree("customFilters", [
-        <>costumFilter(operator="greaterThan", val="0"),
-        <>costumFilter(operator="lessThan", val="0.7"),
-      ], {"and": $true}.toXmlAttributes))
-    sheet.body.child("sheetPr").attrs["filterMode"] = $true
-    sheet.body.add autof
-    ]#
     sheet.autoFilter = ("D5", "H11")
     sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
     sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
       customs: @[(foGt, $0), (foLt, $0.7)])
-    dump sheet.autoFilter
-    dump sheet.body
+    #dump sheet.autoFilter
+    #dump sheet.body
     excel.writeFile "generated-autofilter.xlsx"
 
   autofiltertest()
