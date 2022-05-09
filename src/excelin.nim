@@ -48,6 +48,9 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
+  relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
+  relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+  packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
   excelinVersion* = "0.4.2"
 
@@ -82,6 +85,7 @@ type
     parent: Excel
     rid: string
     privName: string
+    filename: string
 
   Row* = ref object of InternalBody
     ## The object that will be used for working with values within cells of a row.
@@ -626,6 +630,7 @@ proc clear*(row: Row) = row.body.clear
 # ✓ its package relationships
 # ✓ add entry to content type
 # ✗ add complete worksheet nodes
+# ✓ add sheet relations file pre-emptively
 proc addSheet*(e: Excel, name = ""): Sheet =
   ## Add new sheet to excel with supplied name and return it to enable further working.
   ## The name can use the existing sheet name. Sheet name by default will in be
@@ -665,6 +670,10 @@ proc addSheet*(e: Excel, name = ""): Sheet =
         thepath = fpath
         break
       (thepath.relativePath(e.workbook.path).parentDir.tailDir / sheetfname).unixSep.addFileExt "xml"
+    sheetrelname = fmt"{sheetfname}.xml.rels"
+    sheetrelpath = block:
+      let (path, _) = splitPath targetpath
+      (path / "_rels" / sheetrelname).unixSep
 
   let worksheet = newXmlTree(
     "worksheet", [<>sheetData()],
@@ -672,18 +681,23 @@ proc addSheet*(e: Excel, name = ""): Sheet =
       "xmlns": mainns, "xmlns:mc": xmlnsmc}.toXmlAttributes)
   let sheetworkbook = newXmlTree("sheet", [],
     {"name": name, "sheetId": $availableId, "r:id": rid, "state": "visible"}.toXmlAttributes)
+  let sheetrel = <>Relationships(xmlns=relPackageSheet)
 
   let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
     parent: e,
     privName: name,
-    rid: rid)
+    rid: rid,
+    filename: sheetfname & ".xml",
+  )
   e.sheets[fpath] = result
   wbsheets.add sheetworkbook
   e.workbook.sheetsInfo.add result.body
   rel[1].add <>Relationship(Target=targetpath, Type=sheetTypeNs, Id=rid)
   e.content.add <>Override(PartName="/" & fpath, ContentType=contentTypeNs)
+  e.content.add <>Override(PartName="/" & sheetrelpath, ContentType= packagetypefmt % ["relationships"])
+  e.otherfiles[sheetrelname] = (sheetrelpath, sheetrel)
 
 # deleting sheet needs to delete several related info viz:
 # ✓ deleting from the sheet table
@@ -767,7 +781,8 @@ proc assignSheetInfo(e: Excel) =
   for s in e.workbook.rels[1]:
     mapFilenameRid[s.attr("Target").extractFilename] = s.attr "Id"
   for path, sheet in e.sheets:
-    sheet.rid = mapFilenameRid[path.extractFilename]
+    sheet.filename = path.extractFilename
+    sheet.rid = mapFilenameRid[sheet.filename]
     sheet.privName = mapRidName[sheet.rid]
 
 proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
@@ -1230,6 +1245,18 @@ proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
 
   autoFilter.add fcolumns
 
+proc assignSheetRel(excel: Excel) =
+  for k in excel.sheets.keys:
+    let (path, fname) = splitPath k
+    let relname = fmt"{fname}.rels"
+    if  relname in excel.otherfiles: continue
+    let rels = <>Relationships(xmlns=relPackageSheet)
+    let relspathname = (path / "_rels" / relname).unixSep
+    excel.rels.add <>Override(PartName="/" & relspathname,
+      ContentType= packagetypefmt % ["relationships"])
+    excel.otherfiles[relname] = (relspathname, rels)
+
+
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
   ## in case path is not exists, IOError when system errors
@@ -1280,6 +1307,7 @@ proc readExcel*(path: string): Excel =
   if result.sharedStrings == nil:
     result.addSharedStrings
   result.assignSheetInfo
+  result.assignSheetRel
 
   if "app.xml" in result.otherfiles:
     var (_, appnode) = result.otherfiles["app.xml"]
