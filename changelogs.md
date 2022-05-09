@@ -1,3 +1,5 @@
+* 0.4.3:
+    * Add support for fill and fetch hyperlink cell.
 * 0.4.2:
     * Add ranges= and autoFilter proc to sheet.
     * Add `createdAt` to set excel creation date properties.

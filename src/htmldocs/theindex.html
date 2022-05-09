@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,21 +44,29 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -75,6 +82,8 @@ function main() {
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; b: bool)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2Cbool">excelin: `[]=`(row: Row; col: string; b: bool)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; f: Formula)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2CFormula">excelin: `[]=`(row: Row; col: string; f: Formula)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="excelin: `[]=`(row: Row; col: string; h: Hyperlink)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2CHyperlink">excelin: `[]=`(row: Row; col: string; h: Hyperlink)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="excelin: `[]=`(row: Row; col: string; n: SomeNumber)" href="excelin.html#%5B%5D%3D%2CRow%2Cstring%2CSomeNumber">excelin: `[]=`(row: Row; col: string; n: SomeNumber)</a></li>
           <li><a class="reference external"
@@ -354,6 +363,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: hide=(row: Row; yes: bool)" href="excelin.html#hide%3D%2CRow%2Cbool">excelin: hide=(row: Row; yes: bool)</a></li>
           </ul></dd>
+<dt><a name="Hyperlink" href="#Hyperlink"><span>Hyperlink:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: Hyperlink" href="excelin.html#Hyperlink">excelin: Hyperlink</a></li>
+          </ul></dd>
 <dt><a name="modifiedAt" href="#modifiedAt"><span>modifiedAt:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())" href="excelin.html#modifiedAt%2CExcel%2CT">excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())</a></li>
@@ -386,7 +399,7 @@ function main() {
           </ul></dd>
 <dt><a name="patternFill" href="#patternFill"><span>patternFill:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill</a></li>
+          data-doc-search-tag="excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
           </ul></dd>
 <dt><a name="PatternType" href="#PatternType"><span>PatternType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -577,7 +590,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-09 10:00:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-09 17:21:07 UTC</small>
       </div>
     </div>
   </div>

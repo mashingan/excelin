@@ -48,8 +48,11 @@ const
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
+  relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
+  relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+  packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.2"
+  excelinVersion* = "0.4.3"
 
 type
   Excel* = ref object
@@ -82,6 +85,7 @@ type
     parent: Excel
     rid: string
     privName: string
+    filename: string
 
   Row* = ref object of InternalBody
     ## The object that will be used for working with values within cells of a row.
@@ -112,6 +116,12 @@ type
     ## which already calculated beforehand.
     equation*: string
     valueStr*: string
+
+  Hyperlink* = object
+    ## Object that will be used to fill cell with external link.
+    target*: string
+    text*: string
+    tooltip*: string
 
   Font* = object
     ## Cell font styling. Provide name if it's intended to style the cell.
@@ -298,11 +308,12 @@ proc getSheet*(e: Excel, name: string): Sheet =
     return
   e.sheets[thepath]
 
-
-proc getSheetData(s: XmlNode): XmlNode =
-  result = s.child "sheetData"
-  if result == nil:
-    result = <>sheetData()
+proc retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
+  var r = node.child name
+  if r == nil:
+    r = newXmlTree(name, [], newStringTable())
+    node.add r
+  r
 
 proc modifiedAt*[T: DateTime | Time](e: Excel, t: T = now()) =
   ## Update Excel modification time.
@@ -323,7 +334,7 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## Add row by selecting which row number to work with.
   ## This will return new row if there's no existing row
   ## or will return an existing one.
-  let sdata = s.body.getSheetData
+  let sdata = s.body.retrieveChildOrNew "sheetData"
   let rowsExists = sdata.len
   if rowNum > rowsExists:
     for i in rowsExists+1 ..< rowNum:
@@ -502,6 +513,27 @@ proc `[]=`*(row: Row, col: string, f: Formula) =
     @[<>f(newText f.equation), <>v(newText f.valueStr)]
   row.sheet.modifiedAt
 
+proc `[]=`*(row: Row, col: string, h: Hyperlink) =
+  let sheetrelname = fmt"{row.sheet.filename}.rels"
+  if sheetrelname notin row.sheet.parent.otherfiles: return
+  let (_, sheetrel) = row.sheet.parent.otherfiles[sheetrelname]
+  row[col] = h.text
+  let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
+  let colrnum = fmt"{col}{row.rowNum}"
+  let ridn = sheetrel.len + 1 # rId is 1-based
+  let rid = fmt"rId{ridn}"
+
+  let hlink = newXmlTree("hyperlink", [], {
+    "ref": colrnum,
+    "r:id": rid}.toXmlAttributes)
+  if h.tooltip != "": hlink.attrs["tooltip"] = h.tooltip
+  hlinks.add hlink
+
+  sheetrel.add <>Relationship(Type=relHyperlink, Target=h.target,
+    Id=rid, TargetMode="external")
+
+  row.sheet.modifiedAt
+
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## Get cell value from row with optional function to convert it.
   ## When conversion function is supplied, it will be used instead of
@@ -582,6 +614,23 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is Formula:
     result = Formula(equation: v.child("f").innerText,
       valueStr: v.child("v").innerText)
+  elif R is Hyperlink:
+    result.text = if isInnerStr: t else: fetchShared t
+    let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
+    var rid = ""
+    for hlink in hlinks:
+      if fmt"{col}{row.rowNum}" == hlink.attr "ref":
+        result.tooltip = hlink.attr "tooltip"
+        rid = hlink.attr "r:id"
+        break
+    let sheetrelname = fmt"{row.sheet.filename}.rels"
+    if rid == "" or sheetrelname notin row.sheet.parent.otherfiles:
+      return
+    var ridn: int
+    if not scanf(rid, "rId$i", ridn): return
+    let (_, rels) = row.sheet.parent.otherfiles[sheetrelname]
+    let rel = rels[ridn-1]
+    result.target = rel.attr "Target"
   else:
     discard
 
@@ -625,6 +674,7 @@ proc clear*(row: Row) = row.body.clear
 # ✓ its package relationships
 # ✓ add entry to content type
 # ✗ add complete worksheet nodes
+# ✓ add sheet relations file pre-emptively
 proc addSheet*(e: Excel, name = ""): Sheet =
   ## Add new sheet to excel with supplied name and return it to enable further working.
   ## The name can use the existing sheet name. Sheet name by default will in be
@@ -650,10 +700,7 @@ proc addSheet*(e: Excel, name = ""): Sheet =
   var name = name
   if name == "":
     name = fmt"Sheet{e.sheetCount}"
-  var wbsheets = e.workbook.body.child "sheets"
-  if wbsheets == nil:
-    wbsheets = <>sheets()
-    e.workbook.body.add wbsheets
+  let wbsheets = e.workbook.body.retrieveChildOrNew "sheets"
   let rel = e.workbook.rels
   var availableId: int
   discard scanf(rel[1].findAll("Relationship")[^1].attr("Id"), "rId$i+", availableId)
@@ -667,6 +714,10 @@ proc addSheet*(e: Excel, name = ""): Sheet =
         thepath = fpath
         break
       (thepath.relativePath(e.workbook.path).parentDir.tailDir / sheetfname).unixSep.addFileExt "xml"
+    sheetrelname = fmt"{sheetfname}.xml.rels"
+    sheetrelpath = block:
+      let (path, _) = splitPath targetpath
+      (path / "_rels" / sheetrelname).unixSep
 
   let worksheet = newXmlTree(
     "worksheet", [<>sheetData()],
@@ -674,18 +725,23 @@ proc addSheet*(e: Excel, name = ""): Sheet =
       "xmlns": mainns, "xmlns:mc": xmlnsmc}.toXmlAttributes)
   let sheetworkbook = newXmlTree("sheet", [],
     {"name": name, "sheetId": $availableId, "r:id": rid, "state": "visible"}.toXmlAttributes)
+  let sheetrel = <>Relationships(xmlns=relPackageSheet)
 
   let fpath = (e.workbook.path.parentDir / targetpath).unixSep
   result = Sheet(
     body: worksheet,
     parent: e,
     privName: name,
-    rid: rid)
+    rid: rid,
+    filename: sheetfname & ".xml",
+  )
   e.sheets[fpath] = result
   wbsheets.add sheetworkbook
   e.workbook.sheetsInfo.add result.body
   rel[1].add <>Relationship(Target=targetpath, Type=sheetTypeNs, Id=rid)
   e.content.add <>Override(PartName="/" & fpath, ContentType=contentTypeNs)
+  e.content.add <>Override(PartName="/" & sheetrelpath, ContentType= packagetypefmt % ["relationships"])
+  e.otherfiles[sheetrelname] = (sheetrelpath, sheetrel)
 
 # deleting sheet needs to delete several related info viz:
 # ✓ deleting from the sheet table
@@ -769,7 +825,8 @@ proc assignSheetInfo(e: Excel) =
   for s in e.workbook.rels[1]:
     mapFilenameRid[s.attr("Target").extractFilename] = s.attr "Id"
   for path, sheet in e.sheets:
-    sheet.rid = mapFilenameRid[path.extractFilename]
+    sheet.filename = path.extractFilename
+    sheet.rid = mapFilenameRid[sheet.filename]
     sheet.privName = mapRidName[sheet.rid]
 
 proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
@@ -836,37 +893,24 @@ proc toXmlNode(f: Font): XmlNode =
   result.add <>vertAlign(val= $f.verticalAlign)
 
 proc addFont(styles: XmlNode, font: Font): (int, bool) =
-  var fontId = 0
   if font.name == "": return
   let fontnode = font.toXmlNode
   let applyFont = true
-  var fonts = styles.child "fonts"
-  var fontCount = 0
-  if fonts == nil:
-    fonts = <>fonts(count= "1", fontnode)
-    styles.add fonts
-  else:
-    fontCount = try: parseInt(fonts.attr "count") except: 0
-    fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
-    fonts.add fontnode
-    fontId = fontCount
+
+  let fonts = styles.retrieveChildOrNew "fonts"
+  let fontCount = try: parseInt(fonts.attr "count") except: 0
+  fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
+  fonts.add fontnode
+  let fontId = fontCount
   (fontId, applyFont)
 
 proc addBorder(styles: XmlNode, border: Border): (int, bool) =
-  if not border.edit:
-    return
-  var
-    bnodes = styles.child "borders"
-    bcount = -1
-    borderId = 0
+  if not border.edit: return
+
   let applyBorder = true
-  if bnodes == nil:
-    bnodes = <>borders(count= $0)
-    styles.add bnodes
-    bcount = 1
-  else:
-    bcount = try: parseInt(bnodes.attr "count") except: 0
-    borderId = bcount
+  let bnodes = styles.retrieveChildOrNew "borders"
+  let bcount = try: parseInt(bnodes.attr "count") except: 0
+  let borderId = bcount
 
   let bnode = <>border(diagonalUp= $border.diagonalUp,
     diagonalDown= $border.diagonalDown)
@@ -921,15 +965,10 @@ proc addGradient(fillnode: XmlNode, grad: GradientFill) =
 
 proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   if not fill.edit: return
-  var fills = styles.child "fills"
-  var count = -1
+
   result[1] = true
-  if fills == nil:
-    count = 0
-    fills = <>fills(count= $0)
-    styles.add fills
-  else:
-    count = try: parseInt(fills.attr "count") except: 0
+  let fills = styles.retrieveChildOrNew "fills"
+  let count = try: parseInt(fills.attr "count") except: 0
 
   let fillnode = <>fill()
   fillnode.addPattern fill.pattern
@@ -1034,9 +1073,7 @@ proc style*(row: Row, col: string,
   let (borderId, applyBorder) = styles.addBorder border
   let (fillId, applyFill) = styles.addFill fill
 
-  var csxfs = styles.child "cellStyleXfs"
-  if csxfs == nil:
-    csxfs = <>cellStyleXfs(count="0")
+  let csxfs = styles.retrieveChildOrNew "cellStyleXfs"
   let cxfs = styles.child "cellXfs"
   if cxfs == nil: return
   let xfid = cxfs.len
@@ -1151,10 +1188,7 @@ proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
   if styles == nil: return
   let cxfs = styles.child "cellXfs"
   if cxfs == nil or cxfs.len < 1: return
-  var csxfs = styles.child "cellStyleXfs"
-  if csxfs == nil:
-    csxfs = <>cellStyleXfs(count= $0)
-    styles.add csxfs
+  let csxfs = styles.retrieveChildOrNew "cellStyleXfs"
   let stylepos = try: parseInt(sid) except: -1
   if stylepos < 0 or stylepos >= cxfs.len: return
   var stylescount = cxfs.len
@@ -1198,12 +1232,8 @@ proc `ranges=`*(sheet: Sheet, `range`: Range) =
 
   var dim = $`range`
   if dim == "": dim = "A1"
-  var dimn = sheet.body.child "dimension"
-  if dimn == nil:
-    dimn = <>dimension(ref=dim)
-    sheet.body.insert dimn, 0
-  else:
-    dimn.attrs["ref"] = dim
+  let dimn = sheet.body.retrieveChildOrNew "dimension"
+  dimn.attrs["ref"] = dim
 
 proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
   ## Add auto filter to selected range. Setting this range
@@ -1223,20 +1253,10 @@ proc `autoFilter=`*(sheet: Sheet, `range`: Range) =
       sheet.body.delete autoFilterPos
     return
   sheet.ranges = `range`
-  var autoFilter = sheet.body.child "autoFilter"
   let dim = $`range`
-  if autoFilter == nil:
-    autoFilter = <>autoFilter(ref=dim)
-    sheet.body.add autoFilter
-  else:
-    autoFilter.attrs["ref"] = dim
+  (sheet.body.retrieveChildOrNew "autoFilter").attrs["ref"] = dim
 
-  var sheetPr = sheet.body.child "sheetPr"
-  if sheetPr == nil:
-    sheetPr = <>sheetPr(filterMode= $true)
-    sheet.body.add sheetPr
-  else:
-    sheetPr.attrs["filterMode"] = $true
+  (sheet.body.retrieveChildOrNew "sheetPr").attrs["filterMode"] = $true
 
 proc autoFilter*(sheet: Sheet): Range =
   ## Retrieve the set range for auto filter. Mainly used to check
@@ -1267,6 +1287,18 @@ proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
     fcolumns.add cusf
 
   autoFilter.add fcolumns
+
+proc assignSheetRel(excel: Excel) =
+  for k in excel.sheets.keys:
+    let (path, fname) = splitPath k
+    let relname = fmt"{fname}.rels"
+    if  relname in excel.otherfiles: continue
+    let rels = <>Relationships(xmlns=relPackageSheet)
+    let relspathname = (path / "_rels" / relname).unixSep
+    excel.rels.add <>Override(PartName="/" & relspathname,
+      ContentType= packagetypefmt % ["relationships"])
+    excel.otherfiles[relname] = (relspathname, rels)
+
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1318,6 +1350,7 @@ proc readExcel*(path: string): Excel =
   if result.sharedStrings == nil:
     result.addSharedStrings
   result.assignSheetInfo
+  result.assignSheetRel
 
   if "app.xml" in result.otherfiles:
     var (_, appnode) = result.otherfiles["app.xml"]
@@ -1346,10 +1379,7 @@ proc createdAt*(excel: Excel, at: DateTime|Time = now()) =
   if core in excel.otherfiles:
     let (_, cxml) = excel.otherfiles[core]
     if cxml != nil:
-      var created = cxml.child "dcterms:created"
-      if created == nil:
-        created = newXmlTree("dcterms:created", [])
-        cxml.add created
+      var created = cxml.retrieveChildOrNew "dcterms:created"
       clear created
       created.add newText(at.format datefmt)
 
@@ -1516,6 +1546,18 @@ when isMainModule:
     row14["D"] = "copied style from A16"
     row15["E"] = "copied style from A16"
 
+    let row17 = sheet.row 17
+    row17["B"] = Hyperlink(target: "https://github.com/mashingan/excelin",
+      text: "excelin github page", tooltip: "excelin temptest's page")
+    row17.style "B", font = Font(
+      name: "Verdana",
+      underline: uDouble,
+      family: -1, charset: -1,
+      size: 12,
+      color: $colRed,
+    )
+    dump row17["B", Hyperlink]
+
     #dump sheet.body
     #dump empty.sharedStrings.body
     #dump empty.otherfiles["app.xml"]
@@ -1552,23 +1594,12 @@ when isMainModule:
     sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
 
     sheet.ranges = ("D5", "H11")
-    #[
-    let autof = <>autoFilter(ref="D5:H11")
-    autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
-    autof.add <>filterColumn(colId="1",
-      newXmlTree("customFilters", [
-        <>costumFilter(operator="greaterThan", val="0"),
-        <>costumFilter(operator="lessThan", val="0.7"),
-      ], {"and": $true}.toXmlAttributes))
-    sheet.body.child("sheetPr").attrs["filterMode"] = $true
-    sheet.body.add autof
-    ]#
     sheet.autoFilter = ("D5", "H11")
     sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
     sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
       customs: @[(foGt, $0), (foLt, $0.7)])
-    dump sheet.autoFilter
-    dump sheet.body
+    #dump sheet.autoFilter
+    #dump sheet.body
     excel.writeFile "generated-autofilter.xlsx"
 
   autofiltertest()

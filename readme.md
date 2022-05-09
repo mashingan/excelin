@@ -84,6 +84,12 @@ row1["D"] = "2200/12/01" # we put the date as string for later example when fetc
 
 row1["F"] = $ForExample(a: "A", b: 200)
 row1["H"] = -111
+let srclink = Hyperlink(
+  target: "https://github.com/mashingan/excelin",
+  text: "excelin github page",
+  tooltip: "lakad matataag, excelin excelin",
+)
+row1["J"] = srclink
 
 # notice above example we arbitrarily chose the column and by current implementation
 # Excel data won't add unnecessary empty cells. In other words, sparse row cells.
@@ -104,6 +110,10 @@ doAssert row1["H", int] == -111
 doAssert row1["B", DateTime].toTime.toUnix == nao.toTime.toUnix
 doAssert row1["B", Time].toUnix == nao.toTime.toUnix
 doAssert row1["E", float] == 42.42
+let destlink = row1["J", Hyperlink]
+doAssert destlink.target == srclink.target
+doAssert destlink.text == srclink.text
+doAssert destlink.tooltip == srclink.tooltip
 
 # in above example, we fetched various values from its designated cell position
 # using the two kind of function, `getCell` and `[]`. `[]` often used for
@@ -166,7 +176,7 @@ for i, c in toSeq['A'..'J']:
 # to where the Excel data will be written.
 
 let toSendToWire = $excel
-excel.writeFile("to/any/path/we/choose.xlsx")
+excel.writeFile("excelin-example-readme.xlsx")
 
 # note that the current excelin.`$` is using the `writeFile` first to temporarily
 # write to file in $TEMP dir because the current zip lib dependency doesn't
@@ -557,9 +567,15 @@ excel.writeFile "excelin-example-autofilter.xlsx"
 
 ![resulted sheet auto filter range](assets/sheet-autofilter.png)
 
-Above is the result from Google docs. Libreoffice doesn't change.  
+Above is the result from Google sheet. Libreoffice doesn't change.  
 As we can see, the columns are not filtered even though we set it.  
-Haven't checked with Microsoft Excel.
+
+![resulted sheet auto filter range in wps spreadsheet](assets/sheet-autofilter-wps.png)
+
+While this is screenshot when checked with WPS spreadsheet. The difference
+with Google sheet that in WPS the column 0 (Category) and column 1 (Num1)
+has different icon because the filtering already defined in those two
+columns in our example.
 
 [Back to examples list](#examples)
 
