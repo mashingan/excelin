@@ -1157,6 +1157,19 @@ proc copyStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
   let row = sheet.row sourceRow
   row.copyStyle sourceCol, targets
 
+proc `ranges=`*(sheet: Sheet, topLeftToBottomRight: (string, string)) =
+  ## Set the ranges of data/table within sheet.
+  var dim = topLeftToBottomRight[0]
+  if topLeftToBottomRight[1] != "":
+    dim &= ":" & topLeftToBottomRight[1]
+
+  var dimn = sheet.body.child "dimension"
+  if dimn == nil:
+    dimn = <>dimension(ref=dim)
+    sheet.body.insert dimn, 0
+  else:
+    dimn.attrs["ref"] = dim
+
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1344,7 +1357,7 @@ when isMainModule:
         bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
       ),
       fillStyle(
-        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
+        pattern = patternFill(patternType = ptDarkGray, fgColor = $colRed)
       ),
       alignment = {"horizontal": "center", "vertical": "center",
         "wrapText": $true, "textRotation": $45})
