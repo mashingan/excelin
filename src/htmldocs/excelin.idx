@@ -1,3 +1,4 @@
+Excelin	excelin.html#excelin	 Excelin	
 excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
 Excel	excelin.html#Excel	excelin: Excel	
 Workbook	excelin.html#Workbook	excelin: Workbook	
@@ -109,7 +110,7 @@ deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel;
 border	excelin.html#border_2	excelin: border(start, end, top, bottom, vertical, horizontal = BorderProp();\n       diagonalUp, diagonalDown = false): Border	
 borderProp	excelin.html#borderProp,string	excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp	
 fillStyle	excelin.html#fillStyle	excelin: fillStyle(pattern = PatternFill(); gradient = GradientFill()): Fill	
-patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill	
+patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill	
 gradientFill	excelin.html#gradientFill,float,float,float,float,float	excelin: gradientFill(stop = GradientStop(); type = gtLinear;\n             degree, left, right, top, bottom = 0.0): GradientFill	
 style	excelin.html#style,Row,string,openArray[]	excelin: style(row: Row; col: string; font = Font(size: 1); border = Border();\n      fill = Fill(); alignment: openArray[(string, string)] = [])	
 shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
@@ -129,4 +130,3 @@ writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targe
 sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
 name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
 name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
-Excelin	excelin.html#excelin	 Excelin	
