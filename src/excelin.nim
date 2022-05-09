@@ -244,6 +244,9 @@ type
     gtLinear = "linear"
     gtPath = "path"
 
+  Range* = (string, string)
+    # Range of table which consist of top left cell and bottom right cell.
+
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 
@@ -1157,12 +1160,16 @@ proc copyStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
   let row = sheet.row sourceRow
   row.copyStyle sourceCol, targets
 
-proc `ranges=`*(sheet: Sheet, topLeftToBottomRight: (string, string)) =
-  ## Set the ranges of data/table within sheet.
-  var dim = topLeftToBottomRight[0]
-  if topLeftToBottomRight[1] != "":
-    dim &= ":" & topLeftToBottomRight[1]
+template `$`(r: Range): string =
+  var dim = r[0]
+  if r[1] != "":
+    dim &= ":" & r[1]
+  dim
 
+proc `ranges=`*(sheet: Sheet, `range`: Range) =
+  ## Set the ranges of data/table within sheet.
+
+  let dim = $`range`
   var dimn = sheet.body.child "dimension"
   if dimn == nil:
     dimn = <>dimension(ref=dim)
@@ -1170,6 +1177,16 @@ proc `ranges=`*(sheet: Sheet, topLeftToBottomRight: (string, string)) =
   else:
     dimn.attrs["ref"] = dim
 
+proc `autoFilter=`(sheet: Sheet, `range`: Range) =
+  ## Add auto filter to selected range.
+  sheet.ranges = `range`
+  var autoFilter = sheet.body.child "autoFilter"
+  let dim = $`range`
+  if autoFilter == nil:
+    autoFilter = <>autoFilter(ref=dim)
+    sheet.body.add autoFilter
+  else:
+    autoFilter.attrs["ref"] = dim
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
@@ -1454,39 +1471,19 @@ when isMainModule:
     sheet.row(10).populateRow("D", "B", [0.63608141933645479, 0.35635845012920608, 0.67122053637107193])
     sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
 
-    let autof = <>autoFilter(ref="D5:H11")
-    #autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
+    sheet.ranges = ("D5", "H11")
     #[
+    let autof = <>autoFilter(ref="D5:H11")
+    autof.add <>filterColumn(colId="0", <>filters(<>filter(val="A")))
     autof.add <>filterColumn(colId="1",
       newXmlTree("customFilters", [
         <>costumFilter(operator="greaterThan", val="0"),
         <>costumFilter(operator="lessThan", val="0.7"),
       ], {"and": $true}.toXmlAttributes))
-    ]#
-    autof.add <>filterColumn(colId="1",
-      newXmlTree("customFilters", [
-        <>costumFilter(operator="greaterThan", val="0"),
-      ], {"and": $true}.toXmlAttributes))
-    autof.add <>filterColumn(colId="2",
-      newXmlTree("customFilters", [
-        <>costumFilter(operator="lessThan", val="0.7"),
-      ], {"and": $true}.toXmlAttributes))
+    sheet.body.child("sheetPr").attrs["filterMode"] = $true
     sheet.body.add autof
-    sheet.body.insert <>Dimension(ref="D5:H11"), 0
-    excel.otherfiles["sheet1.xml.rels"] = (
-      "xl/worksheets/_rels/sheet1.xml.rels",
-        <>Relationships(xmlns="http://schemas.openxmlformats.org/package/2006/relationships", 
-          <>Relationship(Id="rId1", Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
-            Target="../drawings/drawing1.xml")),
-    )
-    excel.otherfiles["drawing1.xml"] = (
-      "xl/drawings/drawing1.xml",
-        newXmlTree("xdr:wsDr", [], {
-          "xmlns:a": "http://schemas.openxmlformats.org/drawingml/2006/main",
-          "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        }.toXmlAttributes),
-    )
-    sheet.body.add newXmlTree("drawing", [], {"r:id": "rId1"}.toXmlAttributes)
+    ]#
+    sheet.autoFilter = ("D5", "H11")
     dump sheet.body
     excel.writeFile "generated-autofilter.xlsx"
 

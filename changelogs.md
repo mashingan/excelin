@@ -1,4 +1,5 @@
 * 0.4.2:
+    * Add ranges= and autoFilter proc to sheet.
     * Add `createdAt` to set excel creation date properties.
     * wip; Add `autoFilter` in the sheet.
     * Add API to set ranges to sheet.
