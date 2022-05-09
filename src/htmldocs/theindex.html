@@ -34,6 +34,7 @@ function main() {
     }
   }
 
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -44,29 +45,21 @@ function main() {
       }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-  if (toggleSwitch !== null) {
-    toggleSwitch.addEventListener('change', switchTheme, false);
-  }
+  toggleSwitch.addEventListener('change', switchTheme, false);
 
-  var currentTheme = localStorage.getItem('theme');
-  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    currentTheme = 'dark';
-  }
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark' && toggleSwitch !== null) {
+    if (currentTheme === 'dark') {
       toggleSwitch.checked = true;
     }
   }
 }
-
-window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body>
+<body onload="main()">
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -393,7 +386,7 @@ window.addEventListener('DOMContentLoaded', main);
           </ul></dd>
 <dt><a name="patternFill" href="#patternFill"><span>patternFill:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
+          data-doc-search-tag="excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill</a></li>
           </ul></dd>
 <dt><a name="PatternType" href="#PatternType"><span>PatternType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -584,7 +577,7 @@ window.addEventListener('DOMContentLoaded', main);
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-09 10:00:10 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-09 10:00:16 UTC</small>
       </div>
     </div>
   </div>
