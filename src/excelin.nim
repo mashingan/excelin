@@ -1046,7 +1046,7 @@ proc patternFillStyle*(fgColor = $colWhite; patternType = ptNone): PatternFill =
   PatternFill(edit: true, fgColor: fgColor, bgColor: "",
     patternType: patternType)
 
-proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill 
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill
   {. deprecated: "use patternFillStyle" .} =
   patternFillStyle(fgColor, patternType)
 
@@ -1348,6 +1348,29 @@ proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
     fcolumns.add cusf
 
   autoFilter.add fcolumns
+
+proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
+  ## Merge cells will remove any existing values within
+  ## range cells to be merged. Will only retain the topleft
+  ## cell value when merging the range.
+  let
+    (topleftcol, topleftrow) = `range`[0].colrow
+    (botrightcol, botrightrow) = `range`[1].colrow
+    mcells = sheet.body.retrieveChildOrNew "mergeCells"
+    horizontalRange = toSeq[topleftcol.toNum .. botrightcol.toNum]
+
+  mcells.add <>mergeCell(ref= $`range`)
+
+  template addEmptyCell(r: Row, col: string): untyped =
+    r.addCell col, cellType = "", text = "", valelem = "", emptyCell = true
+
+  for cn in horizontalRange[1..^1]:
+    let r = sheet.row topleftrow
+    r.addEmptyCell cn.toCol
+  for rnum in topleftrow+1 .. botrightrow:
+    for cn in horizontalRange:
+      let r = sheet.row rnum
+      r.addEmptyCell cn.toCol
 
 proc assignSheetRel(excel: Excel) =
   for k in excel.sheets.keys:

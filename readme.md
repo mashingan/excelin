@@ -282,10 +282,6 @@ from excelin import
     `[]=`,      # fill cell
     `[]`,       # fetch cell
     writeFile,  # finally, to write to file
-    
-    items       # this pecualiar `items` which actually `xmltree.items`
-                # this is called from generic hence it needs to be accessed
-                # even though it runs in proc instead of template.
 
 let (excel, sheet) = newExcel()
 let row1 = sheet.row 1
@@ -354,21 +350,17 @@ row2["D"] = "temperian temptest"
 
 ## Now we want to set some style for this particular cell D2.
 row2.style("D",
-    Font( # Object constructor, if the name empty (or "") this will be ignored
-        name: "DejaVu Sans Mono",
-        size: 11,
-        charset: -1, # negative value means we ignore adding charset to font
-        family: -1,  # idem
+    font = fontStyle(
+        name = "DejaVu Sans Mono",
+        size = 11,
         color: $colBlue, # blue font
     ),
-    border( # Function/proc, needed to mark for applying this border,
-            # simply using object constructor will make this styling ignored.
-            # The same borderProp too
-        top = borderProp(style = bsMedium, color = $colRed),
-        bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
+    border = borderStyle(
+        top = borderPropStyle(style = bsMedium, color = $colRed),
+        bottom = borderPropStyle(style = bsMediumDashDot, color = $colGreen),
     ),
-    fillStyle( # idem with border function
-        pattern = patternFill(patternType = ptLightGrid, fgColor = $colRed)
+    fill = fillStyle(
+        pattern = patternFillStyle(patternType = ptLightGrid, fgColor = $colRed)
     ),
     
     # Lastly alignment as openarray of pair (string, string),
@@ -382,9 +374,11 @@ row2.style("D",
 # ignored and only read the fgColor.
 # Above we setup the style after putting the value, the reverse is valid too.
 # i.e. set the style and put the value.
+# For setting up font, border and fill, we're using object initializer proc
+# with pattern of "{objectName}Style".
 
 row2.style("E",
-    border = border(`end` = borderProp(style = bsDashDot, color = $colAzure)),
+    border = borderStyle(`end` = borderProp(style = bsDashDot, color = $colAzure)),
     alignment = {"wrapText": $true},
 )
 let longstr = "brown fox jumps over the lazy dog".repeat(5).join(";")
