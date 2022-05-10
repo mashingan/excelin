@@ -35,7 +35,6 @@ from std/colors import `$`, colWhite, colRed, colGreen, colBlue
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
-
 const
   datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
   xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
@@ -979,9 +978,10 @@ proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   result[0] = count
 
 # Had to add for API style consistency.
-proc fontStyle*(name = string, size = 10, family, charset = -1,
+proc fontStyle*(name: string, size = 10,
+  family, charset = -1,
   bold, italic, strike, outline, shadow, condense, extend = false,
-  color = "", underline = uNone, verticalAlign = vaBaseline) =
+  color = "", underline = uNone, verticalAlign = vaBaseline): Font =
   Font(
     name: name,
     size: size,
@@ -1100,6 +1100,7 @@ proc style*(row: Row, col: string,
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
+  let refnum = fmt"{col}{rnum}"
   var c =
     if not sparse:
       pos = col.toNum
@@ -1108,7 +1109,7 @@ proc style*(row: Row, col: string,
       var x: XmlNode
       for node in row.body:
         inc pos
-        if fmt"{col}{rnum}" == node.attr "r" :
+        if refnum == node.attr "r" :
           x = node
           break
       x
