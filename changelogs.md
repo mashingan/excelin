@@ -1,3 +1,8 @@
+* 0.4.4:
+    * Add support for reset merging cells and copy the subsequent cells to avoid sharing.
+    * Add support for merging cells and sharing all its style.
+    * Refactor getCell and addCell to allow adding empty cell and different style.
+    * Refactor local test.
 * 0.4.3:
     * Add support for fill and fetch hyperlink cell.
 * 0.4.2:

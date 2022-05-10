@@ -49,7 +49,7 @@ const
   relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
   packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.3"
+  excelinVersion* = "0.4.4"
 
 type
   Excel* = ref object
@@ -432,17 +432,17 @@ proc toCol*(n: Natural): string =
   result &= atoz[count]
 
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
-  altnode: seq[XmlNode] = @[], emptyCell = false) =
+  altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
   let rn = row.body.attr "r"
   let sparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
   let innerval = if altnode.len > 0: altnode else: @[newText text]
   let cnode = if cellType != "" and valelem != "":
-                <>c(r=cellpos, s="0", t=cellType, newXmlTree(valelem, innerval))
-              elif valelem != "": <>c(r=cellpos, s="0", newXmlTree(valelem, innerval))
-              elif emptyCell: <>c(r=cellpos)
-              else: newXmlTree("c", innerval, {"r": cellpos}.toXmlAttributes)
+                <>c(r=cellpos, s=style, t=cellType, newXmlTree(valelem, innerval))
+              elif valelem != "": <>c(r=cellpos, s=style, newXmlTree(valelem, innerval))
+              elif emptyCell: <>c(r=cellpos, s=style)
+              else: newXmlTree("c", innerval, {"r": cellpos, "s": style}.toXmlAttributes)
   if not sparse:
     let cellsTotal = row.body.len
     let colnum = toNum col
@@ -1079,6 +1079,20 @@ proc colrow(cr: string): (string, int) =
       break
   result[1] = try: parseInt(rowstr) except: 0
 
+template styleRange(sheet: Sheet, `range`: Range, op: untyped) =
+  let
+    (tlcol, tlrow) = `range`[0].colrow
+    (btcol, btrow) = `range`[1].colrow
+    r = sheet.row tlrow
+  var targets: seq[string]
+  for cn in tlcol.toNum+1 .. btcol.toNum:
+    let col = cn.toCol
+    targets.add col & $tlrow
+  for rnum in tlrow+1 .. btrow:
+    for cn in tlcol.toNum .. btcol.toNum:
+      targets.add cn.toCol & $rnum
+  r.`op`(tlcol, targets)
+
 proc shareStyle*(row: Row, col: string, targets: varargs[string])
 
 # To add style need to update:
@@ -1173,17 +1187,7 @@ proc style*(row: Row, col: string,
       var topleft, bottomright: string
       if not scanf(m.attr "ref", "$w:$w", topleft, bottomright):
         return
-      let
-        (tlcol, tlrow) = topleft.colrow
-        (btcol, btrow) = bottomright.colrow
-        r = row.sheet.row tlrow
-      var targets: seq[string]
-      for c in tlcol.toNum+1 .. btcol.toNum:
-        targets.add fmt"{c.toCol}{tlrow}"
-      for rnum in tlrow+1 .. btrow:
-        for c in tlcol.toNum .. btcol.toNum:
-          targets.add fmt"{c.toCol}{rnum}"
-      r.shareStyle(tlcol, targets)
+      styleRange(row.sheet, (topleft, bottomright), shareStyle)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
   if $cfSparse == row.body.attr "cellfill":
@@ -1361,16 +1365,41 @@ proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
 
   mcells.add <>mergeCell(ref= $`range`)
 
-  template addEmptyCell(r: Row, col: string): untyped =
-    r.addCell col, cellType = "", text = "", valelem = "", emptyCell = true
+  let
+    r = sheet.row topleftrow
+    topleftcell = r.fetchValNode(topleftcol, $cfSparse == r.body.attr "cellfill")
+  var styleattr = if topleftcell == nil: "0" else: topleftcell.attr "s"
+  if styleattr == "": styleattr = "0"
+
+  template addEmptyCell(r: Row, col, s: string): untyped =
+    r.addCell col, cellType = "", text = "", valelem = "",
+      emptyCell = true, style = s
 
   for cn in horizontalRange[1..^1]:
-    let r = sheet.row topleftrow
-    r.addEmptyCell cn.toCol
+    r.addEmptyCell cn.toCol, styleattr
   for rnum in topleftrow+1 .. botrightrow:
     for cn in horizontalRange:
       let r = sheet.row rnum
-      r.addEmptyCell cn.toCol
+      r.addEmptyCell cn.toCol, styleattr
+
+proc resetMerge*(sheet: Sheet, `range`: Range) =
+  ## Remove any merge cell with defined range.
+  ## Ignored if there's no such such range supplied.
+  let
+    refrange = $`range`
+    mcells = sheet.body.child "mergeCells"
+  if mcells == nil: return
+  var
+    pos = -1
+    found = false
+  for mcell in mcells:
+    inc pos
+    if refrange == mcell.attr "ref":
+      found = true
+      break
+  if not found: return
+  mcells.delete pos
+  styleRange(sheet, `range`, copyStyle)
 
 proc assignSheetRel(excel: Excel) =
   for k in excel.sheets.keys:
