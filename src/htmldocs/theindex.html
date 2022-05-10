@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,21 +44,29 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -116,9 +123,19 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp" href="excelin.html#borderProp%2Cstring">excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp</a></li>
           </ul></dd>
+<dt><a name="borderPropStyle" href="#borderPropStyle"><span>borderPropStyle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: borderPropStyle(style = bsNone; color = &quot;&quot;): BorderProp" href="excelin.html#borderPropStyle%2Cstring">excelin: borderPropStyle(style = bsNone; color = &quot;&quot;): BorderProp</a></li>
+          </ul></dd>
 <dt><a name="BorderStyle" href="#BorderStyle"><span>BorderStyle:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: BorderStyle" href="excelin.html#BorderStyle">excelin: BorderStyle</a></li>
+          </ul></dd>
+<dt><a name="borderStyle" href="#borderStyle"><span>borderStyle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: borderStyle(start, end, top, bottom, vertical, horizontal = BorderProp();
+            diagonalUp, diagonalDown = false): Border" href="excelin.html#borderStyle_2">excelin: borderStyle(start, end, top, bottom, vertical, horizontal = BorderProp();
+            diagonalUp, diagonalDown = false): Border</a></li>
           </ul></dd>
 <dt><a name="bsDashDot" href="#bsDashDot"><span>bsDashDot:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -290,6 +307,14 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: Font" href="excelin.html#Font">excelin: Font</a></li>
           </ul></dd>
+<dt><a name="fontStyle" href="#fontStyle"><span>fontStyle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: fontStyle(name: string; size = 10; family, charset = -1;
+          bold, italic, strike, outline, shadow, condense, extend = false;
+          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font" href="excelin.html#fontStyle%2Cstring%2Cint%2Cint%2Cint%2Cstring">excelin: fontStyle(name: string; size = 10; family, charset = -1;
+          bold, italic, strike, outline, shadow, condense, extend = false;
+          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font</a></li>
+          </ul></dd>
 <dt><a name="Formula" href="#Formula"><span>Formula:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: Formula" href="excelin.html#Formula">excelin: Formula</a></li>
@@ -323,6 +348,12 @@ function main() {
           data-doc-search-tag="excelin: gradientFill(stop = GradientStop(); type = gtLinear;
              degree, left, right, top, bottom = 0.0): GradientFill" href="excelin.html#gradientFill%2Cfloat%2Cfloat%2Cfloat%2Cfloat%2Cfloat">excelin: gradientFill(stop = GradientStop(); type = gtLinear;
              degree, left, right, top, bottom = 0.0): GradientFill</a></li>
+          </ul></dd>
+<dt><a name="gradientFillStyle" href="#gradientFillStyle"><span>gradientFillStyle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: gradientFillStyle(stop = GradientStop(); type = gtLinear;
+                  degree, left, right, top, bottom = 0.0): GradientFill" href="excelin.html#gradientFillStyle%2Cfloat%2Cfloat%2Cfloat%2Cfloat%2Cfloat">excelin: gradientFillStyle(stop = GradientStop(); type = gtLinear;
+                  degree, left, right, top, bottom = 0.0): GradientFill</a></li>
           </ul></dd>
 <dt><a name="GradientStop" href="#GradientStop"><span>GradientStop:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -360,6 +391,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: Hyperlink" href="excelin.html#Hyperlink">excelin: Hyperlink</a></li>
           </ul></dd>
+<dt><a name="mergeCells%3D" href="#mergeCells%3D"><span>mergeCells=:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: mergeCells=(sheet: Sheet; range: Range)" href="excelin.html#mergeCells%3D%2CSheet%2CRange">excelin: mergeCells=(sheet: Sheet; range: Range)</a></li>
+          </ul></dd>
 <dt><a name="modifiedAt" href="#modifiedAt"><span>modifiedAt:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())" href="excelin.html#modifiedAt%2CExcel%2CT">excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())</a></li>
@@ -392,7 +427,11 @@ function main() {
           </ul></dd>
 <dt><a name="patternFill" href="#patternFill"><span>patternFill:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill</a></li>
+          data-doc-search-tag="excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
+          </ul></dd>
+<dt><a name="patternFillStyle" href="#patternFillStyle"><span>patternFillStyle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFillStyle">excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
           </ul></dd>
 <dt><a name="PatternType" href="#PatternType"><span>PatternType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -490,6 +529,10 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: readExcel(path: string): Excel" href="excelin.html#readExcel%2Cstring">excelin: readExcel(path: string): Excel</a></li>
           </ul></dd>
+<dt><a name="resetMerge" href="#resetMerge"><span>resetMerge:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="excelin: resetMerge(sheet: Sheet; range: Range)" href="excelin.html#resetMerge%2CSheet%2CRange">excelin: resetMerge(sheet: Sheet; range: Range)</a></li>
+          </ul></dd>
 <dt><a name="Row" href="#Row"><span>Row:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="excelin: Row" href="excelin.html#Row">excelin: Row</a></li>
@@ -583,7 +626,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-09 17:21:08 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-10 09:04:39 UTC</small>
       </div>
     </div>
   </div>

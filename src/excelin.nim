@@ -35,9 +35,6 @@ from std/colors import `$`, colWhite, colRed, colGreen, colBlue
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
-export xmltree.items
-#export xmltree.`$`
-
 const
   datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
   xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
@@ -52,7 +49,7 @@ const
   relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
   packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
-  excelinVersion* = "0.4.3"
+  excelinVersion* = "0.4.4"
 
 type
   Excel* = ref object
@@ -434,16 +431,18 @@ proc toCol*(n: Natural): string =
     count = count mod atoz.len
   result &= atoz[count]
 
-proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[XmlNode] = @[]) =
+proc addCell(row: Row, col, cellType, text: string, valelem = "v",
+  altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
   let rn = row.body.attr "r"
   let sparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
   let innerval = if altnode.len > 0: altnode else: @[newText text]
   let cnode = if cellType != "" and valelem != "":
-                <>c(r=cellpos, s="0", t=cellType, newXmlTree(valelem, innerval))
-              elif valelem != "": <>c(r=cellpos, s="0", newXmlTree(valelem, innerval))
-              else: newXmlTree("c", innerval, {"r": cellpos}.toXmlAttributes)
+                <>c(r=cellpos, s=style, t=cellType, newXmlTree(valelem, innerval))
+              elif valelem != "": <>c(r=cellpos, s=style, newXmlTree(valelem, innerval))
+              elif emptyCell: <>c(r=cellpos, s=style)
+              else: newXmlTree("c", innerval, {"r": cellpos, "s": style}.toXmlAttributes)
   if not sparse:
     let cellsTotal = row.body.len
     let colnum = toNum col
@@ -534,6 +533,19 @@ proc `[]=`*(row: Row, col: string, h: Hyperlink) =
 
   row.sheet.modifiedAt
 
+proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
+  var x: XmlNode
+  let colnum = col.toNum
+  let rnum = row.body.attr "r"
+  if not isSparse and colnum < row.body.len:
+    x = row.body[colnum]
+  else:
+    for node in row.body:
+      if fmt"{col}{rnum}" == node.attr "r":
+        x = node
+        break
+  x
+
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## Get cell value from row with optional function to convert it.
   ## When conversion function is supplied, it will be used instead of
@@ -568,22 +580,9 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is DateTime: result = fromUnix(0).local
   elif R is Time: result = fromUnix 0
   else: discard
-  let rnum = row.body.attr "r"
   let isSparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
-  var isInnerStr = false
-  let v = block:
-    var x: XmlNode
-    let colnum = col.toNum
-    if not isSparse and colnum < row.body.len:
-      x = row.body[colnum]
-    else:
-      for node in row.body:
-        if fmt"{col}{rnum}" == node.attr "r":
-          isInnerStr = "inlineStr" == node.attr "t"
-          x = node
-          break
-    x
+  let v = row.fetchValNode(col, isSparse)
   if v == nil: return
   let t = v.innerText
   template fetchShared(t: string): untyped =
@@ -600,7 +599,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
       return conv tt
   retconv()
   when R is string:
-    result = if isInnerStr: t else: fetchShared t
+    result = if "inlineStr" == v.attr "t" : t else: fetchShared t
   elif R is SomeSignedInt:
     try: result = parseInt(t) except: discard
   elif R is SomeFloat:
@@ -615,7 +614,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     result = Formula(equation: v.child("f").innerText,
       valueStr: v.child("v").innerText)
   elif R is Hyperlink:
-    result.text = if isInnerStr: t else: fetchShared t
+    result.text = if "inlineStr" == v.attr "t": t else: fetchShared t
     let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
     var rid = ""
     for hlink in hlinks:
@@ -978,7 +977,28 @@ proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
   fills.add fillnode
   result[0] = count
 
-proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+# Had to add for API style consistency.
+proc fontStyle*(name: string, size = 10,
+  family, charset = -1,
+  bold, italic, strike, outline, shadow, condense, extend = false,
+  color = "", underline = uNone, verticalAlign = vaBaseline): Font =
+  Font(
+    name: name,
+    size: size,
+    family: family,
+    charset: charset,
+    bold: bold,
+    italic: italic,
+    strike: strike,
+    outline: outline,
+    shadow: shadow,
+    condense: condense,
+    extend: extend,
+    underline: underline,
+    verticalAlign: verticalAlign,
+  )
+
+proc borderStyle*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
   diagonalUp, diagonalDown = false): Border =
   ## Border initializer. Use this instead of object constructor
   ## to indicate style is ready to apply this border.
@@ -1006,17 +1026,31 @@ proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
     diagonalUp: diagonalUp,
     diagonalDown: diagonalDown)
 
-proc borderProp*(style = bsNone, color = ""): BorderProp =
+proc border*(start, `end`, top, bottom, vertical, horizontal = BorderProp();
+  diagonalUp, diagonalDown = false): Border 
+  {. deprecated: "use borderStyle" .} =
+  borderStyle(start, `end`, top, bottom, vertical, horizontal,
+    diagonalUp, diagonalDown)
+
+proc borderPropStyle*(style = bsNone, color = ""): BorderProp =
   BorderProp(edit: true, style: style, color: color)
+
+proc borderProp*(style = bsNone, color = ""): BorderProp
+  {. deprecated: "use borderPropStyle" .} =
+  borderPropStyle(style, color)
 
 proc fillStyle*(pattern = PatternFill(), gradient = GradientFill()): Fill =
   Fill(edit: true, pattern: pattern, gradient: gradient)
 
-proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill =
+proc patternFillStyle*(fgColor = $colWhite; patternType = ptNone): PatternFill =
   PatternFill(edit: true, fgColor: fgColor, bgColor: "",
     patternType: patternType)
 
-proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+proc patternFill*(fgColor = $colWhite; patternType = ptNone): PatternFill
+  {. deprecated: "use patternFillStyle" .} =
+  patternFillStyle(fgColor, patternType)
+
+proc gradientFillStyle*(stop = GradientStop(), `type` = gtLinear,
   degree, left, right, top, bottom = 0.0): GradientFill =
   GradientFill(
     edit: true,
@@ -1029,6 +1063,37 @@ proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
     bottom: bottom,
   )
 
+proc gradientFill*(stop = GradientStop(), `type` = gtLinear,
+  degree, left, right, top, bottom = 0.0): GradientFill 
+  {. deprecated: "use gradientFillStyle" .} =
+  gradientFillStyle(stop, `type`, degree, left, right, top, bottom)
+
+
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0
+
+template styleRange(sheet: Sheet, `range`: Range, op: untyped) =
+  let
+    (tlcol, tlrow) = `range`[0].colrow
+    (btcol, btrow) = `range`[1].colrow
+    r = sheet.row tlrow
+  var targets: seq[string]
+  for cn in tlcol.toNum+1 .. btcol.toNum:
+    let col = cn.toCol
+    targets.add col & $tlrow
+  for rnum in tlrow+1 .. btrow:
+    for cn in tlcol.toNum .. btcol.toNum:
+      targets.add cn.toCol & $rnum
+  r.`op`(tlcol, targets)
+
+proc shareStyle*(row: Row, col: string, targets: varargs[string])
 
 # To add style need to update:
 # ✗ numFmts
@@ -1049,6 +1114,7 @@ proc style*(row: Row, col: string,
   let sparse = $cfSparse == row.body.attr "cellfill"
   let rnum = row.rowNum
   var pos = -1
+  let refnum = fmt"{col}{rnum}"
   var c =
     if not sparse:
       pos = col.toNum
@@ -1057,7 +1123,7 @@ proc style*(row: Row, col: string,
       var x: XmlNode
       for node in row.body:
         inc pos
-        if fmt"{col}{rnum}" == node.attr "r" :
+        if refnum == node.attr "r" :
           x = node
           break
       x
@@ -1114,15 +1180,14 @@ proc style*(row: Row, col: string,
       xf.attrs["borderId"] = $borderId
     if applyFill: xf.attrs["fillId"] = $fillId
 
-proc colrow(cr: string): (string, int) =
-  var rowstr: string
-  for i, c in cr:
-    if c in Letters:
-      result[0] &= c
-    elif c in Digits:
-      rowstr = cr[i .. ^1]
-      break
-  result[1] = try: parseInt(rowstr) except: 0
+  let mcells = row.sheet.body.child "mergeCells"
+  if mcells == nil: return
+  for m in mcells:
+    if m.attr("ref").startsWith refnum:
+      var topleft, bottomright: string
+      if not scanf(m.attr "ref", "$w:$w", topleft, bottomright):
+        return
+      styleRange(row.sheet, (topleft, bottomright), shareStyle)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
   if $cfSparse == row.body.attr "cellfill":
@@ -1288,6 +1353,54 @@ proc filterCol*(sheet: Sheet, colId: Natural, filter: Filter) =
 
   autoFilter.add fcolumns
 
+proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
+  ## Merge cells will remove any existing values within
+  ## range cells to be merged. Will only retain the topleft
+  ## cell value when merging the range.
+  let
+    (topleftcol, topleftrow) = `range`[0].colrow
+    (botrightcol, botrightrow) = `range`[1].colrow
+    mcells = sheet.body.retrieveChildOrNew "mergeCells"
+    horizontalRange = toSeq[topleftcol.toNum .. botrightcol.toNum]
+
+  mcells.add <>mergeCell(ref= $`range`)
+
+  let
+    r = sheet.row topleftrow
+    topleftcell = r.fetchValNode(topleftcol, $cfSparse == r.body.attr "cellfill")
+  var styleattr = if topleftcell == nil: "0" else: topleftcell.attr "s"
+  if styleattr == "": styleattr = "0"
+
+  template addEmptyCell(r: Row, col, s: string): untyped =
+    r.addCell col, cellType = "", text = "", valelem = "",
+      emptyCell = true, style = s
+
+  for cn in horizontalRange[1..^1]:
+    r.addEmptyCell cn.toCol, styleattr
+  for rnum in topleftrow+1 .. botrightrow:
+    for cn in horizontalRange:
+      let r = sheet.row rnum
+      r.addEmptyCell cn.toCol, styleattr
+
+proc resetMerge*(sheet: Sheet, `range`: Range) =
+  ## Remove any merge cell with defined range.
+  ## Ignored if there's no such such range supplied.
+  let
+    refrange = $`range`
+    mcells = sheet.body.child "mergeCells"
+  if mcells == nil: return
+  var
+    pos = -1
+    found = false
+  for mcell in mcells:
+    inc pos
+    if refrange == mcell.attr "ref":
+      found = true
+      break
+  if not found: return
+  mcells.delete pos
+  styleRange(sheet, `range`, copyStyle)
+
 proc assignSheetRel(excel: Excel) =
   for k in excel.sheets.keys:
     let (path, fname) = splitPath k
@@ -1446,160 +1559,3 @@ proc `name=`*(s: Sheet, newname: string) =
       var currattr = node.attrs
       currattr["name"] = newname
       node.attrs = currattr
-
-when isMainModule:
-  import std/with
-  let (empty, sheet) = newExcel()
-
-  let colnum = [("A", 0), ("AA", 26), ("AB", 27), ("ZZ", 701)]
-  for cn in colnum:
-    doAssert cn[0].toNum == cn[1]
-    doAssert cn[1].toCol == cn[0]
-
-  if sheet != nil:
-    let row = sheet.row(1, cfFilled)
-    row["A"] = "hehe"
-    row["B"] = -1
-    row["C"] = 2
-    row["D"] = 42.0
-    sheet.name = "hehe"
-    let newsheet = empty.addSheet("test add new sheet")
-    dump newsheet.name
-    dump row.getCell[:string]("A")
-    dump row["B", int]
-    dump row.getCell[:uint]("C")
-    dump row["D", float]
-    row["D"] = now() # modify to date time
-    #empty.deleteSheet "hehe"
-    #empty.writeFile "generate-deleted-sheet.xlsx"
-    let row5 = sheet.row 5
-    row5["A"] = "yeehaa"
-    row5.style("A",
-      Font(name: "DejaVu Sans Mono", size: 11,
-        family: -1, charset: -1,
-        color: $colBlue,
-      ),
-      border(
-        top = borderProp(style = bsMedium, color = $colRed),
-        bottom = borderProp(style = bsMediumDashDot, color = $colGreen),
-      ),
-      fillStyle(
-        pattern = patternFill(patternType = ptDarkGray, fgColor = $colRed)
-      ),
-      alignment = {"horizontal": "center", "vertical": "center",
-        "wrapText": $true, "textRotation": $45})
-    row5.height = 200
-    let row6 = sheet.row 6
-    row6["B"] = 5
-    row6["A"] = -1
-    let row10 = sheet.row(10, cfFilled)
-    row10["C"] = 11
-    row10["D"] = -11
-    empty.prop = {"key1": "val1", "prop-custom": "custom-setting"}
-    dump row5["A", string]
-    row5["A"] = row5["A", string] & " heehaa"
-    let tobeShared = "brown fox jumps over the lazy dog".repeat(5).join(";")
-    row5["B"] = tobeShared
-    row5["c"] = tobeShared
-    row5.style("B", alignment = {"wrapText": "true"})
-    let row11 = sheet.row 11
-    var sum = 0
-    for i in 0 .. 9:
-      row11[i.toCol] = i
-      sum += i
-    row11[10.toCol] = Formula(equation: "SUM(A11:J11)", valueStr: $sum)
-    dump row11[10.toCol, Formula]
-
-    let row12 = sheet.row 12
-    row12.style("C", Font(name: "Cambria", size: 11, family: -1, charset: -1),
-      alignment = {"horizontal": "center", "vertical": "center", "wrapText": "true",
-      "textRotation": "90"})
-    row5.style "A", alignment = {"textRotation": $90} # edit existing style
-    template hideLevel(rnum, olevel: int): untyped =
-      let r = sheet.row rnum
-      with r:
-        #hide = true
-        outlineLevel = olevel
-      r
-    let row13 = 13.hideLevel 3
-    let row14 = 14.hideLevel 2
-    let row15 = 15.hideLevel 1
-    let row16 = 16.hideLevel 1
-    row16.collapsed = false
-    row16.hide = false
-
-    for i in 0 ..< 5:
-      let colstyle = i.toCol
-      row16[colstyle] = colstyle
-
-    row16.style "A", font = Font(name: "DejaVu Sans Mono", size: 11,
-      family: -1, charset: -1)
-
-    row16.shareStyle("A", "B16", "C16", "D16", "E16")
-    sheet.shareStyle("A16", "B13", "C14", "D15")
-    row13["B"] = "bebebe"
-    row14["C"] = "cecece"
-    row15["D"] = "dedede"
-
-    row16.copyStyle("A", "C13", "D14", "E15")
-    row13["C"] = "copied style from A16"
-    row14["D"] = "copied style from A16"
-    row15["E"] = "copied style from A16"
-
-    let row17 = sheet.row 17
-    row17["B"] = Hyperlink(target: "https://github.com/mashingan/excelin",
-      text: "excelin github page", tooltip: "excelin temptest's page")
-    row17.style "B", font = Font(
-      name: "Verdana",
-      underline: uDouble,
-      family: -1, charset: -1,
-      size: 12,
-      color: $colRed,
-    )
-    dump row17["B", Hyperlink]
-
-    #dump sheet.body
-    #dump empty.sharedStrings.body
-    #dump empty.otherfiles["app.xml"]
-    #dump empty.otherfiles["styles.xml"]
-    empty.writeFile "generated-add-rows.xlsx"
-  else:
-    echo "sheet is nil"
-
-  {.hint[XDeclaredButNotUsed]:off.}
-
-  proc autofiltertest =
-    proc populateRow(row: Row, col, cat: string, data: array[3, float]) =
-      let startcol = col.toNum + 1
-      row[col] = cat
-      var sum = 0.0
-      for i, d in data:
-        row[(startcol+i).toCol] = d
-        sum += d
-      let rnum = row.rowNum
-      let eqrange = fmt"SUM({col}{rnum}:{(startcol+data.len-1).toCol}{rnum})" 
-      dump eqrange
-      row[(startcol+data.len).toCol] = Formula(equation: eqrange, valueStr: $sum)
-    let (excel, sheet) = newExcel()
-    let row5 = sheet.row 5
-    let startcol = "D".toNum
-    for i, s in ["Category", "Num1", "Num2", "Num3", "Total"]:
-      row5[(startcol+i).toCol] = s
-    let row6 = sheet.row 6
-    row6.populateRow("D", "A", [0.18460660235998017, 0.93463071023892952, 0.58647760893211043])
-    sheet.row(7).populateRow("D", "A", [0.50425224796279555, 0.25118866081991786, 0.26918159410869791])
-    sheet.row(8).populateRow("D", "A", [0.6006019062877066, 0.18319235857964333, 0.12254334000604317])
-    sheet.row(9).populateRow("D", "A", [0.78015011938458589, 0.78159963723670689, 6.7448346870105036E-2])
-    sheet.row(10).populateRow("D", "B", [0.63608141933645479, 0.35635845012920608, 0.67122053637107193])
-    sheet.row(11).populateRow("D", "B", [0.33327331908137214, 0.2256497329592122, 0.5793989116090501])
-
-    sheet.ranges = ("D5", "H11")
-    sheet.autoFilter = ("D5", "H11")
-    sheet.filterCol 0, Filter(kind: ftFilter, valuesStr: @["A"])
-    sheet.filterCol 1, Filter(kind: ftCustom, logic: cflAnd,
-      customs: @[(foGt, $0), (foLt, $0.7)])
-    #dump sheet.autoFilter
-    #dump sheet.body
-    excel.writeFile "generated-autofilter.xlsx"
-
-  autofiltertest()
