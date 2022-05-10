@@ -534,6 +534,19 @@ proc `[]=`*(row: Row, col: string, h: Hyperlink) =
 
   row.sheet.modifiedAt
 
+proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
+  var x: XmlNode
+  let colnum = col.toNum
+  let rnum = row.body.attr "r"
+  if not isSparse and colnum < row.body.len:
+    x = row.body[colnum]
+  else:
+    for node in row.body:
+      if fmt"{col}{rnum}" == node.attr "r":
+        x = node
+        break
+  x
+
 proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   ## Get cell value from row with optional function to convert it.
   ## When conversion function is supplied, it will be used instead of
@@ -568,22 +581,9 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is DateTime: result = fromUnix(0).local
   elif R is Time: result = fromUnix 0
   else: discard
-  let rnum = row.body.attr "r"
   let isSparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
-  var isInnerStr = false
-  let v = block:
-    var x: XmlNode
-    let colnum = col.toNum
-    if not isSparse and colnum < row.body.len:
-      x = row.body[colnum]
-    else:
-      for node in row.body:
-        if fmt"{col}{rnum}" == node.attr "r":
-          isInnerStr = "inlineStr" == node.attr "t"
-          x = node
-          break
-    x
+  let v = row.fetchValNode(col, isSparse)
   if v == nil: return
   let t = v.innerText
   template fetchShared(t: string): untyped =
@@ -600,7 +600,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
       return conv tt
   retconv()
   when R is string:
-    result = if isInnerStr: t else: fetchShared t
+    result = if "inlineStr" == v.attr "t" : t else: fetchShared t
   elif R is SomeSignedInt:
     try: result = parseInt(t) except: discard
   elif R is SomeFloat:
@@ -615,7 +615,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     result = Formula(equation: v.child("f").innerText,
       valueStr: v.child("v").innerText)
   elif R is Hyperlink:
-    result.text = if isInnerStr: t else: fetchShared t
+    result.text = if "inlineStr" == v.attr "t": t else: fetchShared t
     let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
     var rid = ""
     for hlink in hlinks:
@@ -1165,15 +1165,24 @@ proc style*(row: Row, col: string,
       xf.attrs["borderId"] = $borderId
     if applyFill: xf.attrs["fillId"] = $fillId
 
-proc colrow(cr: string): (string, int) =
-  var rowstr: string
-  for i, c in cr:
-    if c in Letters:
-      result[0] &= c
-    elif c in Digits:
-      rowstr = cr[i .. ^1]
-      break
-  result[1] = try: parseInt(rowstr) except: 0
+  let mcells = row.sheet.body.child "mergeCells"
+  if mcells == nil: return
+  for m in mcells:
+    if m.attr("ref").startsWith refnum:
+      var topleft, bottomright: string
+      if not scanf(m.attr "ref", "$w:$w", topleft, bottomright):
+        return
+      let
+        (tlcol, tlrow) = topleft.colrow
+        (btcol, btrow) = bottomright.colrow
+        r = row.sheet.row tlrow
+      var targets: seq[string]
+      for c in tlcol.toNum+1 .. btcol.toNum:
+        targets.add fmt"{c.toCol}{tlrow}"
+      for rnum in tlrow+1 .. btrow:
+        for c in tlcol.toNum .. btcol.toNum:
+          targets.add fmt"{c.toCol}{rnum}"
+      r.shareStyle(tlcol, targets)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
   if $cfSparse == row.body.attr "cellfill":
