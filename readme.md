@@ -16,6 +16,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Cell styling](#cell-styling)
 * [Row display](#row-display)
 * [Sheet auto filter](#sheet-auto-filter)
+* [Cell merge](#cell-merge)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -575,6 +576,60 @@ has different icon because the filtering already defined in those two
 columns in our example.
 
 [Back to examples list](#examples)
+
+## Cell merge
+
+For this example, we'll see how to merge, reset it and also reset style
+inherited from previous merged cells.
+
+```nim
+import std/colors
+import excelin
+
+let (excel, sheet) = newExcel()
+
+let cellsToMerge = [
+  ("DejaVu Sans Mono", 1, "A", colGreen, ("A1", "E1")), # merge in range A1:E1 with font Dejavu Sans Mono
+  ("Roboto", 3, "A", colBlue, ("A3", "B5")),
+  ("Verdana", 3, "D", colRed, ("D3", "E5")),
+  ("Consolas", 7, "A", colBlack, ("A7", "E8"))          # used for deleting merged cells example
+]
+
+for (fontname, rownum, col, color, `range`) in cellsToMerge:
+  let row = sheet.row rownum
+  row.style(col,
+    font = fontStyle(name = fontname, size = 13),
+    alignment = {"horizontal": "center", "vertical": "center"},
+    fill = fillStyle(
+      pattern = patternFillStyle(patternType = ptLightTrellis, fgColor = $color),
+    ),
+  )
+  row[col] = fontname
+  sheet.mergeCells = `range`
+
+# Let's remove the last merged cells.
+sheet.resetMerge cellsToMerge[^1][4]
+
+# By default, when resetting merge, the existing style (top left cell style)
+# is copied to its subsequent cells in the previous range.
+# We can use resetStyle to remove it.
+
+# The reset merge in range A7:E8, we selectively reset cells.
+sheet.resetStyle("B7", "D7", "A8", "C8", "E8")
+
+excel.writeFile "excelin-example-merge-cells.xlsx"
+```
+
+This is the result when viewed with Libreoffice
+
+![cell merges libreoffice](assets/merge-cells-libreoffice.png)
+
+This is the result when viewed with WPS
+
+![cell merges wps](assets/merge-cells-wps.png)
+
+[Back to examples list](#examples)
+
 
 # Install
 

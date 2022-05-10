@@ -1,4 +1,5 @@
 * 0.4.4:
+    * Add support to reset style.
     * Add support for reset merging cells and copy the subsequent cells to avoid sharing.
     * Add support for merging cells and sharing all its style.
     * Refactor getCell and addCell to allow adding empty cell and different style.

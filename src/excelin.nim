@@ -1286,7 +1286,19 @@ proc copyStyle*(sheet: Sheet, source: string, targets: varargs[string]) =
   let row = sheet.row sourceRow
   row.copyStyle sourceCol, targets
 
-template `$`(r: Range): string =
+proc resetStyle*(sheet: Sheet, targets: varargs[string]) =
+  ## Reset any styling to default.
+  for cr in targets:
+    let (tgcol, tgrow) = cr.colrow
+    let ctgt = sheet.row(tgrow).retrieveCell tgcol
+    if ctgt == nil: continue
+    ctgt.attrs["s"] = $0
+
+proc resetStyle*(row: Row, targets: varargs[string]) =
+  ## Reset any styling to default.
+  row.sheet.resetStyle targets
+
+template `$`*(r: Range): string =
   var dim = r[0]
   if r[1] != "":
     dim &= ":" & r[1]
