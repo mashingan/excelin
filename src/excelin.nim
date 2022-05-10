@@ -35,8 +35,6 @@ from std/colors import `$`, colWhite, colRed, colGreen, colBlue
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
   ArchiveEntry, writeZipArchive
 
-export xmltree.items
-#export xmltree.`$`
 
 const
   datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
@@ -434,7 +432,8 @@ proc toCol*(n: Natural): string =
     count = count mod atoz.len
   result &= atoz[count]
 
-proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[XmlNode] = @[]) =
+proc addCell(row: Row, col, cellType, text: string, valelem = "v",
+  altnode: seq[XmlNode] = @[], emptyCell = false) =
   let rn = row.body.attr "r"
   let sparse = $cfSparse == row.body.attr "cellfill"
   let col = col.toUpperAscii
@@ -443,6 +442,7 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v", altnode: seq[
   let cnode = if cellType != "" and valelem != "":
                 <>c(r=cellpos, s="0", t=cellType, newXmlTree(valelem, innerval))
               elif valelem != "": <>c(r=cellpos, s="0", newXmlTree(valelem, innerval))
+              elif emptyCell: <>c(r=cellpos)
               else: newXmlTree("c", innerval, {"r": cellpos}.toXmlAttributes)
   if not sparse:
     let cellsTotal = row.body.len
