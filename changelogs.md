@@ -1,3 +1,5 @@
+* 0.4.6:
+    * Add support for sheet page breaks and re-organize internal code organization.
 * 0.4.5:
     * Overhaul internal code organization with include compartments.
 * 0.4.4:

@@ -17,6 +17,7 @@ All available APIs can be find in [docs page](https://mashingan.github.io/exceli
 * [Row display](#row-display)
 * [Sheet auto filter](#sheet-auto-filter)
 * [Cell merge](#cell-merge)
+* [Sheet page breaks](#sheet-page-breaks)
 
 ## Common operations
 All operations available working with Excel worksheet are illustrated in below:
@@ -631,6 +632,57 @@ This is the result when viewed with WPS
 
 [Back to examples list](#examples)
 
+
+## Sheet page breaks
+
+This example we'll see how to add page break to our sheet.
+
+```nim
+from std/strformat import fmt
+import std/colors
+import excelin
+
+
+let (excel, sheet) = newExcel()
+
+# Let's add page break inserted at row 10 with some info
+
+let row10 = sheet.row 10
+row10.pageBreak()
+row10["A"] = "Above this is the horizontal page break"
+row10.style("A",
+  fill = fillStyle(
+    pattern = patternFillStyle(patternType = ptLightGray, fgColor = $colRed),
+  ),
+  alignment = {"horizontal": "center"},
+)
+
+# For better illustration, we merge cells from column A to A+3 in
+# row 10, the last cell will be merged vertically
+
+sheet.mergeCells = ("A10", fmt"{3.toCol}10") # remember toCol needs 0-based hence 3 is D
+sheet.mergeCells = ("E1", "E10")
+
+# Now let's add vertical page break after column E or inserted at column F.
+
+sheet.pageBreakCol(5.toCol)
+let row1 = sheet.row 1
+row1[4.toCol] = "Right this is the vertical page break"
+row1.style("E",
+  fill = fillStyle(
+    pattern = patternFillStyle(patternType = ptLightGray, fgColor = $colGreen),
+  ),
+  alignment = {"vertical": "center", "wrapText": $true},
+)
+
+excel.writeFile "excelin-example-pagebreak.xlsx"
+```
+
+The result as we can see below when viewed with Libreoffice
+
+![page breaks libreoffice](assets/page-breaks-libreoffice.png)
+
+[Back to examples list](#examples)
 
 # Install
 
