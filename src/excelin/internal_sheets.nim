@@ -308,6 +308,10 @@ proc collapsedCol*(sheet: Sheet, col: string, collapsed: bool) =
   ## Set whether the column is collapsed or not.
   sheet.modifyCol(col, "collapsed", $collapsed)
 
+proc isCollapsedCol*(sheet: Sheet, col: string): bool =
+  ## Check whether the column in sheet is collapsed or not.
+  sheet.body.retrieveCol(col.toNum+1).attr("collapsed") in [$true, $1]
+
 proc widthCol*(sheet: Sheet, col: string, width: float) =
   ## Set the entire column width. Set with 0 width to reset it.
   ## The formula to count what's the width is as below:
@@ -324,3 +328,9 @@ proc widthCol*(sheet: Sheet, col: string, width: float) =
     return
   coln.attrs["customWidth"] = $true
   coln.attrs["width"] = $width
+
+proc bestFitCol*(sheet: Sheet, col: string, yes: bool) =
+  ## Set the column width with best fit which the column is not set
+  ## manually or not default width. Best fit means the column width
+  ## will automatically resize its width to display.
+  sheet.modifyCol(col, "bestFit", $yes)
