@@ -268,3 +268,34 @@ proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
     for cn in horizontalRange:
       let r = sheet.row rnum
       r.addEmptyCell cn.toCol, styleattr
+
+proc retrieveCol(node: XmlNode, colnum: int): XmlNode =
+  let colstr = $colnum
+  for n in node:
+    if n.attr("min") == colstr and n.attr("max") == colstr:
+      return n
+  result = <>col(min=colstr, max=colstr)
+  node.add result
+
+template modifyCol(sheet: Sheet, col, attr, val: string) =
+  let coln = sheet.body.retrieveChildOrNew("cols").retrieveCol col.toNum+1
+  coln.attrs[attr] = val
+
+proc colHide*(sheet: Sheet, col: string, hide: bool) =
+  ## Hide entire column in the sheet.
+  sheet.modifyCol(col, "hidden", $hide)
+
+proc colOutlineLevel*(sheet: Sheet, col: string, level: Natural) =
+  ## Set outline level for the entire column in the sheet.
+  sheet.modifyCol(col, "outlineLevel", $level)
+
+proc colWidth*(sheet: Sheet, col: string, width: float) =
+  ## Set the entire column width. Set with 0 width to reset it.
+  let cols = sheet.body.retrieveChildOrNew "cols"
+  let coln = cols.retrieveCol col.toNum+1
+  if width <= 0:
+    coln.attrs.del "width"
+    coln.attrs["customWidth"] = $false
+    return
+  coln.attrs["customWidth"] = $true
+  coln.attrs["width"] = $width
