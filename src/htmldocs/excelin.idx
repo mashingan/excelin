@@ -1,4 +1,3 @@
-Excelin	excelin.html#excelin	 Excelin	
 excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
 Excel	excelin.html#Excel	excelin: Excel	
 Workbook	excelin.html#Workbook	excelin: Workbook	
@@ -81,20 +80,12 @@ cflAnd	excelin.html#cflAnd	CustomFilterLogic.cflAnd
 cflOr	excelin.html#cflOr	CustomFilterLogic.cflOr	
 cflXor	excelin.html#cflXor	CustomFilterLogic.cflXor	
 CustomFilterLogic	excelin.html#CustomFilterLogic	excelin: CustomFilterLogic	
-getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
-modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
-modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
-row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive; fill = cfSparse): Row	
-rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive	
-hide=	excelin.html#hide=,Row,bool	excelin: hide=(row: Row; yes: bool)	
-hidden	excelin.html#hidden,Row	excelin: hidden(row: Row): bool	
-height=	excelin.html#height=,Row,Natural	excelin: height=(row: Row; height: Natural)	
-height	excelin.html#height,Row	excelin: height(row: Row): Natural	
-outlineLevel=	excelin.html#outlineLevel=,Row,Natural	excelin: outlineLevel=(row: Row; level: Natural)	
-outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natural	
-collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 toNum	excelin.html#toNum,string	excelin: toNum(col: string): int	
 toCol	excelin.html#toCol,Natural	excelin: toCol(n: Natural): string	
+modifiedAt	excelin.html#modifiedAt,Excel,T	excelin: modifiedAt[T: DateTime | Time](e: Excel; t: T = now())	
+modifiedAt	excelin.html#modifiedAt,Node,T	excelin: modifiedAt[Node: Workbook | Sheet; T: DateTime | Time](w: Node; t: T = now())	
+`$`	excelin.html#$.t,Range	excelin: `$`(r: Range): string	
+rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive	
 `[]=`	excelin.html#[]=,Row,string,string	excelin: `[]=`(row: Row; col: string; s: string)	
 `[]=`	excelin.html#[]=,Row,string,SomeNumber	excelin: `[]=`(row: Row; col: string; n: SomeNumber)	
 `[]=`	excelin.html#[]=,Row,string,bool	excelin: `[]=`(row: Row; col: string; b: bool)	
@@ -104,33 +95,43 @@ toCol	excelin.html#toCol,Natural	excelin: toCol(n: Natural): string
 getCell	excelin.html#getCell,Row,string,typeof(nil)	excelin: getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R	
 getCellIt	excelin.html#getCellIt.t,Row,string,untyped	excelin: getCellIt[R](r: Row; col: string; body: untyped): untyped	
 `[]`	excelin.html#[],Row,string,typedesc	excelin: `[]`(r: Row; col: string; ret: typedesc): ret:type	
+row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive; fill = cfSparse): Row	
+hide=	excelin.html#hide=,Row,bool	excelin: hide=(row: Row; yes: bool)	
+hidden	excelin.html#hidden,Row	excelin: hidden(row: Row): bool	
+height=	excelin.html#height=,Row,Natural	excelin: height=(row: Row; height: Natural)	
+height	excelin.html#height,Row	excelin: height(row: Row): Natural	
+outlineLevel=	excelin.html#outlineLevel=,Row,Natural	excelin: outlineLevel=(row: Row; level: Natural)	
+outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natural	
+collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
-addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
-deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	
-fontStyle	excelin.html#fontStyle,string,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	
+shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
+copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
+fontStyle	excelin.html#fontStyle,string,int,int,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	
 borderStyle	excelin.html#borderStyle_2	excelin: borderStyle(start, end, top, bottom, vertical, horizontal = BorderProp();\n            diagonalUp, diagonalDown = false): Border	
 border	excelin.html#border_2	excelin: border(start, end, top, bottom, vertical, horizontal = BorderProp();\n       diagonalUp, diagonalDown = false): Border	
 borderPropStyle	excelin.html#borderPropStyle,string	excelin: borderPropStyle(style = bsNone; color = &quot;&quot;): BorderProp	
 borderProp	excelin.html#borderProp,string	excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp	
 fillStyle	excelin.html#fillStyle	excelin: fillStyle(pattern = PatternFill(); gradient = GradientFill()): Fill	
-patternFillStyle	excelin.html#patternFillStyle	excelin: patternFillStyle(fgColor = $16777215; patternType = ptNone): PatternFill	
-patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill	
+patternFillStyle	excelin.html#patternFillStyle	excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill	
+patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill	
 gradientFillStyle	excelin.html#gradientFillStyle,float,float,float,float,float	excelin: gradientFillStyle(stop = GradientStop(); type = gtLinear;\n                  degree, left, right, top, bottom = 0.0): GradientFill	
 gradientFill	excelin.html#gradientFill,float,float,float,float,float	excelin: gradientFill(stop = GradientStop(); type = gtLinear;\n             degree, left, right, top, bottom = 0.0): GradientFill	
 style	excelin.html#style,Row,string,openArray[]	excelin: style(row: Row; col: string; font = Font(size: 1); border = Border();\n      fill = Fill(); alignment: openArray[(string, string)] = [])	
-shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
 shareStyle	excelin.html#shareStyle,Sheet,string,varargs[string]	excelin: shareStyle(sheet: Sheet; source: string; targets: varargs[string])	
-copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Sheet,string,varargs[string]	excelin: copyStyle(sheet: Sheet; source: string; targets: varargs[string])	
 resetStyle	excelin.html#resetStyle,Sheet,varargs[string]	excelin: resetStyle(sheet: Sheet; targets: varargs[string])	
 resetStyle	excelin.html#resetStyle,Row,varargs[string]	excelin: resetStyle(row: Row; targets: varargs[string])	
-`$`	excelin.html#$.t,Range	excelin: `$`(r: Range): string	
+getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
+addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
+deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	
+name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
+name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
+resetMerge	excelin.html#resetMerge,Sheet,Range	excelin: resetMerge(sheet: Sheet; range: Range)	
 ranges=	excelin.html#ranges=,Sheet,Range	excelin: ranges=(sheet: Sheet; range: Range)	
 autoFilter=	excelin.html#autoFilter=,Sheet,Range	excelin: autoFilter=(sheet: Sheet; range: Range)	
 autoFilter	excelin.html#autoFilter,Sheet	excelin: autoFilter(sheet: Sheet): Range	
 filterCol	excelin.html#filterCol,Sheet,Natural,Filter	excelin: filterCol(sheet: Sheet; colId: Natural; filter: Filter)	
 mergeCells=	excelin.html#mergeCells=,Sheet,Range	excelin: mergeCells=(sheet: Sheet; range: Range)	
-resetMerge	excelin.html#resetMerge,Sheet,Range	excelin: resetMerge(sheet: Sheet; range: Range)	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
 createdAt	excelin.html#createdAt,Excel	excelin: createdAt(excel: Excel; at: DateTime | Time = now())	
@@ -138,5 +139,4 @@ newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&
 writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targetpath: string)	
 `$`	excelin.html#$,Excel	excelin: `$`(e: Excel): string	
 sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
-name	excelin.html#name,Sheet	excelin: name(s: Sheet): string	
-name=	excelin.html#name=,Sheet,string	excelin: name=(s: Sheet; newname: string)	
+Excelin	excelin.html#excelin	 Excelin	

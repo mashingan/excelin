@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,21 +44,29 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -306,7 +313,7 @@ function main() {
 <li><a class="reference external"
           data-doc-search-tag="excelin: fontStyle(name: string; size = 10; family, charset = -1;
           bold, italic, strike, outline, shadow, condense, extend = false;
-          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font" href="excelin.html#fontStyle%2Cstring%2Cint%2Cstring">excelin: fontStyle(name: string; size = 10; family, charset = -1;
+          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font" href="excelin.html#fontStyle%2Cstring%2Cint%2Cint%2Cint%2Cstring">excelin: fontStyle(name: string; size = 10; family, charset = -1;
           bold, italic, strike, outline, shadow, condense, extend = false;
           color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font</a></li>
           </ul></dd>
@@ -422,11 +429,11 @@ function main() {
           </ul></dd>
 <dt><a name="patternFill" href="#patternFill"><span>patternFill:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill</a></li>
+          data-doc-search-tag="excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFill_2">excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
           </ul></dd>
 <dt><a name="patternFillStyle" href="#patternFillStyle"><span>patternFillStyle:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="excelin: patternFillStyle(fgColor = $16777215; patternType = ptNone): PatternFill" href="excelin.html#patternFillStyle">excelin: patternFillStyle(fgColor = $16777215; patternType = ptNone): PatternFill</a></li>
+          data-doc-search-tag="excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill" href="excelin.html#patternFillStyle">excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill</a></li>
           </ul></dd>
 <dt><a name="PatternType" href="#PatternType"><span>PatternType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -627,7 +634,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-10 09:45:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-11 00:56:33 UTC</small>
       </div>
     </div>
   </div>
