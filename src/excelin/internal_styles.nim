@@ -1,5 +1,70 @@
 include internal_rows
 
+from std/colors import `$`, colWhite
+
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0
+
+template styleRange(sheet: Sheet, `range`: Range, op: untyped) =
+  let
+    (tlcol, tlrow) = `range`[0].colrow
+    (btcol, btrow) = `range`[1].colrow
+    r = sheet.row tlrow
+  var targets: seq[string]
+  for cn in tlcol.toNum+1 .. btcol.toNum:
+    let col = cn.toCol
+    targets.add col & $tlrow
+  for rnum in tlrow+1 .. btrow:
+    for cn in tlcol.toNum .. btcol.toNum:
+      targets.add cn.toCol & $rnum
+  r.`op`(tlcol, targets)
+
+template fetchStyles(row: Row): XmlNode =
+  let (a, r) = row.sheet.parent.otherfiles["styles.xml"]
+  discard a
+  r
+
+template retrieveColor(color: string): untyped =
+  let r = if color.startsWith("#"): color[1..^1] else: color
+  "FF" & r
+
+proc toXmlNode(f: Font): XmlNode =
+  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
+  template addElem(test, field: untyped): untyped =
+    if `test`:
+      result.add <>`field`(val= $f.`field`)
+
+  addElem f.family >= 0, family
+  addElem f.charset >= 0, charset
+  addElem f.strike, strike
+  addElem f.outline, outline
+  addElem f.shadow, shadow
+  addElem f.condense, condense
+  addElem f.extend, extend
+  if f.bold: result.add <>b(val= $f.bold)
+  if f.italic: result.add <>i(val= $f.italic)
+  if f.color != "": result.add <>color(rgb = retrieveColor(f.color))
+  result.add <>u(val= $f.underline)
+  result.add <>vertAlign(val= $f.verticalAlign)
+
+proc retrieveCell(row: Row, col: string): XmlNode =
+  if $cfSparse == row.body.attr "cellfill":
+    let colrow = fmt"{col}{row.rowNum}"
+    let fetchpos = row.body.fetchCell colrow
+    if fetchpos < 0:
+      row[col] = ""
+      row.body[row.body.len-1]
+    else: row.body[fetchpos]
+  else:
+    row.body[col.toNum]
+
 proc shareStyle*(row: Row, col: string, targets: varargs[string]) =
   ## Share style from source row and col string to any arbitrary cells
   ## in format {Col}{Num} e.g. A1, B2, C3 etc. Changing the shared
@@ -54,25 +119,6 @@ proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
 
   cxfs.attrs["count"] = $stylescount
   csxfs.attrs["count"] = $(csxfs.len+count)
-
-proc addEmptyStyles(e: Excel) =
-  const path = "xl/styles.xml"
-  e.content.add <>Override(PartName="/" & path,
-    ContentType=spreadtypefmt % ["styles"])
-  let relslen = e.workbook.rels[1].len
-  e.workbook.rels[1].add <>Relationship(Target="styles.xml",
-    Id=fmt"rId{relslen+1}", Type=relStylesScheme)
-  let styles = <>stylesSheet(xmlns=mainns,
-    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
-    <>fonts(count= $0),
-    <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
-    <>borders(count= $1, <>border(diagonalUp="false", diagonalDown="false",
-      <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
-    <>cellStyleXfs(count= $0),
-    <>cellXfs(count= $0),
-    <>cellStyles(count= $0),
-    <>colors(<>indexedColors()))
-  e.otherfiles["styles.xml"] = (path, styles)
 
 proc addFont(styles: XmlNode, font: Font): (int, bool) =
   if font.name == "": return
@@ -169,6 +215,7 @@ proc fontStyle*(name: string, size = 10,
     name: name,
     size: size,
     family: family,
+    color: color,
     charset: charset,
     bold: bold,
     italic: italic,

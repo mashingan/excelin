@@ -58,13 +58,31 @@ proc `collapsed=`*(row: Row, yes: bool) =
 proc clear*(row: Row) = row.body.clear
   ## Clear all cells in the row.
 
-proc retrieveCell(row: Row, col: string): XmlNode =
-  if $cfSparse == row.body.attr "cellfill":
-    let colrow = fmt"{col}{row.rowNum}"
-    let fetchpos = row.body.fetchCell colrow
-    if fetchpos < 0:
-      row[col] = ""
-      row.body[row.body.len-1]
-    else: row.body[fetchpos]
+template retrieveCol(node: XmlNode, colnum: int, test, target, whenNotFound: untyped) =
+  let colstr {.inject.} = $colnum
+  var found = false
+  for n {.inject.} in node:
+    if `test`:
+      `target` = n
+      found = true
+      break
+  if not found:
+    `target` = `whenNotFound`
+    node.add `target`
+
+proc pageBreak*(row: Row, maxCol, minCol = 0, manual = true) =
+  ## Add horizontal page break after the current row working on.
+  ## Set the horizontal page break length up to intended maxCol.
+  let rbreak = row.sheet.body.retrieveChildOrNew "rowBreaks"
+  let rnum = row.rowNum-1
+  var brkn: XmlNode
+  rbreak.retrieveCol(rnum, n.attr("id") == colstr, brkn, <>brk(id=colstr))
+  if minCol > 0: brkn.attrs["min"] = $minCol
+  if maxCol > 0: brkn.attrs["max"] = $maxCol
+  brkn.attrs["man"] = $manual
+  let newcount = $rbreak.len
+  rbreak.attrs["count"] = newcount
+  if manual:
+    rbreak.attrs["manualBreakCount"] = newcount
   else:
-    row.body[col.toNum]
+    rbreak.attrs["manualBreakCount"] = $(rbreak.len-1)

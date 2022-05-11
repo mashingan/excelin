@@ -3,7 +3,19 @@
 #   internal_cells <- internal_utilities <- internal_types
 # all files with prefix internal_ are considered as package
 # wide implementation hence all internal privates are shared.
-include internal_sheets
+include excelin/internal_sheets
+
+from std/xmlparser import parseXml
+from std/sha1 import secureHash, `$`
+
+from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
+  ArchiveEntry, writeZipArchive
+
+const
+  spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
+  relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+  relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
+  emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
 
 proc retrieveSheetsInfo(n: XmlNode): seq[XmlNode] =
   let sheets = n.child "sheets"
@@ -64,6 +76,25 @@ proc assignSheetRel(excel: Excel) =
     excel.rels.add <>Override(PartName="/" & relspathname,
       ContentType= packagetypefmt % ["relationships"])
     excel.otherfiles[relname] = (relspathname, rels)
+
+proc addEmptyStyles(e: Excel) =
+  const path = "xl/styles.xml"
+  e.content.add <>Override(PartName="/" & path,
+    ContentType=spreadtypefmt % ["styles"])
+  let relslen = e.workbook.rels[1].len
+  e.workbook.rels[1].add <>Relationship(Target="styles.xml",
+    Id=fmt"rId{relslen+1}", Type=relStylesScheme)
+  let styles = <>stylesSheet(xmlns=mainns,
+    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
+    <>fonts(count= $0),
+    <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
+    <>borders(count= $1, <>border(diagonalUp="false", diagonalDown="false",
+      <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
+    <>cellStyleXfs(count= $0),
+    <>cellXfs(count= $0),
+    <>cellStyles(count= $0),
+    <>colors(<>indexedColors()))
+  e.otherfiles["styles.xml"] = (path, styles)
 
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError

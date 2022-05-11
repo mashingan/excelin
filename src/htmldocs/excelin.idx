@@ -105,6 +105,7 @@ outlineLevel=	excelin.html#outlineLevel=,Row,Natural	excelin: outlineLevel=(row:
 outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natural	
 collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
+pageBreak	excelin.html#pageBreak,Row,int,int	excelin: pageBreak(row: Row; maxCol, minCol = 0; manual = true)	
 shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
 fontStyle	excelin.html#fontStyle,string,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	
@@ -133,6 +134,13 @@ autoFilter=	excelin.html#autoFilter=,Sheet,Range	excelin: autoFilter=(sheet: She
 autoFilter	excelin.html#autoFilter,Sheet	excelin: autoFilter(sheet: Sheet): Range	
 filterCol	excelin.html#filterCol,Sheet,Natural,Filter	excelin: filterCol(sheet: Sheet; colId: Natural; filter: Filter)	
 mergeCells=	excelin.html#mergeCells=,Sheet,Range	excelin: mergeCells=(sheet: Sheet; range: Range)	
+hideCol	excelin.html#hideCol,Sheet,string,bool	excelin: hideCol(sheet: Sheet; col: string; hide: bool)	
+outlineLevelCol	excelin.html#outlineLevelCol,Sheet,string,Natural	excelin: outlineLevelCol(sheet: Sheet; col: string; level: Natural)	
+collapsedCol	excelin.html#collapsedCol,Sheet,string,bool	excelin: collapsedCol(sheet: Sheet; col: string; collapsed: bool)	
+isCollapsedCol	excelin.html#isCollapsedCol,Sheet,string	excelin: isCollapsedCol(sheet: Sheet; col: string): bool	
+widthCol	excelin.html#widthCol,Sheet,string,float	excelin: widthCol(sheet: Sheet; col: string; width: float)	
+bestFitCol	excelin.html#bestFitCol,Sheet,string,bool	excelin: bestFitCol(sheet: Sheet; col: string; yes: bool)	
+pageBreakCol	excelin.html#pageBreakCol,Sheet,string,int,int	excelin: pageBreakCol(sheet: Sheet; col: string; maxRow, minRow = 0; manual = true)	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
 createdAt	excelin.html#createdAt,Excel	excelin: createdAt(excel: Excel; at: DateTime | Time = now())	

@@ -1,5 +1,20 @@
 include internal_styles
 
+from std/os import `/`, addFileExt, parentDir, splitPath,
+  getTempDir, removeFile, extractFilename, relativePath, tailDir
+
+const
+  xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
+  xmlnsr = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+  xmlnsmc = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+  relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
+  packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
+
+template unixSep(str: string): untyped = str.replace('\\', '/')
+  ## helper to change the Windows path separator to Unix path separator
+
+
 proc getSheet*(e: Excel, name: string): Sheet =
   ## Fetch the sheet from the Excel file for further work.
   ## Will return nil for unavailable sheet name.
@@ -268,3 +283,70 @@ proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
     for cn in horizontalRange:
       let r = sheet.row rnum
       r.addEmptyCell cn.toCol, styleattr
+
+template retrieveColsAttr(node: XmlNode, col: string): XmlNode =
+  var coln: XmlNode
+  node.retrieveCol(col.toNum+1,
+    n.attr("min") == colstr and n.attr("max") == colstr,
+    coln, <>col(min=colstr, max=colstr))
+  coln
+
+template modifyCol(sheet: Sheet, col, colAttr, val: string) =
+  let coln = sheet.body.retrieveChildOrNew("cols").retrieveColsAttr(col)
+  coln.attrs[colAttr] = val
+
+proc hideCol*(sheet: Sheet, col: string, hide: bool) =
+  ## Hide entire column in the sheet.
+  sheet.modifyCol(col, "hidden", $hide)
+
+proc outlineLevelCol*(sheet: Sheet, col: string, level: Natural) =
+  ## Set outline level for the entire column in the sheet.
+  sheet.modifyCol(col, "outlineLevel", $level)
+
+proc collapsedCol*(sheet: Sheet, col: string, collapsed: bool) =
+  ## Set whether the column is collapsed or not.
+  sheet.modifyCol(col, "collapsed", $collapsed)
+
+proc isCollapsedCol*(sheet: Sheet, col: string): bool =
+  ## Check whether the column in sheet is collapsed or not.
+  sheet.body.retrieveColsAttr(col).attr("collapsed") in [$true, $1]
+
+proc widthCol*(sheet: Sheet, col: string, width: float) =
+  ## Set the entire column width. Set with 0 width to reset it.
+  ## The formula to count what's the width is as below:
+  ## `float(int({NumOfChars}*{MaxDigitPixel}+{5 pixel padding}) / {MaxDigitPixel} * 256) / 256` .
+  ## 
+  ## For example Calibri has maximum width of 11 point, i.e. 7 pixel at 96 dpi at default
+  ## style. If we want to set the column support 8 chars, the value would be:
+  ## doAssert float((8*7+5) / 7 * 256) / 256 == 8.714285714285714
+  let cols = sheet.body.retrieveChildOrNew "cols"
+  let coln = cols.retrieveColsAttr col
+  if width <= 0:
+    coln.attrs.del "width"
+    coln.attrs["customWidth"] = $false
+    return
+  coln.attrs["customWidth"] = $true
+  coln.attrs["width"] = $width
+
+proc bestFitCol*(sheet: Sheet, col: string, yes: bool) =
+  ## Set the column width with best fit which the column is not set
+  ## manually or not default width. Best fit means the column width
+  ## will automatically resize its width to display.
+  sheet.modifyCol(col, "bestFit", $yes)
+
+proc pageBreakCol*(sheet: Sheet, col: string, maxRow, minRow = 0, manual = true) =
+  ## Set vertical page break on the right of column. Set the maximum row
+  ## for the vertical length of the page break.
+  let cbreak = sheet.body.retrieveChildOrNew "colBreaks"
+  var brkn: XmlNode
+  cbreak.retrieveCol(col.toNum,
+    n.attr("id") == colstr, brkn, <>brk(id=colstr))
+  if minRow > 0: brkn.attrs["min"] = $minRow
+  if maxRow > 0: brkn.attrs["max"] = $maxRow
+  brkn.attrs["man"] = $manual
+  let newcount = $cbreak.len
+  cbreak.attrs["count"] = newcount
+  if manual:
+    cbreak.attrs["manualBreakCount"] = newcount
+  else:
+    cbreak.attrs["manualBreakCount"] = $(cbreak.len-1)

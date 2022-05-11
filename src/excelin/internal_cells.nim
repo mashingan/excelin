@@ -1,5 +1,33 @@
 include internal_utilities
 
+from std/strformat import fmt
+from std/strscans import scanf
+from std/sugar import dump, `->`
+
+const
+  mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+  relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+
+proc retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
+  var r = node.child name
+  if r == nil:
+    r = newXmlTree(name, [], newStringTable())
+    node.add r
+  r
+
+proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
+  var x: XmlNode
+  let colnum = col.toNum
+  let rnum = row.body.attr "r"
+  if not isSparse and colnum < row.body.len:
+    x = row.body[colnum]
+  else:
+    for node in row.body:
+      if fmt"{col}{rnum}" == node.attr "r":
+        x = node
+        break
+  x
+
 proc fetchCell(body: XmlNode, colrow: string): int =
   var count = -1
   for n in body:
