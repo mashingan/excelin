@@ -598,6 +598,7 @@ let cellsToMerge = [
 for (fontname, rownum, col, color, `range`) in cellsToMerge:
   let row = sheet.row rownum
   row.style(col,
+    #font = fontStyle(name = fontname, size = 13, color = $color),
     font = fontStyle(name = fontname, size = 13),
     alignment = {"horizontal": "center", "vertical": "center"},
     fill = fillStyle(

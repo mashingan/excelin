@@ -49,7 +49,7 @@ proc toNum*(col: string): int =
     result += cnum * (26 ^ i)
   dec result
 
-let atoz = toSeq('A'..'Z')
+const atoz = toseq('A'..'Z')
 
 proc toCol*(n: Natural): string =
   ## Convert our numeric column to string representation.

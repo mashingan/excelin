@@ -3,7 +3,7 @@
 #   internal_cells <- internal_utilities <- internal_types
 # all files with prefix internal_ are considered as package
 # wide implementation hence all internal privates are shared.
-include internal_sheets
+include excelin/internal_sheets
 
 proc retrieveSheetsInfo(n: XmlNode): seq[XmlNode] =
   let sheets = n.child "sheets"
