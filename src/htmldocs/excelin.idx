@@ -1,3 +1,4 @@
+Excelin	excelin.html#excelin	 Excelin	
 excelinVersion	excelin.html#excelinVersion	excelin: excelinVersion	
 Excel	excelin.html#Excel	excelin: Excel	
 Workbook	excelin.html#Workbook	excelin: Workbook	
@@ -106,14 +107,14 @@ collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: b
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
 shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
-fontStyle	excelin.html#fontStyle,string,int,int,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	
+fontStyle	excelin.html#fontStyle,string,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	
 borderStyle	excelin.html#borderStyle_2	excelin: borderStyle(start, end, top, bottom, vertical, horizontal = BorderProp();\n            diagonalUp, diagonalDown = false): Border	
 border	excelin.html#border_2	excelin: border(start, end, top, bottom, vertical, horizontal = BorderProp();\n       diagonalUp, diagonalDown = false): Border	
 borderPropStyle	excelin.html#borderPropStyle,string	excelin: borderPropStyle(style = bsNone; color = &quot;&quot;): BorderProp	
 borderProp	excelin.html#borderProp,string	excelin: borderProp(style = bsNone; color = &quot;&quot;): BorderProp	
 fillStyle	excelin.html#fillStyle	excelin: fillStyle(pattern = PatternFill(); gradient = GradientFill()): Fill	
-patternFillStyle	excelin.html#patternFillStyle	excelin: patternFillStyle(fgColor = $colWhite; patternType = ptNone): PatternFill	
-patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $colWhite; patternType = ptNone): PatternFill	
+patternFillStyle	excelin.html#patternFillStyle	excelin: patternFillStyle(fgColor = $16777215; patternType = ptNone): PatternFill	
+patternFill	excelin.html#patternFill_2	excelin: patternFill(fgColor = $16777215; patternType = ptNone): PatternFill	
 gradientFillStyle	excelin.html#gradientFillStyle,float,float,float,float,float	excelin: gradientFillStyle(stop = GradientStop(); type = gtLinear;\n                  degree, left, right, top, bottom = 0.0): GradientFill	
 gradientFill	excelin.html#gradientFill,float,float,float,float,float	excelin: gradientFill(stop = GradientStop(); type = gtLinear;\n             degree, left, right, top, bottom = 0.0): GradientFill	
 style	excelin.html#style,Row,string,openArray[]	excelin: style(row: Row; col: string; font = Font(size: 1); border = Border();\n      fill = Fill(); alignment: openArray[(string, string)] = [])	
@@ -139,4 +140,3 @@ newExcel	excelin.html#newExcel,string	excelin: newExcel(appName = &quot;Excelin&
 writeFile	excelin.html#writeFile,Excel,string	excelin: writeFile(e: Excel; targetpath: string)	
 `$`	excelin.html#$,Excel	excelin: `$`(e: Excel): string	
 sheetNames	excelin.html#sheetNames,Excel	excelin: sheetNames(e: Excel): seq[string]	
-Excelin	excelin.html#excelin	 Excelin	
