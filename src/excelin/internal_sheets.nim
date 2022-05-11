@@ -284,17 +284,16 @@ proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
       let r = sheet.row rnum
       r.addEmptyCell cn.toCol, styleattr
 
-proc retrieveCol(node: XmlNode, colnum: int): XmlNode =
-  let colstr = $colnum
-  for n in node:
-    if n.attr("min") == colstr and n.attr("max") == colstr:
-      return n
-  result = <>col(min=colstr, max=colstr)
-  node.add result
+template retrieveColsAttr(node: XmlNode, col: string): XmlNode =
+  var coln: XmlNode
+  node.retrieveCol(col.toNum+1,
+    n.attr("min") == colstr and n.attr("max") == colstr,
+    coln, <>col(min=colstr, max=colstr))
+  coln
 
-template modifyCol(sheet: Sheet, col, attr, val: string) =
-  let coln = sheet.body.retrieveChildOrNew("cols").retrieveCol col.toNum+1
-  coln.attrs[attr] = val
+template modifyCol(sheet: Sheet, col, colAttr, val: string) =
+  let coln = sheet.body.retrieveChildOrNew("cols").retrieveColsAttr(col)
+  coln.attrs[colAttr] = val
 
 proc hideCol*(sheet: Sheet, col: string, hide: bool) =
   ## Hide entire column in the sheet.
@@ -310,7 +309,7 @@ proc collapsedCol*(sheet: Sheet, col: string, collapsed: bool) =
 
 proc isCollapsedCol*(sheet: Sheet, col: string): bool =
   ## Check whether the column in sheet is collapsed or not.
-  sheet.body.retrieveCol(col.toNum+1).attr("collapsed") in [$true, $1]
+  sheet.body.retrieveColsAttr(col).attr("collapsed") in [$true, $1]
 
 proc widthCol*(sheet: Sheet, col: string, width: float) =
   ## Set the entire column width. Set with 0 width to reset it.
@@ -321,7 +320,7 @@ proc widthCol*(sheet: Sheet, col: string, width: float) =
   ## style. If we want to set the column support 8 chars, the value would be:
   ## doAssert float((8*7+5) / 7 * 256) / 256 == 8.714285714285714
   let cols = sheet.body.retrieveChildOrNew "cols"
-  let coln = cols.retrieveCol col.toNum+1
+  let coln = cols.retrieveColsAttr col
   if width <= 0:
     coln.attrs.del "width"
     coln.attrs["customWidth"] = $false
@@ -334,3 +333,20 @@ proc bestFitCol*(sheet: Sheet, col: string, yes: bool) =
   ## manually or not default width. Best fit means the column width
   ## will automatically resize its width to display.
   sheet.modifyCol(col, "bestFit", $yes)
+
+proc pageBreakCol*(sheet: Sheet, col: string, maxRow, minRow = 0, manual = true) =
+  ## Set vertical page break on the right of column. Set the maximum row
+  ## for the vertical length of the page break.
+  let cbreak = sheet.body.retrieveChildOrNew "colBreaks"
+  var brkn: XmlNode
+  cbreak.retrieveCol(col.toNum,
+    n.attr("id") == colstr, brkn, <>brk(id=colstr))
+  if minRow > 0: brkn.attrs["min"] = $minRow
+  if maxRow > 0: brkn.attrs["max"] = $maxRow
+  brkn.attrs["man"] = $manual
+  let newcount = $cbreak.len
+  cbreak.attrs["count"] = newcount
+  if manual:
+    cbreak.attrs["manualBreakCount"] = newcount
+  else:
+    cbreak.attrs["manualBreakCount"] = $(cbreak.len-1)

@@ -54,6 +54,17 @@ proc toXmlNode(f: Font): XmlNode =
   result.add <>u(val= $f.underline)
   result.add <>vertAlign(val= $f.verticalAlign)
 
+proc retrieveCell(row: Row, col: string): XmlNode =
+  if $cfSparse == row.body.attr "cellfill":
+    let colrow = fmt"{col}{row.rowNum}"
+    let fetchpos = row.body.fetchCell colrow
+    if fetchpos < 0:
+      row[col] = ""
+      row.body[row.body.len-1]
+    else: row.body[fetchpos]
+  else:
+    row.body[col.toNum]
+
 proc shareStyle*(row: Row, col: string, targets: varargs[string]) =
   ## Share style from source row and col string to any arbitrary cells
   ## in format {Col}{Num} e.g. A1, B2, C3 etc. Changing the shared
