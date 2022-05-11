@@ -2,45 +2,14 @@ include internal_types
 
 from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
-from std/strformat import fmt
 from std/sequtils import toSeq, mapIt, repeat
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
   parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
 from std/math import `^`
+from std/strtabs import `[]=`, pairs, newStringTable, del
 
-template unixSep(str: string): untyped = str.replace('\\', '/')
-  ## helper to change the Windows path separator to Unix path separator
-
-proc retrieveChildOrNew(node: XmlNode, name: string): XmlNode =
-  var r = node.child name
-  if r == nil:
-    r = newXmlTree(name, [], newStringTable())
-    node.add r
-  r
-
-proc colrow(cr: string): (string, int) =
-  var rowstr: string
-  for i, c in cr:
-    if c in Letters:
-      result[0] &= c
-    elif c in Digits:
-      rowstr = cr[i .. ^1]
-      break
-  result[1] = try: parseInt(rowstr) except: 0
-
-template styleRange(sheet: Sheet, `range`: Range, op: untyped) =
-  let
-    (tlcol, tlrow) = `range`[0].colrow
-    (btcol, btrow) = `range`[1].colrow
-    r = sheet.row tlrow
-  var targets: seq[string]
-  for cn in tlcol.toNum+1 .. btcol.toNum:
-    let col = cn.toCol
-    targets.add col & $tlrow
-  for rnum in tlrow+1 .. btrow:
-    for cn in tlcol.toNum .. btcol.toNum:
-      targets.add cn.toCol & $rnum
-  r.`op`(tlcol, targets)
+const
+  datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
 
 proc toNum*(col: string): int =
   ## Convert our column string to its numeric representation.
@@ -79,47 +48,6 @@ proc toCol*(n: Natural): string =
       result &= atoz[c-1]
     count = count mod atoz.len
   result &= atoz[count]
-
-proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
-  var x: XmlNode
-  let colnum = col.toNum
-  let rnum = row.body.attr "r"
-  if not isSparse and colnum < row.body.len:
-    x = row.body[colnum]
-  else:
-    for node in row.body:
-      if fmt"{col}{rnum}" == node.attr "r":
-        x = node
-        break
-  x
-
-template fetchStyles(row: Row): XmlNode =
-  let (a, r) = row.sheet.parent.otherfiles["styles.xml"]
-  discard a
-  r
-
-template retrieveColor(color: string): untyped =
-  let r = if color.startsWith("#"): color[1..^1] else: color
-  "FF" & r
-
-proc toXmlNode(f: Font): XmlNode =
-  result = <>font(<>name(val=f.name), <>sz(val= $f.size))
-  template addElem(test, field: untyped): untyped =
-    if `test`:
-      result.add <>`field`(val= $f.`field`)
-
-  addElem f.family >= 0, family
-  addElem f.charset >= 0, charset
-  addElem f.strike, strike
-  addElem f.outline, outline
-  addElem f.shadow, shadow
-  addElem f.condense, condense
-  addElem f.extend, extend
-  if f.bold: result.add <>b(val= $f.bold)
-  if f.italic: result.add <>i(val= $f.italic)
-  if f.color != "": result.add <>color(rgb = retrieveColor(f.color))
-  result.add <>u(val= $f.underline)
-  result.add <>vertAlign(val= $f.verticalAlign)
 
 proc copyTo(src, dest: XmlNode) =
   if src == nil or dest == nil or

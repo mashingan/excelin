@@ -15,20 +15,9 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      tag
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
-from std/os import `/`, addFileExt, parentDir, splitPath,
-  getTempDir, removeFile, extractFilename, relativePath, tailDir
-from std/strtabs import `[]=`, pairs, newStringTable, del
 
 
 const
-  datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
-  xmlnsr = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-  xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
-  xmlnsmc = "http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
-  relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-  packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
   excelinVersion* = "0.4.5"
 
 type

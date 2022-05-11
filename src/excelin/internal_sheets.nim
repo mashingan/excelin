@@ -1,7 +1,19 @@
 include internal_styles
 
+from std/os import `/`, addFileExt, parentDir, splitPath,
+  getTempDir, removeFile, extractFilename, relativePath, tailDir
+
 const
   xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
+  xmlnsr = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+  xmlnsmc = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+  relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
+  packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
+
+template unixSep(str: string): untyped = str.replace('\\', '/')
+  ## helper to change the Windows path separator to Unix path separator
+
 
 proc getSheet*(e: Excel, name: string): Sheet =
   ## Fetch the sheet from the Excel file for further work.
