@@ -1,3 +1,5 @@
+* 0.4.5:
+    * Overhaul internal code organization with include compartments.
 * 0.4.4:
     * Add support to reset style.
     * Add support for reset merging cells and copy the subsequent cells to avoid sharing.
