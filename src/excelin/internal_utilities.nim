@@ -1,5 +1,13 @@
 include internal_types
 
+from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
+  parse, fromUnix, local
+from std/strformat import fmt
+from std/sequtils import toSeq, mapIt, repeat
+from std/strutils import endsWith, contains, parseInt, `%`, replace,
+  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
+from std/math import `^`
+
 template unixSep(str: string): untyped = str.replace('\\', '/')
   ## helper to change the Windows path separator to Unix path separator
 

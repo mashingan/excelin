@@ -1,5 +1,7 @@
 include internal_rows
 
+from std/colors import `$`, colWhite
+
 proc shareStyle*(row: Row, col: string, targets: varargs[string]) =
   ## Share style from source row and col string to any arbitrary cells
   ## in format {Col}{Num} e.g. A1, B2, C3 etc. Changing the shared
@@ -54,25 +56,6 @@ proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
 
   cxfs.attrs["count"] = $stylescount
   csxfs.attrs["count"] = $(csxfs.len+count)
-
-proc addEmptyStyles(e: Excel) =
-  const path = "xl/styles.xml"
-  e.content.add <>Override(PartName="/" & path,
-    ContentType=spreadtypefmt % ["styles"])
-  let relslen = e.workbook.rels[1].len
-  e.workbook.rels[1].add <>Relationship(Target="styles.xml",
-    Id=fmt"rId{relslen+1}", Type=relStylesScheme)
-  let styles = <>stylesSheet(xmlns=mainns,
-    <>numFmts(count="1", <>numFmt(formatCode="General", numFmtId="164")),
-    <>fonts(count= $0),
-    <>fills(count="1", <>fill(<>patternFill(patternType="none"))),
-    <>borders(count= $1, <>border(diagonalUp="false", diagonalDown="false",
-      <>begin(), newXmlTree("end", []), <>top(), <>bottom())),
-    <>cellStyleXfs(count= $0),
-    <>cellXfs(count= $0),
-    <>cellStyles(count= $0),
-    <>colors(<>indexedColors()))
-  e.otherfiles["styles.xml"] = (path, styles)
 
 proc addFont(styles: XmlNode, font: Font): (int, bool) =
   if font.name == "": return

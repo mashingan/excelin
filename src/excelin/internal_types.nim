@@ -13,42 +13,24 @@ from std/xmltree import XmlNode, findAll, `$`, child, items, attr, `<>`,
      newXmlTree, add, newText, toXmlAttributes, delete, len, xmlHeader,
      attrs, `attrs=`, innerText, `[]`, insert, clear, XmlNodeKind, kind,
      tag
-from std/xmlparser import parseXml
-from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
-from std/sequtils import toSeq, mapIt, repeat
 from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
      keys, del, values, initTable, len
-from std/strformat import fmt
-from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
-  parse, fromUnix, local
 from std/os import `/`, addFileExt, parentDir, splitPath,
   getTempDir, removeFile, extractFilename, relativePath, tailDir
 from std/strtabs import `[]=`, pairs, newStringTable, del
-from std/sugar import dump, `->`
-from std/strscans import scanf
-from std/sha1 import secureHash, `$`
-from std/math import `^`
-from std/colors import `$`, colWhite
 
-
-from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
-  ArchiveEntry, writeZipArchive
 
 const
   datefmt = "yyyy-MM-dd'T'HH:mm:ss'.'fffzz"
-  xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
   xmlnsr = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
   xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
   xmlnsmc = "http://schemas.openxmlformats.org/markup-compatibility/2006"
-  spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
   relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
   relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
   relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
   packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"
-  emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
   excelinVersion* = "0.4.5"
 
 type

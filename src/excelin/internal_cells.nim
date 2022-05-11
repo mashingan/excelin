@@ -1,5 +1,8 @@
 include internal_utilities
 
+from std/strscans import scanf
+from std/sugar import dump, `->`
+
 proc fetchCell(body: XmlNode, colrow: string): int =
   var count = -1
   for n in body:

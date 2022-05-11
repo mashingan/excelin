@@ -1,5 +1,8 @@
 include internal_styles
 
+const
+  xmlnsx14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
+
 proc getSheet*(e: Excel, name: string): Sheet =
   ## Fetch the sheet from the Excel file for further work.
   ## Will return nil for unavailable sheet name.
