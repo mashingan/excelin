@@ -26,8 +26,6 @@ const
   xmlnsxdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
   xmlnsmc = "http://schemas.openxmlformats.org/markup-compatibility/2006"
   mainns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
-  relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   relPackageSheet = "http://schemas.openxmlformats.org/package/2006/relationships"
   relHyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
   packagetypefmt = "application/vnd.openxmlformats-package.$1+xml"

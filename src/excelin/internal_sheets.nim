@@ -284,16 +284,26 @@ template modifyCol(sheet: Sheet, col, attr, val: string) =
   let coln = sheet.body.retrieveChildOrNew("cols").retrieveCol col.toNum+1
   coln.attrs[attr] = val
 
-proc colHide*(sheet: Sheet, col: string, hide: bool) =
+proc hideCol*(sheet: Sheet, col: string, hide: bool) =
   ## Hide entire column in the sheet.
   sheet.modifyCol(col, "hidden", $hide)
 
-proc colOutlineLevel*(sheet: Sheet, col: string, level: Natural) =
+proc outlineLevelCol*(sheet: Sheet, col: string, level: Natural) =
   ## Set outline level for the entire column in the sheet.
   sheet.modifyCol(col, "outlineLevel", $level)
 
-proc colWidth*(sheet: Sheet, col: string, width: float) =
+proc collapsedCol*(sheet: Sheet, col: string, collapsed: bool) =
+  ## Set whether the column is collapsed or not.
+  sheet.modifyCol(col, "collapsed", $collapsed)
+
+proc widthCol*(sheet: Sheet, col: string, width: float) =
   ## Set the entire column width. Set with 0 width to reset it.
+  ## The formula to count what's the width is as below:
+  ## `float(int({NumOfChars}*{MaxDigitPixel}+{5 pixel padding}) / {MaxDigitPixel} * 256) / 256` .
+  ## 
+  ## For example Calibri has maximum width of 11 point, i.e. 7 pixel at 96 dpi at default
+  ## style. If we want to set the column support 8 chars, the value would be:
+  ## doAssert float((8*7+5) / 7 * 256) / 256 == 8.714285714285714
   let cols = sheet.body.retrieveChildOrNew "cols"
   let coln = cols.retrieveCol col.toNum+1
   if width <= 0:

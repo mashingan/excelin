@@ -13,6 +13,8 @@ from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
 
 const
   spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
+  relSharedStrScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+  relStylesScheme = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
   emptyxlsx = currentSourcePath.parentDir() / "empty.xlsx"
 
 proc retrieveSheetsInfo(n: XmlNode): seq[XmlNode] =
