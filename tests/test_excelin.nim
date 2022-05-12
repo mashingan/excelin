@@ -291,3 +291,15 @@ suite "Excelin unit test":
     check fill.gradient.right == 0.0
     check fill.gradient.top == 0.0
     check fill.gradient.bottom == 0.0
+
+    let border = newsheet.styleBorder "G5"
+    check not border.diagonalDown
+    check not border.diagonalUp
+    check border.top.style == bsThick
+    check border.top.color == $colRed
+    check border.`end`.style == bsDotted
+    check border.`end`.color == $colNavy
+    check border.start.style == bsNone
+    check border.start.color == ""
+    check border.bottom.style == bsNone
+    check border.bottom.color == ""
