@@ -440,7 +440,7 @@ proc toFont(node: XmlNode): Font =
   fetchElem "name", name, val
   fetchElem "family", family, try: parseInt(val) except: -1
   fetchElem "charset", charset, try: parseInt(val) except: -1
-  fetchElem "size", size, try: parseInt(val) except: 1
+  fetchElem "sz", size, try: parseInt(val) except: 1
   fetchElem "b", bold, try: parseBool(val) except: false
   fetchElem "i", italic, try: parseBool(val) except: false
   fetchElem "strike", strike, try: parseBool(val) except: false
@@ -485,11 +485,15 @@ template retrieveStyleId(row: Row, col, styleAttr, child: string, conv: untyped)
   retrieveCol(row.body, 0,
     cr == n.attr "r", cnode, (discard colstr; nil))
   if cnode == nil: return
-  let cxfs = row.sheet.body.retrieveChildOrNew "cellXfs"
+  const stylename = "styles.xml"
+  if stylename notin row.sheet.parent.otherfiles: return
+  let (path, style) = row.sheet.parent.otherfiles[stylename]
+  discard path
+  let cxfs = style.retrieveChildOrNew "cellXfs"
   let sid = try: parseInt(cnode.attr "s") except: 0
   if sid >= cxfs.len: return
   let theid = try: parseInt(cxfs[sid].attr styleAttr) except: 0
-  let childnode = row.sheet.body.retrieveChildOrNew child
+  let childnode = style.retrieveChildOrNew child
   if theid >= childnode.len: return
   childnode[theid].`conv`
 
