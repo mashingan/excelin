@@ -250,8 +250,13 @@ suite "Excelin unit test":
         `end` = borderPropStyle(style = bsDotted, color = $colNavy),
       ),
       fill = fillStyle(
-        pattern = patternFillStyle(),
-        gradient = gradientFillStyle(),
+        pattern = patternFillStyle(patternType = ptDarkDown),
+        gradient = gradientFillStyle(
+          stop = GradientStop(
+            position: 0.75,
+            color: $colGray,
+          )
+        ),
       )
     )
     const fteststyle = "test-style.xlsx"
@@ -274,3 +279,15 @@ suite "Excelin unit test":
     check not font.outline
     check font.underline == uNone
     check font.verticalAlign == vaBaseline
+
+    let fill = newsheet.styleFill("G5")
+    check fill.pattern.patternType == ptDarkDown
+    check fill.pattern.fgColor == $colWhite
+    check fill.gradient.stop.color == $colGray
+    check fill.gradient.stop.position == 0.75
+    check fill.gradient.`type` == gtLinear
+    check fill.gradient.degree == 0.0
+    check fill.gradient.left == 0.0
+    check fill.gradient.right == 0.0
+    check fill.gradient.top == 0.0
+    check fill.gradient.bottom == 0.0
