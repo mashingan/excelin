@@ -1,5 +1,6 @@
 include internal_rows
 
+import std/macros
 from std/colors import `$`, colWhite
 
 proc colrow(cr: string): (string, int) =
@@ -143,21 +144,22 @@ proc addBorder(styles: XmlNode, border: Border): (int, bool) =
   let bnode = <>border(diagonalUp= $border.diagonalUp,
     diagonalDown= $border.diagonalDown)
 
-  template addBorderProp(fname: string, field: untyped) =
-    let fld = border.`field`
-    let elem = newXmlTree(fname, [], newStringTable())
-    if fld.edit:
-      elem.attrs["style"] = $fld.style
-      if fld.color != "":
-        elem.add <>color(rgb = retrieveColor(fld.color))
-    bnode.add elem
-
-  addBorderProp("start", start)
-  addBorderProp("end", `end`)
-  addBorderProp("top", top)
-  addBorderProp("bottom", bottom)
-  addBorderProp("vertical", vertical)
-  addBorderProp("horizontal", horizontal)
+  macro addBorderProp(field: untyped): untyped =
+    let elemtag = $field
+    result = quote do:
+      let fld = border.`field`
+      let elem = newXmlTree(`elemtag`, [], newStringTable())
+      if fld.edit:
+        elem.attrs["style"] = $fld.style
+        if fld.color != "":
+          elem.add <>color(rgb = retrieveColor(fld.color))
+      bnode.add elem
+  addBorderProp start
+  addBorderProp `end`
+  addBorderProp top
+  addBorderProp bottom
+  addBorderProp vertical
+  addBorderProp horizontal
 
   bnodes.attrs["count"] = $(bcount+1)
   bnodes.add bnode
@@ -473,13 +475,15 @@ proc toFill(node: XmlNode): Fill =
         color: stop.toRgbColorStr,
       )
     )
-    template addelemfloat(fname: string, field: untyped) =
-      result.gradient.`field` = try: parseFloat(gradient.attr fname) except: 0.0
-    addelemfloat "degree", degree
-    addelemfloat "left", left
-    addelemfloat "right", right
-    addelemfloat "top", top
-    addelemfloat "bottom", bottom
+    macro addelemfloat(field: untyped): untyped =
+      let strfield = $field
+      result = quote do:
+        result.gradient.`field` = try: parseFloat(gradient.attr `strfield`) except: 0.0
+    addelemfloat degree
+    addelemfloat left
+    addelemfloat right
+    addelemfloat top
+    addelemfloat bottom
 
 template retrieveStyleId(row: Row, col, styleAttr, child: string, conv: untyped): untyped =
   var cnode: XmlNode
@@ -502,21 +506,22 @@ template retrieveStyleId(row: Row, col, styleAttr, child: string, conv: untyped)
 proc toBorder(node: XmlNode): Border =
   result = Border(edit: true)
 
-  template retrieveField(fname: string, field: untyped) =
-    let child = node.child fname
-    var b: BorderProp
-    if child != nil:
-      b.edit = true
-      b.style = try: parseEnum[BorderStyle](child.attr "style") except: bsNone
-      b.color = child.toRgbColorStr
-    result.`field` = b
-
-  "start".retrieveField start
-  "end".retrieveField `end`
-  "top".retrieveField top
-  "bottom".retrieveField bottom
-  "vertical".retrieveField vertical
-  "horizontal".retrieveField horizontal
+  macro retrieveField(field: untyped): untyped =
+    let fname = $field
+    result = quote do:
+      let child = node.child `fname`
+      var b: BorderProp
+      if child != nil:
+        b.edit = true
+        b.style = try: parseEnum[BorderStyle](child.attr "style") except: bsNone
+        b.color = child.toRgbColorStr
+      result.`field` = b
+  retrieveField start
+  retrieveField `end`
+  retrieveField top
+  retrieveField bottom
+  retrieveField vertical
+  retrieveField horizontal
   result.diagonalDown = try: parseBool(node.attr "diagonalDown") except: false
   result.diagonalUp = try: parseBool(node.attr "diagonalUp") except: false
 
