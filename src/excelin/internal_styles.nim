@@ -419,3 +419,125 @@ proc resetStyle*(sheet: Sheet, targets: varargs[string]) =
 proc resetStyle*(row: Row, targets: varargs[string]) =
   ## Reset any styling to default.
   row.sheet.resetStyle targets
+
+proc toRgbColorStr(node: XmlNode): string =
+  let color = node.child "color"
+  if color != nil:
+    let rgb = color.attr "rgb"
+    if rgb.len > 1:
+      result = "#" & rgb[2..^1]
+
+proc toFont(node: XmlNode): Font =
+  result = Font(size: 1)
+  if node.tag != "font": return
+
+  template fetchElem(nodename: string, field, fetch: untyped) =
+    block:
+      let nn = node.retrieveChildOrNew nodename
+      let val {.inject.} = nn.attr "val"
+      result.`field` = `fetch`
+
+  fetchElem "name", name, val
+  fetchElem "family", family, try: parseInt(val) except: -1
+  fetchElem "charset", charset, try: parseInt(val) except: -1
+  fetchElem "size", size, try: parseInt(val) except: 1
+  fetchElem "b", bold, try: parseBool(val) except: false
+  fetchElem "i", italic, try: parseBool(val) except: false
+  fetchElem "strike", strike, try: parseBool(val) except: false
+  fetchElem "outline", outline, try: parseBool(val) except: false
+  fetchElem "shadow", shadow, try: parseBool(val) except: false
+  fetchElem "condense", condense, try: parseBool(val) except: false
+  fetchElem "extend", extend, try: parseBool(val) except: false
+  result.color = node.toRgbColorStr
+  fetchElem "underline", underline, try: parseEnum[Underline](val) except: uNone
+  fetchElem "verticalAlign", verticalAlign, try: parseEnum[VerticalAlign](val) except: vaBaseline
+
+proc toFill(node: XmlNode): Fill =
+  result.edit = true
+  let pattern = node.retrieveChildOrNew "pattern"
+  if pattern != nil:
+    result.pattern = PatternFill(edit: true)
+    result.pattern.fgColor = pattern.retrieveChildOrNew("fgColor").toRgbColorStr
+    result.pattern.bgColor = pattern.retrieveChildOrNew("bgColor").toRgbColorStr
+    result.pattern.patternType = try: parseEnum[PatternType](pattern.attr "patternType") except: ptNone
+  let gradient = node.retrieveChildOrNew "gradient"
+  if gradient != nil:
+    let stop = gradient.retrieveChildOrNew "stop"
+    result.gradient = GradientFill(
+      edit: true,
+      `type`: try: parseEnum[GradientType]gradient.attr "type" except: gtLinear,
+      stop: GradientStop(
+        position: try: parseFloat(stop.attr "position") except: 0.0,
+        color: stop.toRgbColorStr,
+      )
+    )
+    template addelemfloat(fname: string, field: untyped) =
+      result.gradient.`field` = try: parseFloat(gradient.attr fname) except: 0.0
+    addelemfloat "degree", degree
+    addelemfloat "left", left
+    addelemfloat "right", right
+    addelemfloat "top", top
+    addelemfloat "bottom", bottom
+
+template retrieveStyleId(row: Row, col, styleAttr, child: string, conv: untyped): untyped =
+  var cnode: XmlNode
+  let cr = fmt"{col}{row.rowNum}"
+  retrieveCol(row.body, 0,
+    cr == n.attr "r", cnode, (discard colstr; nil))
+  if cnode == nil: return
+  let cxfs = row.sheet.body.retrieveChildOrNew "cellXfs"
+  let sid = try: parseInt(cnode.attr "s") except: 0
+  if sid >= cxfs.len: return
+  let theid = try: parseInt(cxfs[sid].attr styleAttr) except: 0
+  let childnode = row.sheet.body.retrieveChildOrNew child
+  if theid >= childnode.len: return
+  childnode[theid].`conv`
+
+proc toBorder(node: XmlNode): Border =
+  result = Border(edit: true)
+
+  template retrieveField(fname: string, field: untyped) =
+    let child = node.child fname
+    var b: BorderProp
+    if child != nil:
+      b.edit = true
+      b.style = try: parseEnum[BorderStyle](child.attr "style") except: bsNone
+      b.color = child.toRgbColorStr
+    result.`field` = b
+
+  "start".retrieveField start
+  "end".retrieveField `end`
+  "top".retrieveField top
+  "bottom".retrieveField bottom
+  "vertical".retrieveField vertical
+  "horizontal".retrieveField horizontal
+  result.diagonalDown = try: parseBool(node.attr "diagonalDown") except: false
+  result.diagonalUp = try: parseBool(node.attr "diagonalUp") except: false
+
+
+proc styleFont*(row: Row, col: string): Font =
+  ## Get the style font from the cell in the row.
+  result = retrieveStyleId(row, col, "fontId", "fonts", toFont)
+
+proc styleFont*(sheet: Sheet, colrow: string): Font =
+  ## Get the style font from the sheet to specified cell.
+  let (c, r) = colrow.colrow
+  sheet.row(r).styleFont(c)
+
+proc styleFill*(row: Row, col: string): Fill =
+  ## Get the style fill from the cell in the row.
+  result = retrieveStyleId(row, col, "fillId", "fills", toFill)
+
+proc styleFill*(sheet: Sheet, colrow: string): Fill =
+  ## Get the style fill from the sheet to specified cell.
+  let (c, r) = colrow.colrow
+  sheet.row(r).styleFill c
+
+proc styleBorder*(row: Row, col: string): Border =
+  ## Get the style border from the cell in the row.
+  result = retrieveStyleId(row, col, "borderId", "borders", toBorder)
+
+proc styleBorder*(sheet: Sheet, colrow: string): Border =
+  ## Get the style fill from the border to specified cell.
+  let (c, r) = colrow.colrow
+  sheet.row(r).styleBorder c

@@ -4,7 +4,8 @@ from std/times import DateTime, Time, now, format, toTime, toUnixFloat,
   parse, fromUnix, local
 from std/sequtils import toSeq, mapIt, repeat
 from std/strutils import endsWith, contains, parseInt, `%`, replace,
-  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits
+  parseFloat, parseUint, toUpperAscii, join, startsWith, Letters, Digits,
+  parseBool, parseEnum
 from std/math import `^`
 from std/strtabs import `[]=`, pairs, newStringTable, del
 

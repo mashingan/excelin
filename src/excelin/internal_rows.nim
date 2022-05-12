@@ -68,7 +68,8 @@ template retrieveCol(node: XmlNode, colnum: int, test, target, whenNotFound: unt
       break
   if not found:
     `target` = `whenNotFound`
-    node.add `target`
+    if `target` != nil:
+      node.add `target`
 
 proc pageBreak*(row: Row, maxCol, minCol = 0, manual = true) =
   ## Add horizontal page break after the current row working on.
