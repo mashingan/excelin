@@ -350,3 +350,25 @@ proc pageBreakCol*(sheet: Sheet, col: string, maxRow, minRow = 0, manual = true)
     cbreak.attrs["manualBreakCount"] = newcount
   else:
     cbreak.attrs["manualBreakCount"] = $(cbreak.len-1)
+
+template fetchsheet(wb: XmlNode, rid: string): XmlNode =
+  let sheets = wb.child "sheets"
+  if sheets ==  nil: return
+  var sh: XmlNode
+  retrieveCol(sheets, 0, rid == n.attr "r:id", sh, (discard colstr; nil))
+  if sh == nil: return
+  sh
+
+proc `hide=`*(sheet: Sheet, hide: bool) =
+  ## Hide sheet from workbook view.
+  let sh = fetchsheet(sheet.parent.workbook.body, sheet.rid)
+  if hide:
+    sh.attrs["state"] = "hidden"
+  else:
+    sh.attrs["state"] = "visible"
+
+proc hidden*(sheet: Sheet): bool =
+  ## Check whether sheet is hidden or not.
+  result = false
+  let sh = fetchsheet(sheet.parent.workbook.body, sheet.rid)
+  result = "hidden" == sh.attr "state"
