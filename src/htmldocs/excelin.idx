@@ -123,6 +123,12 @@ shareStyle	excelin.html#shareStyle,Sheet,string,varargs[string]	excelin: shareSt
 copyStyle	excelin.html#copyStyle,Sheet,string,varargs[string]	excelin: copyStyle(sheet: Sheet; source: string; targets: varargs[string])	
 resetStyle	excelin.html#resetStyle,Sheet,varargs[string]	excelin: resetStyle(sheet: Sheet; targets: varargs[string])	
 resetStyle	excelin.html#resetStyle,Row,varargs[string]	excelin: resetStyle(row: Row; targets: varargs[string])	
+styleFont	excelin.html#styleFont,Row,string	excelin: styleFont(row: Row; col: string): Font	
+styleFont	excelin.html#styleFont,Sheet,string	excelin: styleFont(sheet: Sheet; colrow: string): Font	
+styleFill	excelin.html#styleFill,Row,string	excelin: styleFill(row: Row; col: string): Fill	
+styleFill	excelin.html#styleFill,Sheet,string	excelin: styleFill(sheet: Sheet; colrow: string): Fill	
+styleBorder	excelin.html#styleBorder,Row,string	excelin: styleBorder(row: Row; col: string): Border	
+styleBorder	excelin.html#styleBorder,Sheet,string	excelin: styleBorder(sheet: Sheet; colrow: string): Border	
 getSheet	excelin.html#getSheet,Excel,string	excelin: getSheet(e: Excel; name: string): Sheet	
 addSheet	excelin.html#addSheet,Excel,string	excelin: addSheet(e: Excel; name = &quot;&quot;): Sheet	
 deleteSheet	excelin.html#deleteSheet,Excel,string	excelin: deleteSheet(e: Excel; name = &quot;&quot;)	

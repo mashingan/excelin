@@ -355,7 +355,7 @@ row2.style("D",
     font = fontStyle(
         name = "DejaVu Sans Mono",
         size = 11,
-        color: $colBlue, # blue font
+        color = $colBlue, # blue font
     ),
     border = borderStyle(
         top = borderPropStyle(style = bsMedium, color = $colRed),
@@ -380,7 +380,7 @@ row2.style("D",
 # with pattern of "{objectName}Style".
 
 row2.style("E",
-    border = borderStyle(`end` = borderProp(style = bsDashDot, color = $colAzure)),
+    border = borderStyle(`end` = borderPropStyle(style = bsDashDot, color = $colAzure)),
     alignment = {"wrapText": $true},
 )
 let longstr = "brown fox jumps over the lazy dog".repeat(5).join(";")
@@ -408,6 +408,30 @@ row2.shareStyle("D", "D4", "E4", "F4")
 sheet.copyStyle("D2", "D5", "E5", "F5")
 row2.copyStyle("D", "D5", "E5", "F5")
 
+# Apart from sharing and/or copying the style, we can actually fetch the specific
+# setting from cell style.
+
+let font = row2.styleFont "D"
+doAssert font.name == "DejaVu Sans Mono"
+doAssert font.size == 11
+doAssert font.color == $colBlue
+doAssert font.family == -1  # negative value means it will be ignored when applying syle
+doAssert font.charset == -1 # idem
+let fill = sheet.styleFill "D2"
+doAssert fill.pattern.fgColor == $colRed
+doAssert fill.pattern.patternType == ptLightGrid
+doAssert fill.gradient.stop.color == "" # we didn't set the gradient when setting the fillStyle
+doAssert fill.gradient.stop.position == 0.0
+let border = sheet.styleBorder "D2"
+doAssert border.top.style == bsMedium
+doAssert border.top.color == $colRed
+doAssert border.bottom.style == bsMediumDashDot
+doAssert border.bottom.color == $colGreen
+
+# Above, we fetch specifically for font, fill, and border using two different (which work same)
+# ways, row proc and sheet proc. Sheet proc underlyingly is using row proc too but both
+# are provided in case we only has row or sheet. The only difference that row only needs to
+# specified the column while the sheet needs to to specify column row cell.
 
 # Now we want to see the cell in its row.
 # Since the cell E2 is quite long and with its alignment has wrapText true, we can also

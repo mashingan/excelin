@@ -6,14 +6,13 @@ from std/strscans import scanf
 from std/os import fileExists
 from std/sequtils import repeat
 from std/strutils import join
-from std/math import cbrt
 
 const v15Up = NimMajor >= 1 and NimMinor >= 5
 when v15up:
-  from std/math import isNaN
+  from std/math import isNaN, cbrt
 else:
-  from std/math import classify, FloatClass
-import std/[unittest, with]
+  from std/math import classify, FloatClass, cbrt
+import std/[unittest, with, colors]
 
 import excelin
 
@@ -220,20 +219,20 @@ suite "Excelin unit test":
     checkpoint "fetching shared string done"
 
   test "can initialize border and its properties for style":
-    var b = border(diagonalUp = true)
+    var b = borderStyle(diagonalUp = true)
     with b:
-      start = borderProp(style = bsMedium) # border style
+      start = borderPropStyle(style = bsMedium) # border style
       diagonalDown = true
 
     check b.diagonalUp
     check b.diagonalDown
     check b.start.style == bsMedium
 
-    let b2 = border(
-      start = borderProp(style = bsThick),
-      `end` = borderProp(style = bsThick),
-      top = borderProp(style = bsDotted),
-      bottom = borderProp(style = bsDotted))
+    let b2 = borderStyle(
+      start = borderPropStyle(style = bsThick),
+      `end` = borderPropStyle(style = bsThick),
+      top = borderPropStyle(style = bsDotted),
+      bottom = borderPropStyle(style = bsDotted))
 
     check not b2.diagonalUp
     check not b2.diagonalDown
@@ -241,3 +240,66 @@ suite "Excelin unit test":
     check b2.`end`.style == bsThick
     check b2.top.style == bsDotted
     check b2.bottom.style == bsDotted
+
+  test "can refetch cell styling":
+    let (excel, sheet) = newExcel()
+    sheet.row(5).style("G",
+      font = fontStyle(name = "Cambria Explosion", size = 1_000_000, color = $colGreen),
+      border = borderStyle(
+        top = borderPropStyle(style = bsThick, color = $colRed),
+        `end` = borderPropStyle(style = bsDotted, color = $colNavy),
+      ),
+      fill = fillStyle(
+        pattern = patternFillStyle(patternType = ptDarkDown),
+        gradient = gradientFillStyle(
+          stop = GradientStop(
+            position: 0.75,
+            color: $colGray,
+          )
+        ),
+      )
+    )
+    const fteststyle = "test-style.xlsx"
+    excel.writeFile fteststyle
+
+    let excel2 = readExcel fteststyle
+
+    let newsheet = excel2.getSheet "Sheet1"
+    let font = newsheet.styleFont("G5")
+    check font.name == "Cambria Explosion"
+    check font.size == 1_000_000
+    check font.color == $colGreen
+    check font.family == -1
+    check font.charset == -1
+    check not font.bold
+    check not font.strike
+    check not font.italic
+    check not font.condense
+    check not font.extend
+    check not font.outline
+    check font.underline == uNone
+    check font.verticalAlign == vaBaseline
+
+    let fill = newsheet.styleFill("G5")
+    check fill.pattern.patternType == ptDarkDown
+    check fill.pattern.fgColor == $colWhite
+    check fill.gradient.stop.color == $colGray
+    check fill.gradient.stop.position == 0.75
+    check fill.gradient.`type` == gtLinear
+    check fill.gradient.degree == 0.0
+    check fill.gradient.left == 0.0
+    check fill.gradient.right == 0.0
+    check fill.gradient.top == 0.0
+    check fill.gradient.bottom == 0.0
+
+    let border = newsheet.styleBorder "G5"
+    check not border.diagonalDown
+    check not border.diagonalUp
+    check border.top.style == bsThick
+    check border.top.color == $colRed
+    check border.`end`.style == bsDotted
+    check border.`end`.color == $colNavy
+    check border.start.style == bsNone
+    check border.start.color == ""
+    check border.bottom.style == bsNone
+    check border.bottom.color == ""
