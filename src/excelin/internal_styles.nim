@@ -52,8 +52,10 @@ proc toXmlNode(f: Font): XmlNode =
   if f.bold: result.add <>b(val= $f.bold)
   if f.italic: result.add <>i(val= $f.italic)
   if f.color != "": result.add <>color(rgb = retrieveColor(f.color))
-  result.add <>u(val= $f.underline)
-  result.add <>vertAlign(val= $f.verticalAlign)
+  if f.underline != uNone:
+    result.add <>u(val= $f.underline)
+  if f.verticalAlign != vaBaseline:
+    result.add <>vertAlign(val= $f.verticalAlign)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
   if $cfSparse == row.body.attr "cellfill":
@@ -429,30 +431,34 @@ proc toRgbColorStr(node: XmlNode): string =
     if rgb.len > 1:
       result = "#" & rgb[2..^1]
 
+{.hint[ConvFromXtoItselfNotNeeded]: off.}
+
 proc toFont(node: XmlNode): Font =
   result = Font(size: 1)
   if node.tag != "font": return
 
-  template fetchElem(nodename: string, field, fetch: untyped) =
-    block:
-      let nn = node.retrieveChildOrNew nodename
+  template fetchElem(nodename: string, field, fetch, default: untyped) =
+    let nn = node.child nodename
+    if nn != nil:
       let val {.inject.} = nn.attr "val"
-      result.`field` = `fetch`
+      result.`field` = try: `fetch`(val) except: `default`
+    else:
+      result.`field` = `default`
 
-  fetchElem "name", name, val
-  fetchElem "family", family, try: parseInt(val) except: -1
-  fetchElem "charset", charset, try: parseInt(val) except: -1
-  fetchElem "sz", size, try: parseInt(val) except: 1
-  fetchElem "b", bold, try: parseBool(val) except: false
-  fetchElem "i", italic, try: parseBool(val) except: false
-  fetchElem "strike", strike, try: parseBool(val) except: false
-  fetchElem "outline", outline, try: parseBool(val) except: false
-  fetchElem "shadow", shadow, try: parseBool(val) except: false
-  fetchElem "condense", condense, try: parseBool(val) except: false
-  fetchElem "extend", extend, try: parseBool(val) except: false
+  fetchElem "name", name, string, ""
+  fetchElem "family", family, parseInt, -1
+  fetchElem "charset", charset, parseInt, -1
+  fetchElem "sz", size, parseInt, 1
+  fetchElem "b", bold, parseBool, false
+  fetchElem "i", italic, parseBool, false
+  fetchElem "strike", strike, parseBool, false
+  fetchElem "outline", outline, parseBool, false
+  fetchElem "shadow", shadow, parseBool, false
+  fetchElem "condense", condense, parseBool, false
+  fetchElem "extend", extend, parseBool, false
   result.color = node.toRgbColorStr
-  fetchElem "underline", underline, try: parseEnum[Underline](val) except: uNone
-  fetchElem "verticalAlign", verticalAlign, try: parseEnum[VerticalAlign](val) except: vaBaseline
+  fetchElem "u", underline, parseEnum[Underline], uNone
+  fetchElem "vertAlign", verticalAlign, parseEnum[VerticalAlign], vaBaseline
 
 proc toFill(node: XmlNode): Fill =
   result.edit = true
