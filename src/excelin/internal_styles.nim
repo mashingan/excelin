@@ -462,25 +462,30 @@ proc toFont(node: XmlNode): Font =
 
 proc toFill(node: XmlNode): Fill =
   result.edit = true
-  let pattern = node.retrieveChildOrNew "patternFill"
+  let pattern = node.child "patternFill"
   if pattern != nil:
     result.pattern = PatternFill(edit: true)
-    let fgColorRgb = pattern.retrieveChildOrNew("fgColor").attr "rgb"
-    result.pattern.fgColor = if fgColorRgb.len > 1: "#" & fgColorRgb[2..^1] else: ""
-    let bgColorRgb = pattern.retrieveChildOrNew("bgColor").attr "rgb"
-    result.pattern.bgColor = if bgColorRgb.len > 1: "#" & bgColorRgb[2..^1] else: ""
+    let fgnode = pattern.child "fgColor"
+    if fgnode != nil:
+      let fgColorRgb = fgnode.attr "rgb"
+      result.pattern.fgColor = if fgColorRgb.len > 1: "#" & fgColorRgb[2..^1] else: ""
+    let bgnode = pattern.child "bgColor"
+    if bgnode != nil:
+      let bgColorRgb = bgnode.attr "rgb"
+      result.pattern.bgColor = if bgColorRgb.len > 1: "#" & bgColorRgb[2..^1] else: ""
     result.pattern.patternType = try: parseEnum[PatternType](pattern.attr "patternType") except: ptNone
-  let gradient = node.retrieveChildOrNew "gradientFill"
+  let gradient = node.child "gradientFill"
   if gradient != nil:
-    let stop = gradient.retrieveChildOrNew "stop"
+    let stop = gradient.child "stop"
     result.gradient = GradientFill(
       edit: true,
       `type`: try: parseEnum[GradientType]gradient.attr "type" except: gtLinear,
-      stop: GradientStop(
-        position: try: parseFloat(stop.attr "position") except: 0.0,
-        color: stop.toRgbColorStr,
-      )
     )
+    if stop != nil:
+      result.gradient.stop = GradientStop(
+          position: try: parseFloat(stop.attr "position") except: 0.0,
+          color: stop.toRgbColorStr,
+      )
     macro addelemfloat(field: untyped): untyped =
       let strfield = $field
       result = quote do:
