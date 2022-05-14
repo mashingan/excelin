@@ -337,6 +337,8 @@ function main() {
   <ul class="simple nested-toc-section">hide=
       <li><a class="reference" href="#hide%3D%2CRow%2Cbool"
     title="hide=(row: Row; yes: bool)">hide=,Row,bool<span class="attachedType">Row</span></a></li>
+  <li><a class="reference" href="#hide%3D%2CSheet%2Cbool"
+    title="hide=(sheet: Sheet; hide: bool)">hide=,Sheet,bool<span class="attachedType">Sheet</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">clear
@@ -425,6 +427,8 @@ function main() {
   <ul class="simple nested-toc-section">hidden
       <li><a class="reference" href="#hidden%2CRow"
     title="hidden(row: Row): bool">hidden,Row<span class="attachedType">Row</span></a></li>
+  <li><a class="reference" href="#hidden%2CSheet"
+    title="hidden(sheet: Sheet): bool">hidden,Sheet<span class="attachedType">Sheet</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">deleteSheet
@@ -1191,9 +1195,9 @@ Getting cell value from supplied return typedesc. This is overload of basic supp
 <p>Other than above mentioned types, see <a class="reference external" href="#getCell,Row,string,typeof(nil)">getCell proc</a> for supplying the converting closure for getting the value.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_cells.nim#L245"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_cells.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_cells.nim#L245" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_cells.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="row,Sheet,Positive"></a>
@@ -1827,6 +1831,28 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_sheets.nim#L337" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="hide=,Sheet,bool"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#hide%3D%2CSheet%2Cbool"><span class="Identifier">hide=</span></a><span class="Other">(</span><span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">;</span> <span class="Identifier">hide</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Hide sheet from workbook view.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_sheets.nim#L362"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_sheets.nim#L362" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="hidden,Sheet"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#hidden%2CSheet"><span class="Identifier">hidden</span></a><span class="Other">(</span><span class="Identifier">sheet</span><span class="Other">:</span> <a href="excelin.html#Sheet"><span class="Identifier">Sheet</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Check whether sheet is hidden or not.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_sheets.nim#L370"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_sheets.nim#L370" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="readExcel,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#readExcel%2Cstring"><span class="Identifier">readExcel</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
@@ -1940,9 +1966,9 @@ Shorthand for <a class="reference external" href="#getCell,Row,string,typeof(nil
 <span class="Identifier">doAssert</span> <span class="Identifier">dt</span><span class="Operator">.</span><span class="Identifier">month</span> <span class="Operator">==</span> <span class="Identifier">mDec</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">dt</span><span class="Operator">.</span><span class="Identifier">monthday</span> <span class="Operator">=</span> <span class="DecNumber">1</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_cells.nim#L227"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin/internal_cells.nim#L228"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_cells.nim#L227" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin/internal_cells.nim#L228" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1955,7 +1981,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-13 01:19:49 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-14 20:52:24 UTC</small>
       </div>
     </div>
   </div>

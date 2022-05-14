@@ -171,7 +171,8 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is DateTime: result = fromUnix(0).local
   elif R is Time: result = fromUnix 0
   else: discard
-  let isSparse = $cfSparse == row.body.attr "cellfill"
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let isSparse = fillmode == cfSparse
   let col = col.toUpperAscii
   let v = row.fetchValNode(col, isSparse)
   if v == nil: return

@@ -147,6 +147,8 @@ isCollapsedCol	excelin.html#isCollapsedCol,Sheet,string	excelin: isCollapsedCol(
 widthCol	excelin.html#widthCol,Sheet,string,float	excelin: widthCol(sheet: Sheet; col: string; width: float)	
 bestFitCol	excelin.html#bestFitCol,Sheet,string,bool	excelin: bestFitCol(sheet: Sheet; col: string; yes: bool)	
 pageBreakCol	excelin.html#pageBreakCol,Sheet,string,int,int	excelin: pageBreakCol(sheet: Sheet; col: string; maxRow, minRow = 0; manual = true)	
+hide=	excelin.html#hide=,Sheet,bool	excelin: hide=(sheet: Sheet; hide: bool)	
+hidden	excelin.html#hidden,Sheet	excelin: hidden(sheet: Sheet): bool	
 readExcel	excelin.html#readExcel,string	excelin: readExcel(path: string): Excel	
 prop=	excelin.html#prop=,Excel,varargs[]	excelin: prop=(e: Excel; prop: varargs[(string, string)])	
 createdAt	excelin.html#createdAt,Excel	excelin: createdAt(excel: Excel; at: DateTime | Time = now())	

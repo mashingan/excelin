@@ -1,3 +1,6 @@
+* 0.4.8:
+    * Fix reading empty fill mode read as CellFill.cfFilled instead of CellFill.cfSparse as default.
+    * Add API to hide sheet.
 * 0.4.7:
     * Add support for fetching font, border, and fill style in cell.
 * 0.4.6:
