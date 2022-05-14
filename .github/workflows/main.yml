@@ -28,7 +28,7 @@ jobs:
             #- macOS-latest
         nim-version:
           - '1.4.0'
-          - 'stable'
+          #- 'stable' # temporarily disabled because newest stable version cannot run nim doc with sources included
     needs: before
     steps:
       - uses: actions/checkout@v1
