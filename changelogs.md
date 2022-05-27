@@ -1,3 +1,5 @@
+* 0.4.9:
+    * Fix adding cell in case of reading from excel which doesn't have cellfill attr.
 * 0.4.8:
     * Fix reading empty fill mode read as CellFill.cfFilled instead of CellFill.cfSparse as default.
     * Add API to hide sheet.

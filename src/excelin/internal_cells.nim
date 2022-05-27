@@ -38,7 +38,8 @@ proc fetchCell(body: XmlNode, colrow: string): int =
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
   altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
   let rn = row.body.attr "r"
-  let sparse = $cfSparse == row.body.attr "cellfill"
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let sparse = fillmode == cfSparse
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
   let innerval = if altnode.len > 0: altnode else: @[newText text]
