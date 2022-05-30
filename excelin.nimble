@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.4.9"
+version       = "0.4.10"
 author        = "Rahmatullah"
 description   = "Create and read Excel purely in Nim"
 license       = "MIT"

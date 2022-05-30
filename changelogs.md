@@ -1,3 +1,5 @@
+* 0.4.10:
+    * Fix all instance of checking cellfill mode in a row.
 * 0.4.9:
     * Fix adding cell in case of reading from excel which doesn't have cellfill attr.
 * 0.4.8:

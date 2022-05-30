@@ -269,7 +269,8 @@ proc `mergeCells=`*(sheet: Sheet, `range`: Range) =
 
   let
     r = sheet.row topleftrow
-    topleftcell = r.fetchValNode(topleftcol, $cfSparse == r.body.attr "cellfill")
+    fillmode = try: parseEnum[CellFill](r.body.attr "cellfill") except: cfSparse
+    topleftcell = r.fetchValNode(topleftcol, cfSparse == fillmode)
   var styleattr = if topleftcell == nil: "0" else: topleftcell.attr "s"
   if styleattr == "": styleattr = "0"
 
