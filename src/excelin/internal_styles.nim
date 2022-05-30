@@ -58,7 +58,8 @@ proc toXmlNode(f: Font): XmlNode =
     result.add <>vertAlign(val= $f.verticalAlign)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
-  if $cfSparse == row.body.attr "cellfill":
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  if fillmode == cfSparse:
     let colrow = fmt"{col}{row.rowNum}"
     let fetchpos = row.body.fetchCell colrow
     if fetchpos < 0:
@@ -318,7 +319,8 @@ proc style*(row: Row, col: string,
   alignment: openarray[(string, string)] = []) =
   ## Add style to cell in row by selectively providing the font, border, fill
   ## and alignment styles.
-  let sparse = $cfSparse == row.body.attr "cellfill"
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let sparse = cfSparse == fillmode
   let rnum = row.rowNum
   var pos = -1
   let refnum = fmt"{col}{rnum}"
