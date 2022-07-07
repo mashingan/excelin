@@ -9,7 +9,7 @@ from std/xmlparser import parseXml
 from std/sha1 import secureHash, `$`
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
-  ArchiveEntry, writeZipArchive
+  ArchiveEntry, writeZipArchive, ZippyError
 
 const
   spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
@@ -109,7 +109,9 @@ proc readExcel*(path: string): Excel =
     (path, extract path)
   result.content = extract "[Content_Types].xml"
   result.rels = extract "_rels/.rels"
-  var found = false
+  var
+    workbookfound = false
+    workbookrelsExitst = false
   result.sheets = newTable[string, Sheet]()
   result.otherfiles = newTable[string, FileRep]()
   result.embedfiles = newTable[string, EmbedFile]()
@@ -126,12 +128,13 @@ proc readExcel*(path: string): Excel =
         sheetsInfo: body.retrieveSheetsInfo,
         parent: result,
       )
-      found = true
+      workbookfound = true
     elif "worksheet" in contentType:
       inc result.sheetCount
       let sheet = extract path
       result.sheets[path] = Sheet(body: sheet, parent: result)
     elif wbpath.endsWith "workbook.xml.rels":
+      workbookrelsExitst = true
       result.workbook.rels = fileRep path
     elif wbpath.endsWith "sharedStrings.xml":
       result.sharedStrings = path.readSharedStrings(extract path)
@@ -141,8 +144,14 @@ proc readExcel*(path: string): Excel =
     else:
       let (_, f) = splitPath wbpath
       result.embedfiles[f] = (path, reader.extractFile path)
-  if not found:
+  if not workbookfound:
     raise newException(ExcelError, "No workbook found, invalid excel file")
+  if not workbookrelsExitst:
+    const relspath = "xl/_rels/workbook.xml.rels"
+    try:
+      result.workbook.rels = fileRep relspath
+    except ZippyError as ze:
+      raise newException(ExcelError, "Invalid excel file, no workbook relations exists")
   if result.sharedStrings == nil:
     result.addSharedStrings
   result.assignSheetInfo
