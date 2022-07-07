@@ -31,6 +31,7 @@ suite "Excelin unit test":
   let
     nao = now()
     generatefname = "excelin_generated.xlsx"
+    invalidexcel = "tests/Book1-no-rels.xlsx"
     fexob = ForExample(a: "A", b: 200)
     row1cellA = "this is string"
     row1cellC = 256
@@ -303,3 +304,7 @@ suite "Excelin unit test":
     check border.start.color == ""
     check border.bottom.style == bsNone
     check border.bottom.color == ""
+
+  test "can throw ExcelError when invalid excel without workbook relations found":
+    expect ExcelError:
+      discard readExcel(invalidexcel)

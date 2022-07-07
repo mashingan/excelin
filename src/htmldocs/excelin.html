@@ -1855,8 +1855,9 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="readExcel,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#readExcel%2Cstring"><span class="Identifier">readExcel</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="excelin.html#Excel"><span class="Identifier">Excel</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">XmlError</span><span class="Other">,</span> <span class="Identifier">ExcelError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Read Excel file from supplied path. Will raise OSError in case path is not exists, IOError when system errors during reading the file, ExcelError when the Excel file is not valid (Excel file that has no workbook).
@@ -1873,9 +1874,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Add information property to Excel file. Will add the properties to the existing.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L160"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L169"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L169" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createdAt,Excel"></a>
@@ -1884,9 +1885,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set the created at properties to our excel. Useful when we're creating an excel from template so we set the creation date to current date which different with template created date.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L169"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L178"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L169" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L178" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newExcel,string"></a>
@@ -1897,9 +1898,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Return a new Excel and Sheet at the same time to work for both. The Sheet returned is by default has name &quot;Sheet1&quot; but user can use <a class="reference external" href="#name=,Sheet,string">name= proc</a> to change its name.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L182"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L191"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L182" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L191" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="writeFile,Excel,string"></a>
@@ -1909,9 +1910,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Write Excel to file in target path. Raise OSError when it can't write to the intended path.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L190"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L199"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L190" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L199" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="$,Excel"></a>
@@ -1921,9 +1922,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get Excel file as string. Currently implemented by writing to temporary dir first because there's no API to get the data directly.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L217"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L226"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L217" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L226" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="sheetNames,Excel"></a>
@@ -1932,9 +1933,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Return all availables sheet names within an Excel file.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L230"
+href="https://github.com/mashingan/excelin/tree/version-1-4/src/excelin.nim#L239"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L230" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/excelin/edit/devel/src/excelin.nim#L239" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1981,7 +1982,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-05-30 12:01:19 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-07-07 15:11:38 UTC</small>
       </div>
     </div>
   </div>
