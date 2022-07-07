@@ -111,7 +111,7 @@ proc readExcel*(path: string): Excel =
   result.rels = extract "_rels/.rels"
   var
     workbookfound = false
-    workbookrelsExitst = false
+    workbookrelsExists = false
   result.sheets = newTable[string, Sheet]()
   result.otherfiles = newTable[string, FileRep]()
   result.embedfiles = newTable[string, EmbedFile]()
@@ -134,7 +134,7 @@ proc readExcel*(path: string): Excel =
       let sheet = extract path
       result.sheets[path] = Sheet(body: sheet, parent: result)
     elif wbpath.endsWith "workbook.xml.rels":
-      workbookrelsExitst = true
+      workbookrelsExists = true
       result.workbook.rels = fileRep path
     elif wbpath.endsWith "sharedStrings.xml":
       result.sharedStrings = path.readSharedStrings(extract path)
@@ -146,7 +146,7 @@ proc readExcel*(path: string): Excel =
       result.embedfiles[f] = (path, reader.extractFile path)
   if not workbookfound:
     raise newException(ExcelError, "No workbook found, invalid excel file")
-  if not workbookrelsExitst:
+  if not workbookrelsExists:
     const relspath = "xl/_rels/workbook.xml.rels"
     try:
       result.workbook.rels = fileRep relspath
