@@ -3,7 +3,7 @@ from std/times import now, DateTime, Time, toTime, parse, Month,
 from std/strformat import fmt
 from std/sugar import `->`, `=>`
 from std/strscans import scanf
-from std/os import fileExists
+from std/os import fileExists, `/`, parentDir
 from std/sequtils import repeat
 from std/strutils import join
 
@@ -31,7 +31,7 @@ suite "Excelin unit test":
   let
     nao = now()
     generatefname = "excelin_generated.xlsx"
-    invalidexcel = "tests/Book1-no-rels.xlsx"
+    invalidexcel = currentSourcePath.parentDir() / "Book1-no-rels.xlsx"
     fexob = ForExample(a: "A", b: 200)
     row1cellA = "this is string"
     row1cellC = 256
