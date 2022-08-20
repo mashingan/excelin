@@ -344,3 +344,19 @@ suite "Excelin unit test":
     discard sheet1.rowiter  # because iterator will only be true finished
                             # one more iteration after it's emptied.
     check rowiter.finished
+
+  test "can get last cell in row":
+    var rowiter = rows
+    var r = sheet1.rowiter
+    check r.rowNum == 1
+    check r.lastCol == ""
+    r = sheet1.rowiter
+    check r.rowNum == 2
+    check r.lastCol == 100.toCol
+    r = sheet1.rowiter
+    check r.rowNum == 5
+    check r.lastCol == "D"
+    r = sheet1.rowiter
+    check r.rowNum == 10
+    check r.lastCol == ""
+    discard sheet1.rowiter
