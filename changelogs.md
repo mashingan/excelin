@@ -1,3 +1,5 @@
+* 0.5.1:
+    * Fix Sheet.row ignored fetching empty row.
 * 0.5.0:
     * Add lastRow, lastCol, rows iterator for Sheet, and cols iterator for Row API.
     * Change internal rows and cell to be sorted immediately.
