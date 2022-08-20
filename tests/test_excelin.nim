@@ -309,17 +309,31 @@ suite "Excelin unit test":
     expect ExcelError:
       discard readExcel(invalidexcel)
 
-  test "fetch last row in sheet":
-    var (_, sheet) = newExcel()
-    discard sheet.row(1)        # add row empty
-    sheet.row(5)["D"] = "test"  # row 5 not empty and not hidden
-    let row2 = sheet.row 2      # not empty and hidden
+  test "can fetch last row in sheet":
+    var unused: Excel
+    (unused, sheet1) = newExcel()
+    discard sheet1.row(1)        # add row empty
+    sheet1.row(5)["D"] = "test"  # row 5 not empty and not hidden
+    let row2 = sheet1.row 2      # not empty and hidden
     row2[100.toCol] = 0xb33f
     row2.hide = true
-    sheet.row(10).hide = true   # empty and hidden
+    sheet1.row(10).hide = true   # empty and hidden
 
-    var r = sheet.lastRow
-    check sheet.lastRow.rowNum == 5
-    check sheet.lastRow(getEmpty = true).rowNum == 5
-    check sheet.lastRow(getHidden = true).rowNum == 5
-    check sheet.lastRow(getEmpty = true, getHidden = true).rowNum == 10
+    check sheet1.lastRow.rowNum == 5
+    check sheet1.lastRow(getEmpty = true).rowNum == 5
+    check sheet1.lastRow(getHidden = true).rowNum == 5
+    check sheet1.lastRow(getEmpty = true, getHidden = true).rowNum == 10
+
+  test "can check whether sheet empty and iterating the rows":
+    for row in sheet1.rows:
+      if row.rowNum == 1:
+        check row.empty
+      elif row.rowNum == 2:
+        check not row.empty
+        check row.hidden
+      elif row.rowNum == 5:
+        check not row.empty
+        check not row.hidden
+      else:
+        check row.empty
+        check row.hidden
