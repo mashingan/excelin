@@ -275,3 +275,10 @@ proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   ## Other than above mentioned types, see `getCell proc<#getCell,Row,string,typeof(nil)>`_
   ## for supplying the converting closure for getting the value.
   getCell[ret](r, col)
+
+proc lastCol*(r: Row): string =
+  ## Fetch last column of available cells. Return empty string if the row is empty.
+  if r.body.len == 0: return
+  let c = r.body[r.body.len-1]
+  let (s, _) = c.attr("r").colrow
+  result = s
