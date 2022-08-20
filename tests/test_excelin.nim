@@ -325,15 +325,22 @@ suite "Excelin unit test":
     check sheet1.lastRow(getEmpty = true, getHidden = true).rowNum == 10
 
   test "can check whether sheet empty and iterating the rows":
-    for row in sheet1.rows:
-      if row.rowNum == 1:
-        check row.empty
-      elif row.rowNum == 2:
-        check not row.empty
-        check row.hidden
-      elif row.rowNum == 5:
-        check not row.empty
-        check not row.hidden
-      else:
-        check row.empty
-        check row.hidden
+    var rowiter = rows
+    var r = sheet1.rowiter
+    check r.rowNum == 1
+    check r.empty
+    r = sheet1.rowiter
+    check r.rowNum == 2
+    check not r.empty
+    check r.hidden
+    r = sheet1.rowiter
+    check r.rowNum == 5
+    check not r.empty
+    check not r.hidden
+    r = sheet1.rowiter
+    check r.rowNum == 10
+    check r.empty
+    check r.hidden
+    discard sheet1.rowiter  # because iterator will only be true finished
+                            # one more iteration after it's emptied.
+    check rowiter.finished

@@ -118,7 +118,7 @@ proc empty*(row: Row): bool =
   row.body.len == 0
 
 
-iterator rows*(sheet: Sheet): Row =
+iterator rows*(sheet: Sheet): Row {.closure.} =
   ## rows will iterate each row in the supplied sheet regardless whether
   ## it's empty or hidden.
   let sdata = sheet.body.retrieveChildOrNew "sheetData"
