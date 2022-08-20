@@ -33,21 +33,14 @@ proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
     count = -1
     pos = 0
     done = false
-  let r1 = body[0]
-  let (rcol, _) = r1.attr("r").colrow
-  if colnum > rcol.toNum:
-    done = true
-    pos = 1
-  for i in 1 ..< body.len:
-    let n = body[i]
+  for n in body:
     inc count
     let rpos = n.attr "r"
     let (rcol, _) = n.attr("r").colrow
     if rpos == crow:
       return (count, count)
-    elif not done and rcol.toNum < colnum:
-      done = true
-      pos = count
+    elif not done and colnum > rcol.toNum:
+      inc pos
 
   (-1, pos)
 
@@ -229,7 +222,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     result.text = if "inlineStr" == v.attr "t": t else: fetchShared t
     let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
     var rid = ""
-    for hlink in hlinks:
+    for hlink in xmltree.items(hlinks):
       if fmt"{col}{row.rowNum}" == hlink.attr "ref":
         result.tooltip = hlink.attr "tooltip"
         rid = hlink.attr "r:id"
