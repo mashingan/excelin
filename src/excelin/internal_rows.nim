@@ -15,7 +15,7 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
     let rnum = try: parseInt(r.attr("r")) except: -1
     if rnum == rowNum:
       return Row(sheet: s, body: r)
-    elif rnum == -1 or (rnum > rowNum and r.len > 0):
+    elif rnum == -1 or rnum > rowNum:
       result = resultRow(rowNum)
       pos = idx
       break

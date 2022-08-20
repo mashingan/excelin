@@ -32,14 +32,13 @@ proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
   var
     count = -1
     pos = 0
-    done = false
   for n in body:
     inc count
     let rpos = n.attr "r"
     let (rcol, _) = n.attr("r").colrow
     if rpos == crow:
       return (count, count)
-    elif not done and colnum > rcol.toNum:
+    elif colnum > rcol.toNum:
       inc pos
 
   (-1, pos)
