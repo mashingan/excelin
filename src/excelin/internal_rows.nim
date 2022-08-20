@@ -110,3 +110,17 @@ proc lastRow*(sheet: Sheet, getEmpty = false, getHidden = false): Row =
       continue
     else:
       return Row(body: body, sheet: sheet)
+
+proc empty*(row: Row): bool =
+  ## Check whether there's no cell in row.
+  ## Used to check whether `proc clear<#toCol,Natural,string>`_ was called or
+  ## simply there's no cell available yet.
+  row.body.len == 0
+
+
+iterator rows*(sheet: Sheet): Row =
+  ## rows will iterate each row in the supplied sheet regardless whether
+  ## it's empty or hidden.
+  let sdata = sheet.body.retrieveChildOrNew "sheetData"
+  for body in sdata:
+    yield Row(body: body, sheet: sheet)
