@@ -87,3 +87,13 @@ template `$`*(r: Range): string =
 proc rowNum*(r: Row): Positive =
   ## Getting the current row number of Row object users working it.
   result = try: parseInt(r.body.attr "r") except: 1
+
+proc colrow(cr: string): (string, int) =
+  var rowstr: string
+  for i, c in cr:
+    if c in Letters:
+      result[0] &= c
+    elif c in Digits:
+      rowstr = cr[i .. ^1]
+      break
+  result[1] = try: parseInt(rowstr) except: 0

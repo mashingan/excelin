@@ -28,12 +28,21 @@ proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
         break
   x
 
-proc fetchCell(body: XmlNode, colrow: string): int =
-  var count = -1
+proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
+  var
+    count = -1
+    pos = 0
+    done = false
   for n in body:
     inc count
-    if colrow == n.attr "r": return count
-  -1
+    let rpos = n.attr "r"
+    let (rcol, _) = n.attr("r").colrow
+    if rpos == crow:
+      return (count, count)
+    elif not done and colnum > rcol.toNum:
+      inc pos
+
+  (-1, pos)
 
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
   altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
@@ -62,9 +71,12 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v",
         row.body.add <>c(r=cellp)
       row.body.add cnode
     return
-  let nodepos = row.body.fetchCell(cellpos)
-  if nodepos < 0:
+  if row.body.len == 0:
     row.body.add cnode
+    return
+  let (nodepos, insertpos) = row.body.fetchCell(cellpos, col.toNum)
+  if nodepos < 0:
+    row.body.insert cnode, insertpos
   else:
     cnode.attrs["s"] = row.body[nodepos].attr "s"
     row.body.delete nodepos
@@ -210,7 +222,7 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
     result.text = if "inlineStr" == v.attr "t": t else: fetchShared t
     let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
     var rid = ""
-    for hlink in hlinks:
+    for hlink in xmltree.items(hlinks):
       if fmt"{col}{row.rowNum}" == hlink.attr "ref":
         result.tooltip = hlink.attr "tooltip"
         rid = hlink.attr "r:id"
@@ -256,3 +268,18 @@ proc `[]`*(r: Row, col: string, ret: typedesc): ret =
   ## Other than above mentioned types, see `getCell proc<#getCell,Row,string,typeof(nil)>`_
   ## for supplying the converting closure for getting the value.
   getCell[ret](r, col)
+
+proc lastCol*(r: Row): string =
+  ## Fetch last column of available cells. Return empty string if the row is empty.
+  if r.body.len == 0: return
+  let c = r.body[r.body.len-1]
+  let (s, _) = c.attr("r").colrow
+  result = s
+
+iterator cols*(r: Row): string {.closure.} =
+  ## Iterate available cell columns has filled with values.
+  ## Return its column. Use `proc lastCol<#lastCol,Row,string>`_
+  ## to get its last column cell.
+  for c in r.body:
+    let (col, _) = c.attr("r").colrow
+    yield col

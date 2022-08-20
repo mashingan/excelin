@@ -150,7 +150,7 @@ proc readExcel*(path: string): Excel =
     const relspath = "xl/_rels/workbook.xml.rels"
     try:
       result.workbook.rels = fileRep relspath
-    except ZippyError as ze:
+    except ZippyError:
       raise newException(ExcelError, "Invalid excel file, no workbook relations exists")
   if result.sharedStrings == nil:
     result.addSharedStrings

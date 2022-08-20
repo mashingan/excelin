@@ -3,7 +3,7 @@ from std/times import now, DateTime, Time, toTime, parse, Month,
 from std/strformat import fmt
 from std/sugar import `->`, `=>`
 from std/strscans import scanf
-from std/os import fileExists
+from std/os import fileExists, `/`, parentDir
 from std/sequtils import repeat
 from std/strutils import join
 
@@ -31,7 +31,7 @@ suite "Excelin unit test":
   let
     nao = now()
     generatefname = "excelin_generated.xlsx"
-    invalidexcel = "tests/Book1-no-rels.xlsx"
+    invalidexcel = currentSourcePath.parentDir() / "Book1-no-rels.xlsx"
     fexob = ForExample(a: "A", b: 200)
     row1cellA = "this is string"
     row1cellC = 256
@@ -308,3 +308,73 @@ suite "Excelin unit test":
   test "can throw ExcelError when invalid excel without workbook relations found":
     expect ExcelError:
       discard readExcel(invalidexcel)
+
+  test "can fetch last row in sheet":
+    var unused: Excel
+    (unused, sheet1) = newExcel()
+    discard sheet1.row(1)        # add row empty
+    sheet1.row(5)["D"] = "test"  # row 5 not empty and not hidden
+    let row2 = sheet1.row 2      # not empty and hidden
+    row2[100.toCol] = 0xb33f
+    row2.hide = true
+    sheet1.row(10).hide = true   # empty and hidden
+
+    check sheet1.lastRow.rowNum == 5
+    check sheet1.lastRow(getEmpty = true).rowNum == 5
+    check sheet1.lastRow(getHidden = true).rowNum == 5
+    check sheet1.lastRow(getEmpty = true, getHidden = true).rowNum == 10
+
+  test "can check whether sheet empty and iterating the rows":
+    var rowiter = rows
+    var r = sheet1.rowiter
+    check r.rowNum == 1
+    check r.empty
+    r = sheet1.rowiter
+    check r.rowNum == 2
+    check not r.empty
+    check r.hidden
+    r = sheet1.rowiter
+    check r.rowNum == 5
+    check not r.empty
+    check not r.hidden
+    r = sheet1.rowiter
+    check r.rowNum == 10
+    check r.empty
+    check r.hidden
+    discard sheet1.rowiter  # because iterator will only be true finished
+                            # one more iteration after it's emptied.
+    check rowiter.finished
+
+  test "can get last cell in row":
+    var rowiter = rows
+    var r = sheet1.rowiter
+    check r.rowNum == 1
+    check r.lastCol == ""
+    r = sheet1.rowiter
+    check r.rowNum == 2
+    check r.lastCol == 100.toCol
+    r = sheet1.rowiter
+    check r.rowNum == 5
+    check r.lastCol == "D"
+    r = sheet1.rowiter
+    check r.rowNum == 10
+    check r.lastCol == ""
+    discard sheet1.rowiter
+
+  test "can iterate filled cells in row":
+    var coliter = cols
+    let row2 = sheet1.row 2
+    row2["C"] = 50
+    row2["A"] = "Aaa"
+    var colstring = row2.coliter
+    check colstring == "A"
+    colstring = row2.coliter
+    check colstring == "C"
+    colstring = row2.coliter
+    check colstring == 100.toCol
+    discard row2.coliter
+
+    colstring = ""
+    for c in sheet1.row(10).cols:
+      colstring = c
+    check colstring == "" # because row 10 is empty
