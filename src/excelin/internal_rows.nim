@@ -5,17 +5,25 @@ proc row*(s: Sheet, rowNum: Positive, fill = cfSparse): Row =
   ## This will return new row if there's no existing row
   ## or will return an existing one.
   let sdata = s.body.retrieveChildOrNew "sheetData"
-  let rowsExists = sdata.len
-  if rowNum > rowsExists:
-    for i in rowsExists+1 ..< rowNum:
-      sdata.add <>row(r= $i, hidden="false", collapsed="false", cellfill= $fill)
+  template resultRow(rnum: Positive): Row =
+    Row(sheet: s,
+        body: <>row(r= $rnum, hidden= $false, collapsed= $false, cellfill= $fill))
+  var pos = -1
+  var idx = -1
+  for r in sdata:
+    inc idx
+    let rnum = try: parseInt(r.attr("r")) except: -1
+    if rnum == rowNum:
+      return Row(sheet: s, body: r)
+    elif rnum == -1 or (rnum > rowNum and r.len > 0):
+      result = resultRow(rowNum)
+      pos = idx
+      break
+  if pos == -1:
+    result = resultRow(rowNum)
+    sdata.add result.body
   else:
-    return Row(sheet:s, body: sdata[rowNum-1])
-  result = Row(
-    sheet: s,
-    body: <>row(r= $rowNum, hidden="false", collapsed="false", cellfill= $fill),
-  )
-  sdata.add result.body
+    sdata.insert result.body, pos
   s.modifiedAt
 
 proc `hide=`*(row: Row, yes: bool) =
@@ -24,7 +32,7 @@ proc `hide=`*(row: Row, yes: bool) =
 
 proc hidden*(row: Row): bool =
   ## Check whether row is hidden
-  "1" == row.body.attr "hidden"
+  try: parseBool(row.body.attr "hidden") except: false
 
 proc `height=`*(row: Row, height: Natural) =
   ## Set the row height which sets its attribute to custom height.
@@ -87,3 +95,18 @@ proc pageBreak*(row: Row, maxCol, minCol = 0, manual = true) =
     rbreak.attrs["manualBreakCount"] = newcount
   else:
     rbreak.attrs["manualBreakCount"] = $(rbreak.len-1)
+
+proc lastRow*(sheet: Sheet, getEmpty = false, getHidden = false): Row =
+  ## Fetch the last row available with option to fetch whether it's empty/hidden
+  ## or not.
+  let sdata = sheet.body.retrieveChildOrNew "sheetData"
+  var idx = sdata.len - 1
+  if idx < 0: return
+  for i in countdown(idx, 0):
+    let body = sdata[i]
+    if not getEmpty and body.len == 0:
+      continue
+    elif not getHidden and (try: parseBool(body.attr "hidden") except: false):
+      continue
+    else:
+      return Row(body: body, sheet: sheet)
