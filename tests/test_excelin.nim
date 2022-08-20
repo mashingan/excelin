@@ -360,3 +360,21 @@ suite "Excelin unit test":
     check r.rowNum == 10
     check r.lastCol == ""
     discard sheet1.rowiter
+
+  test "can iterate filled cells in row":
+    var coliter = cols
+    let row2 = sheet1.row 2
+    row2["C"] = 50
+    row2["A"] = "Aaa"
+    var colstring = row2.coliter
+    check colstring == "A"
+    colstring = row2.coliter
+    check colstring == "C"
+    colstring = row2.coliter
+    check colstring == 100.toCol
+    discard row2.coliter
+
+    colstring = ""
+    for c in sheet1.row(10).cols:
+      colstring = c
+    check colstring == "" # because row 10 is empty

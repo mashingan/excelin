@@ -282,3 +282,11 @@ proc lastCol*(r: Row): string =
   let c = r.body[r.body.len-1]
   let (s, _) = c.attr("r").colrow
   result = s
+
+iterator cols*(r: Row): string {.closure.} =
+  ## Iterate available cell columns has filled with values.
+  ## Return its column. Use `proc lastCol<#lastCol,Row,string>`_
+  ## to get its last column cell.
+  for c in r.body:
+    let (col, _) = c.attr("r").colrow
+    yield col
