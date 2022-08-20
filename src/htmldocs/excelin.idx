@@ -96,6 +96,8 @@ rowNum	excelin.html#rowNum,Row	excelin: rowNum(r: Row): Positive
 getCell	excelin.html#getCell,Row,string,typeof(nil)	excelin: getCell[R](row: Row; col: string; conv: string -&gt; R = nil): R	
 getCellIt	excelin.html#getCellIt.t,Row,string,untyped	excelin: getCellIt[R](r: Row; col: string; body: untyped): untyped	
 `[]`	excelin.html#[],Row,string,typedesc	excelin: `[]`(r: Row; col: string; ret: typedesc): ret:type	
+lastCol	excelin.html#lastCol,Row	excelin: lastCol(r: Row): string	
+cols	excelin.html#cols.i,Row	excelin: cols(r: Row): string	
 row	excelin.html#row,Sheet,Positive	excelin: row(s: Sheet; rowNum: Positive; fill = cfSparse): Row	
 hide=	excelin.html#hide=,Row,bool	excelin: hide=(row: Row; yes: bool)	
 hidden	excelin.html#hidden,Row	excelin: hidden(row: Row): bool	
@@ -106,6 +108,9 @@ outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natu
 collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
 pageBreak	excelin.html#pageBreak,Row,int,int	excelin: pageBreak(row: Row; maxCol, minCol = 0; manual = true)	
+lastRow	excelin.html#lastRow,Sheet	excelin: lastRow(sheet: Sheet; getEmpty = false; getHidden = false): Row	
+empty	excelin.html#empty,Row	excelin: empty(row: Row): bool	
+rows	excelin.html#rows.i,Sheet	excelin: rows(sheet: Sheet): Row	
 shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
 copyStyle	excelin.html#copyStyle,Row,string,varargs[string]	excelin: copyStyle(row: Row; col: string; targets: varargs[string])	
 fontStyle	excelin.html#fontStyle,string,int,string	excelin: fontStyle(name: string; size = 10; family, charset = -1;\n          bold, italic, strike, outline, shadow, condense, extend = false;\n          color = &quot;&quot;; underline = uNone; verticalAlign = vaBaseline): Font	

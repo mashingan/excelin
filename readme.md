@@ -172,6 +172,24 @@ for i, c in toSeq['A'..'J']:
     doAssert row11[$c, string].toNum == i
 
 
+# Starting from version 0.5.0, we add rows iterator for sheet and colums iterator
+# for row together with its last accessor. Let's see it in action.
+
+doAssert row1.lastCol == "J"        # lastCol returning string column
+doAssert row11.lastCol == "J"
+doAssert sheet.lastRow.rowNum == 11 # lastRow returning Row
+
+for col in row11.cols:
+  stdout.write col
+echo()
+# will print out:
+# ABCDEFGHIJ
+
+for row in sheet.rows:
+  stdout.write row.rowNum, ", "
+# will print out
+# 1, 2, 5, 11, 
+
 # finally, we have 2 options to access the binary Excel data, using `$` and
 # `writeFile`. Both of procs are the usual which `$` is stringify (that's
 # to return the string of Excel) and `writeFile` is accepting string path

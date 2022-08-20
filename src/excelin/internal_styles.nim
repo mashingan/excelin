@@ -3,16 +3,6 @@ include internal_rows
 import std/macros
 from std/colors import `$`, colWhite
 
-proc colrow(cr: string): (string, int) =
-  var rowstr: string
-  for i, c in cr:
-    if c in Letters:
-      result[0] &= c
-    elif c in Digits:
-      rowstr = cr[i .. ^1]
-      break
-  result[1] = try: parseInt(rowstr) except: 0
-
 template styleRange(sheet: Sheet, `range`: Range, op: untyped) =
   let
     (tlcol, tlrow) = `range`[0].colrow
@@ -61,7 +51,8 @@ proc retrieveCell(row: Row, col: string): XmlNode =
   let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
   if fillmode == cfSparse:
     let colrow = fmt"{col}{row.rowNum}"
-    let fetchpos = row.body.fetchCell colrow
+    ## TODO: fix misfetch the cell
+    let (fetchpos, _) = row.body.fetchCell(colrow, col.toNum)
     if fetchpos < 0:
       row[col] = ""
       row.body[row.body.len-1]
