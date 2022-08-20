@@ -308,3 +308,18 @@ suite "Excelin unit test":
   test "can throw ExcelError when invalid excel without workbook relations found":
     expect ExcelError:
       discard readExcel(invalidexcel)
+
+  test "fetch last row in sheet":
+    var (_, sheet) = newExcel()
+    discard sheet.row(1)        # add row empty
+    sheet.row(5)["D"] = "test"  # row 5 not empty and not hidden
+    let row2 = sheet.row 2      # not empty and hidden
+    row2[100.toCol] = 0xb33f
+    row2.hide = true
+    sheet.row(10).hide = true   # empty and hidden
+
+    var r = sheet.lastRow
+    check sheet.lastRow.rowNum == 5
+    check sheet.lastRow(getEmpty = true).rowNum == 5
+    check sheet.lastRow(getHidden = true).rowNum == 5
+    check sheet.lastRow(getEmpty = true, getHidden = true).rowNum == 10
