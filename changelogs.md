@@ -1,3 +1,6 @@
+* 0.5.0:
+    * Add lastRow, lastCol, rows iterator for Sheet, and cols iterator for Row API.
+    * Change internal rows and cell to be sorted immediately.
 * 0.4.10:
     * Fix all instance of checking cellfill mode in a row.
 * 0.4.9:
