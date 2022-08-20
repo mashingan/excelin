@@ -28,12 +28,28 @@ proc fetchValNode(row: Row, col: string, isSparse: bool): XmlNode =
         break
   x
 
-proc fetchCell(body: XmlNode, colrow: string): int =
-  var count = -1
-  for n in body:
+proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
+  var
+    count = -1
+    pos = 0
+    done = false
+  let r1 = body[0]
+  let (rcol, _) = r1.attr("r").colrow
+  if colnum > rcol.toNum:
+    done = true
+    pos = 1
+  for i in 1 ..< body.len:
+    let n = body[i]
     inc count
-    if colrow == n.attr "r": return count
-  -1
+    let rpos = n.attr "r"
+    let (rcol, _) = n.attr("r").colrow
+    if rpos == crow:
+      return (count, count)
+    elif not done and rcol.toNum < colnum:
+      done = true
+      pos = count
+
+  (-1, pos)
 
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
   altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
@@ -62,9 +78,12 @@ proc addCell(row: Row, col, cellType, text: string, valelem = "v",
         row.body.add <>c(r=cellp)
       row.body.add cnode
     return
-  let nodepos = row.body.fetchCell(cellpos)
-  if nodepos < 0:
+  if row.body.len == 0:
     row.body.add cnode
+    return
+  let (nodepos, insertpos) = row.body.fetchCell(cellpos, col.toNum)
+  if nodepos < 0:
+    row.body.insert cnode, insertpos
   else:
     cnode.attrs["s"] = row.body[nodepos].attr "s"
     row.body.delete nodepos
