@@ -1,3 +1,8 @@
+* 0.5.2:
+    * Revert `Sheet.row` implementation to the latest previous minor-update.
+    * Modify Sheet internal type to support tracking latest/biggest rows filled.
+    * Adjust iterator `Sheet.rows` to ignore empty rows due to reverting back of `Sheet.row` implementation.
+    * Adjust internal `Row.addCell` to support tracking latest rows filled.
 * 0.5.1:
     * Fix Sheet.row ignored fetching empty row.
 * 0.5.0:
