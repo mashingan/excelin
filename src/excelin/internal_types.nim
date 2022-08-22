@@ -18,7 +18,7 @@ from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
 
 
 const
-  excelinVersion* = "0.5.1"
+  excelinVersion* = "0.5.2"
 
 type
   Excel* = ref object
@@ -52,6 +52,7 @@ type
     rid: string
     privName: string
     filename: string
+    lastRowNum: Natural # 1-based, to be used in 0-based array
 
   Row* = ref object of InternalBody
     ## The object that will be used for working with values within cells of a row.
