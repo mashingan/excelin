@@ -183,12 +183,19 @@ for col in row11.cols:
   stdout.write col
 echo()
 # will print out:
-# ABCDEFGHIJ
+#ABCDEFGHIJ
 
 for row in sheet.rows:
   stdout.write row.rowNum, ", "
-# will print out
-# 1, 2, 5, 11, 
+# will print out:
+#1, 11, 
+#
+# note that row 2 and 5 are not shown because both are empty row even though we did access both row.
+# Fill with some value in its cells to make it not empty, and `Row.clear` does the reverse
+# by clearing all cells in a row.
+
+doAssert row2.empty
+doAssert row5.empty
 
 # finally, we have 2 options to access the binary Excel data, using `$` and
 # `writeFile`. Both of procs are the usual which `$` is stringify (that's

@@ -108,7 +108,7 @@ outlineLevel	excelin.html#outlineLevel,Row	excelin: outlineLevel(row: Row): Natu
 collapsed=	excelin.html#collapsed=,Row,bool	excelin: collapsed=(row: Row; yes: bool)	
 clear	excelin.html#clear,Row	excelin: clear(row: Row)	
 pageBreak	excelin.html#pageBreak,Row,int,int	excelin: pageBreak(row: Row; maxCol, minCol = 0; manual = true)	
-lastRow	excelin.html#lastRow,Sheet	excelin: lastRow(sheet: Sheet; getEmpty = false; getHidden = false): Row	
+lastRow	excelin.html#lastRow,Sheet	excelin: lastRow(sheet: Sheet): Row	
 empty	excelin.html#empty,Row	excelin: empty(row: Row): bool	
 rows	excelin.html#rows.i,Sheet	excelin: rows(sheet: Sheet): Row	
 shareStyle	excelin.html#shareStyle,Row,string,varargs[string]	excelin: shareStyle(row: Row; col: string; targets: varargs[string])	
