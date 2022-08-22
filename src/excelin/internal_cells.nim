@@ -46,6 +46,9 @@ proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
   altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
   let rn = row.body.attr "r"
+  let rnum = try: parseInt(rn) except: -1
+  if rnum > row.sheet.lastRowNum:
+    row.sheet.lastRowNum = rnum
   let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
   let sparse = fillmode == cfSparse
   let col = col.toUpperAscii
@@ -131,6 +134,9 @@ proc `[]=`*(row: Row, col: string, f: Formula) =
 proc `[]=`*(row: Row, col: string, h: Hyperlink) =
   let sheetrelname = fmt"{row.sheet.filename}.rels"
   if sheetrelname notin row.sheet.parent.otherfiles: return
+  let rn = row.rowNum
+  if rn > row.sheet.lastRowNum:
+    row.sheet.lastRowNum = rn
   let (_, sheetrel) = row.sheet.parent.otherfiles[sheetrelname]
   row[col] = h.text
   let hlinks = row.sheet.body.retrieveChildOrNew "hyperlinks"
