@@ -367,7 +367,43 @@ In this example we'll see various styling provided for cells in row.
 import std/colors # to work with coloring
 from std/sequtils import repeat
 from std/strutils import join
-import excelin
+from excelin import
+    newExcel,
+    row,
+    `[]=`,
+    
+    BorderProp,  # The object of Border which style is ready to be applied
+    BorderStyle, # Enum for selecting border style,
+                 # not to confuse with `borderStyle` proc for setting up
+                 # style mentioned below section
+    PatternType, # Enum for selecting fill style pattern
+
+    # This part of APIs is for setting up the style.
+    # The naming pattern is `{objectTypeName}style` viz.
+    # Font -> fontStyle
+    # Border -> borderStyle
+    # etc
+    style,
+    fontStyle,
+    borderStyle,
+    borderPropStyle,
+    fillStyle,
+    patternFillStyle,
+
+    # For linking style between cells
+    shareStyle,
+    copyStyle,
+    
+    # This part of APIs is for getting the style.
+    # The naming pattern is `style{ObjectTypeName}` viz.
+    # Font -> styleFont, Fill -> styleFill, Border -> styleBorder
+    styleFont,
+    styleFill,
+    styleBorder,
+
+    height,
+    `height=`,
+    writeFile
 
 let (excel, sheet) = newExcel()
 let row2 = sheet.row 2

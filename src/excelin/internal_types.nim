@@ -18,7 +18,7 @@ from std/tables import TableRef, newTable, `[]`, `[]=`, contains, pairs,
 
 
 const
-  excelinVersion* = "0.5.2"
+  excelinVersion* = "0.5.3"
 
 type
   Excel* = ref object

@@ -24,7 +24,7 @@ proc `hide=`*(row: Row, yes: bool) =
 
 proc hidden*(row: Row): bool =
   ## Check whether row is hidden
-  try: parseBool(row.body.attr "hidden") except: false
+  try: parseBool(row.body.attr "hidden") except ValueError: false
 
 proc `height=`*(row: Row, height: Natural) =
   ## Set the row height which sets its attribute to custom height.
@@ -39,7 +39,7 @@ proc `height=`*(row: Row, height: Natural) =
 proc height*(row: Row): Natural =
   ## Check the row height if it has custom height and its value set.
   ## If not will by default return 0.
-  try: parseInt(row.body.attr "ht") except: 0
+  try: parseInt(row.body.attr "ht") except ValueError: 0
 
 proc `outlineLevel=`*(row: Row, level: Natural) =
   ## Set the outline level for the row. Level 0 means resetting the level.
@@ -48,7 +48,7 @@ proc `outlineLevel=`*(row: Row, level: Natural) =
 
 proc outlineLevel*(row: Row): Natural =
   ## Check current row outline level. 0 when it's not outlined.
-  try: parseInt(row.body.attr "outlineLevel") except: 0
+  try: parseInt(row.body.attr "outlineLevel") except ValueError: 0
 
 proc `collapsed=`*(row: Row, yes: bool) =
   ## Collapse the current row, usually used together with outline level.

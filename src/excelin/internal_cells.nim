@@ -46,10 +46,10 @@ proc fetchCell(body: XmlNode, crow: string, colnum: int): (int, int) =
 proc addCell(row: Row, col, cellType, text: string, valelem = "v",
   altnode: seq[XmlNode] = @[], emptyCell = false, style = "0") =
   let rn = row.body.attr "r"
-  let rnum = try: parseInt(rn) except: -1
+  let rnum = try: parseInt(rn) except ValueError: -1
   if rnum > row.sheet.lastRowNum:
     row.sheet.lastRowNum = rnum
-  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except ValueError: cfSparse
   let sparse = fillmode == cfSparse
   let col = col.toUpperAscii
   let cellpos = fmt"{col}{rn}"
@@ -189,14 +189,14 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   elif R is DateTime: result = fromUnix(0).local
   elif R is Time: result = fromUnix 0
   else: discard
-  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except ValueError: cfSparse
   let isSparse = fillmode == cfSparse
   let col = col.toUpperAscii
   let v = row.fetchValNode(col, isSparse)
   if v == nil: return
   let t = v.innerText
   template fetchShared(t: string): untyped =
-    let refpos = try: parseInt(t) except: -1
+    let refpos = try: parseInt(t) except ValueError: -1
     if refpos < 0: return
     let tnode = row.sheet.parent.sharedStrings.body[refpos]
     if tnode == nil: return
@@ -211,15 +211,15 @@ proc getCell*[R](row: Row, col: string, conv: string -> R = nil): R =
   when R is string:
     result = if "inlineStr" == v.attr "t" : t else: fetchShared t
   elif R is SomeSignedInt:
-    try: result = parseInt(t) except: discard
+    try: result = parseInt(t) except ValueError: discard
   elif R is SomeFloat:
-    try: result = parseFloat(t) except: discard
+    try: result = parseFloat(t) except ValueError: discard
   elif R is SomeUnsignedInt:
-    try: result = parseUint(t) except: discard
+    try: result = parseUint(t) except ValueError: discard
   elif R is DateTime:
-    try: result = parse(t, datefmt) except: discard
+    try: result = parse(t, datefmt) except CatchableError: discard
   elif R is Time:
-    try: result = parse(t, datefmt).toTime except: discard
+    try: result = parse(t, datefmt).toTime except CatchableError: discard
   elif R is Formula:
     result = Formula(equation: v.child("f").innerText,
       valueStr: v.child("v").innerText)
