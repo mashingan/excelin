@@ -54,8 +54,8 @@ proc readSharedStrings(path: string, body: XmlNode): SharedStrings =
   result = SharedStrings(
     path: path,
     body: body,
-    count: try: parseInt(body.attr "count") except: 0,
-    unique: try: parseInt(body.attr "uniqueCount") except: 0,
+    count: try: parseInt(body.attr "count") except ValueError: 0,
+    unique: try: parseInt(body.attr "uniqueCount") except ValueError: 0,
   )
 
   var count = -1
@@ -233,7 +233,7 @@ proc `$`*(e: Excel): string =
   result = readFile path
   try:
     removeFile path
-  except:
+  except CatchableError:
     discard
 
 proc sheetNames*(e: Excel): seq[string] =

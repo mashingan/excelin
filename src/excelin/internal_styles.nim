@@ -48,7 +48,7 @@ proc toXmlNode(f: Font): XmlNode =
     result.add <>vertAlign(val= $f.verticalAlign)
 
 proc retrieveCell(row: Row, col: string): XmlNode =
-  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except ValueError: cfSparse
   if fillmode == cfSparse:
     let colrow = fmt"{col}{row.rowNum}"
     ## TODO: fix misfetch the cell
@@ -91,7 +91,7 @@ proc copyStyle*(row: Row, col: string, targets: varargs[string]) =
   let cxfs = styles.child "cellXfs"
   if cxfs == nil or cxfs.len < 1: return
   let csxfs = styles.retrieveChildOrNew "cellStyleXfs"
-  let stylepos = try: parseInt(sid) except: -1
+  let stylepos = try: parseInt(sid) except ValueError: -1
   if stylepos < 0 or stylepos >= cxfs.len: return
   var stylescount = cxfs.len
   let refxf = cxfs[stylepos]
@@ -121,7 +121,7 @@ proc addFont(styles: XmlNode, font: Font): (int, bool) =
   let applyFont = true
 
   let fonts = styles.retrieveChildOrNew "fonts"
-  let fontCount = try: parseInt(fonts.attr "count") except: 0
+  let fontCount = try: parseInt(fonts.attr "count") except ValueError: 0
   fonts.attrs = {"count": $(fontCount+1)}.toXmlAttributes
   fonts.add fontnode
   let fontId = fontCount
@@ -132,7 +132,7 @@ proc addBorder(styles: XmlNode, border: Border): (int, bool) =
 
   let applyBorder = true
   let bnodes = styles.retrieveChildOrNew "borders"
-  let bcount = try: parseInt(bnodes.attr "count") except: 0
+  let bcount = try: parseInt(bnodes.attr "count") except ValueError: 0
   let borderId = bcount
 
   let bnode = <>border(diagonalUp= $border.diagonalUp,
@@ -192,7 +192,7 @@ proc addFill(styles: XmlNode, fill: Fill): (int, bool) =
 
   result[1] = true
   let fills = styles.retrieveChildOrNew "fills"
-  let count = try: parseInt(fills.attr "count") except: 0
+  let count = try: parseInt(fills.attr "count") except ValueError: 0
 
   let fillnode = <>fill()
   fillnode.addPattern fill.pattern
@@ -310,7 +310,7 @@ proc style*(row: Row, col: string,
   alignment: openarray[(string, string)] = []) =
   ## Add style to cell in row by selectively providing the font, border, fill
   ## and alignment styles.
-  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except: cfSparse
+  let fillmode = try: parseEnum[CellFill](row.body.attr "cellfill") except ValueError: cfSparse
   let sparse = cfSparse == fillmode
   let rnum = row.rowNum
   var pos = -1
@@ -334,7 +334,7 @@ proc style*(row: Row, col: string,
 
   let styles = row.fetchStyles
   let (fontId, applyFont) = styles.addFont font
-  let styleId = try: parseInt(c.attr "s") except: 0
+  let styleId = try: parseInt(c.attr "s") except ValueError: 0
   let applyAlignment = alignment.len > 0
   let (borderId, applyBorder) = styles.addBorder border
   let (fillId, applyFill) = styles.addFill fill
@@ -362,7 +362,7 @@ proc style*(row: Row, col: string,
     alignNode.attrs[k] = v
 
   if styleId == 0:
-    let cxfscount = try: parseInt(cxfs.attr "count") except: 0
+    let cxfscount = try: parseInt(cxfs.attr "count") except ValueError: 0
     cxfs.attrs["count"] = $(cxfscount+1)
     csxfs.attrs["count"] = $(csxfs.len + 1)
     xf.add alignNode
@@ -434,7 +434,7 @@ proc toFont(node: XmlNode): Font =
     let nn = node.child nodename
     if nn != nil:
       let val {.inject.} = nn.attr "val"
-      result.`field` = try: `fetch`(val) except: `default`
+      result.`field` = try: `fetch`(val) except CatchableError: `default`
     else:
       result.`field` = `default`
 
@@ -466,23 +466,23 @@ proc toFill(node: XmlNode): Fill =
     if bgnode != nil:
       let bgColorRgb = bgnode.attr "rgb"
       result.pattern.bgColor = if bgColorRgb.len > 1: "#" & bgColorRgb[2..^1] else: ""
-    result.pattern.patternType = try: parseEnum[PatternType](pattern.attr "patternType") except: ptNone
+    result.pattern.patternType = try: parseEnum[PatternType](pattern.attr "patternType") except ValueError: ptNone
   let gradient = node.child "gradientFill"
   if gradient != nil:
     let stop = gradient.child "stop"
     result.gradient = GradientFill(
       edit: true,
-      `type`: try: parseEnum[GradientType]gradient.attr "type" except: gtLinear,
+      `type`: try: parseEnum[GradientType]gradient.attr "type" except ValueError: gtLinear,
     )
     if stop != nil:
       result.gradient.stop = GradientStop(
-          position: try: parseFloat(stop.attr "position") except: 0.0,
+          position: try: parseFloat(stop.attr "position") except ValueError: 0.0,
           color: stop.toRgbColorStr,
       )
     macro addelemfloat(field: untyped): untyped =
       let strfield = $field
       result = quote do:
-        result.gradient.`field` = try: parseFloat(gradient.attr `strfield`) except: 0.0
+        result.gradient.`field` = try: parseFloat(gradient.attr `strfield`) except ValueError: 0.0
     addelemfloat degree
     addelemfloat left
     addelemfloat right
@@ -500,9 +500,9 @@ template retrieveStyleId(row: Row, col, styleAttr, child: string, conv: untyped)
   let (path, style) = row.sheet.parent.otherfiles[stylename]
   discard path
   let cxfs = style.retrieveChildOrNew "cellXfs"
-  let sid = try: parseInt(cnode.attr "s") except: 0
+  let sid = try: parseInt(cnode.attr "s") except ValueError: 0
   if sid >= cxfs.len: return
-  let theid = try: parseInt(cxfs[sid].attr styleAttr) except: 0
+  let theid = try: parseInt(cxfs[sid].attr styleAttr) except ValueError: 0
   let childnode = style.retrieveChildOrNew child
   if theid >= childnode.len: return
   childnode[theid].`conv`
@@ -517,7 +517,7 @@ proc toBorder(node: XmlNode): Border =
       var b: BorderProp
       if child != nil:
         b.edit = true
-        b.style = try: parseEnum[BorderStyle](child.attr "style") except: bsNone
+        b.style = try: parseEnum[BorderStyle](child.attr "style") except ValueError: bsNone
         b.color = child.toRgbColorStr
       result.`field` = b
   retrieveField start
@@ -526,8 +526,8 @@ proc toBorder(node: XmlNode): Border =
   retrieveField bottom
   retrieveField vertical
   retrieveField horizontal
-  result.diagonalDown = try: parseBool(node.attr "diagonalDown") except: false
-  result.diagonalUp = try: parseBool(node.attr "diagonalUp") except: false
+  result.diagonalDown = try: parseBool(node.attr "diagonalDown") except ValueError: false
+  result.diagonalUp = try: parseBool(node.attr "diagonalUp") except ValueError: false
 
 
 proc styleFont*(row: Row, col: string): Font =
