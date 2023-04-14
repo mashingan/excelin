@@ -1,3 +1,5 @@
+* 0.5.3:
+    * Fix deprecated bare except clause in Nim 1.6.12.
 * 0.5.2:
     * Revert `Sheet.row` implementation to the latest previous minor-update.
     * Modify Sheet internal type to support tracking latest/biggest rows filled.
