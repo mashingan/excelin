@@ -9,7 +9,7 @@ from std/xmlparser import parseXml
 from std/sha1 import secureHash, `$`
 
 from zippy/ziparchives import openZipArchive, extractFile, ZipArchive,
-  ArchiveEntry, writeZipArchive, ZippyError
+  ArchiveEntry, writeZipArchive, ZippyError, ZipArchiveReader
 
 const
   spreadtypefmt = "application/vnd.openxmlformats-officedocument.spreadsheetml.$1+xml"
@@ -96,6 +96,22 @@ proc addEmptyStyles(e: Excel) =
     <>colors(<>indexedColors()))
   e.otherfiles["styles.xml"] = (path, styles)
 
+proc retrieveWorkbook(reader: ZipArchiveReader, parent: Excel,
+  nodes: seq[XmlNode]): (Workbook, bool) =
+  for node in nodes:
+    let path = node.attr "PartName"
+    if not path.endsWith("workbook.xml"): continue
+    let thepath = path.tailDir
+    let body = parseXml reader.extractFile(thepath)
+    let wb = Workbook(
+      path: thepath,
+      body: body,
+      sheetsInfo: body.retrieveSheetsInfo,
+      parent: parent,
+    )
+    result = (wb, true)
+    return
+
 proc readExcel*(path: string): Excel =
   ## Read Excel file from supplied path. Will raise OSError
   ## in case path is not exists, IOError when system errors
@@ -115,20 +131,18 @@ proc readExcel*(path: string): Excel =
   result.sheets = newTable[string, Sheet]()
   result.otherfiles = newTable[string, FileRep]()
   result.embedfiles = newTable[string, EmbedFile]()
-  for node in result.content.findAll("Override"):
+  let overrideNodes = result.content.findAll "Override"
+  (result.workbook, workbookfound) = reader.retrieveWorkbook(
+    result, overrideNodes)
+  if not workbookfound:
+    raise newException(ExcelError, "No workbook found, invalid excel file")
+  for node in overrideNodes:
     let wbpath = node.attr "PartName"
     if wbpath == "": continue
     let contentType = node.attr "ContentType"
     let path = wbpath.tailDir # because the wbpath has leading '/' due to top package position
     if wbpath.endsWith "workbook.xml":
-      let body = extract path
-      result.workbook = Workbook(
-        path: path,
-        body: body,
-        sheetsInfo: body.retrieveSheetsInfo,
-        parent: result,
-      )
-      workbookfound = true
+      continue
     elif "worksheet" in contentType:
       inc result.sheetCount
       let sheet = extract path
@@ -144,8 +158,6 @@ proc readExcel*(path: string): Excel =
     else:
       let (_, f) = splitPath wbpath
       result.embedfiles[f] = (path, reader.extractFile path)
-  if not workbookfound:
-    raise newException(ExcelError, "No workbook found, invalid excel file")
   if not workbookrelsExists:
     const relspath = "xl/_rels/workbook.xml.rels"
     try:

@@ -1,3 +1,5 @@
+* 0.5.4:
+    * Fix accessing workbook when it's not found yet.
 * 0.5.3:
     * Fix deprecated bare except clause in Nim 1.6.12.
 * 0.5.2:
